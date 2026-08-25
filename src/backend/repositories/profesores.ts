@@ -1,7 +1,11 @@
+import type { Prisma } from '@prisma/client';
 import { db } from './cliente';
 
 /**
  * Consultas sobre fichas de profesor para el panel de administración.
+ *
+ * A diferencia del directorio, aquí sí se lee el correo: hace falta para poder
+ * escribir a quien se da de alta si algo de su ficha no cuadra.
  */
 
 const FICHA_COMPLETA = {
@@ -34,9 +38,11 @@ const FICHA_COMPLETA = {
   },
   profesor_disponibilidad: {
     select: { dia_semana: true, hora_inicio: true },
-    orderBy: [{ dia_semana: 'asc' as const }, { hora_inicio: 'asc' as const }],
+    orderBy: [{ dia_semana: 'asc' }, { hora_inicio: 'asc' }],
   },
-} as const;
+  // `satisfies` y no `as const`: comprueba el objeto contra el tipo de Prisma
+  // sin convertirlo en sólo lectura, que es lo que hacía fallar la consulta.
+} satisfies Prisma.profesoresSelect;
 
 /** Fichas esperando revisión. Las más antiguas primero: no se deja a nadie atrás. */
 export async function listarPendientes() {

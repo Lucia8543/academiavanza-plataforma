@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { enviarRegistro, type EstadoFormulario } from '@/app/registro/acciones';
 import type { Catalogos } from '@/backend/repositories/catalogos';
 import { SelectorColegio } from '@/frontend/components/shared/selector-colegio';
@@ -61,6 +61,41 @@ const VACIO: Valores = {
   aceptaPublicacion: false,
 };
 
+/**
+ * Reconstruye los valores del formulario a partir de lo que devolvió el
+ * servidor. Si no devolvió nada —primera visita— sale el formulario vacío.
+ */
+function desdeRespuesta(
+  respuesta: EstadoFormulario['valores'],
+): Valores {
+  if (!respuesta) return VACIO;
+
+  const t = (k: string) =>
+    typeof respuesta[k] === 'string' ? (respuesta[k] as string) : '';
+  const l = (k: string) =>
+    Array.isArray(respuesta[k]) ? (respuesta[k] as string[]) : [];
+
+  return {
+    nombre: t('nombre'),
+    apellidos: t('apellidos'),
+    email: t('email'),
+    colegioId: t('colegioId'),
+    colegioOtro: t('colegioOtro'),
+    titulacion: t('titulacion'),
+    universidad: t('universidad'),
+    cursoActual: t('cursoActual'),
+    titulacionFinalizada: t('titulacionFinalizada') === 'on',
+    asignaturas: l('asignaturas'),
+    niveles: l('niveles'),
+    certificaciones: l('certificaciones'),
+    modalidad: t('modalidad') || 'online',
+    zona: t('zona'),
+    disponibilidad: l('disponibilidad'),
+    puntosFuertes: t('puntosFuertes'),
+    aceptaPublicacion: t('aceptaPublicacion') === 'on',
+  };
+}
+
 function Seccion({
   titulo,
   ayuda,
@@ -96,38 +131,43 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
     enviarRegistro,
     ESTADO_INICIAL,
   );
-  const [v, setV] = useState<Valores>(VACIO);
+  // El estado nace ya con lo que devuelva el servidor.
+  //
+  // Mientras haya JavaScript, `useActionState` no desmonta el formulario y lo
+  // escrito sigue en memoria por sí solo. Este arranque cubre el otro caso: si
+  // el navegador envía el formulario a la antigua —sin JavaScript, o antes de
+  // que la página termine de cargarse— la respuesta es una página nueva, el
+  // componente se monta de cero y sin esto aparecería en blanco.
+  //
+  // Antes esto lo hacía un `useEffect`. Hacía lo mismo, pero pintaba el
+  // formulario vacío y lo rellenaba en un segundo repintado. Empezar con el
+  // valor correcto es más simple y no parpadea.
+  const [v, setV] = useState<Valores>(() => desdeRespuesta(estado.valores));
 
-  // Si el servidor devuelve un error, trae también lo que se había escrito.
-  // Normalmente ya lo tenemos en memoria, pero esto cubre el caso de que la
-  // página se haya recargado por medio.
-  useEffect(() => {
-    if (!estado.valores) return;
-    const p = estado.valores;
-    const t = (k: string) => (typeof p[k] === 'string' ? (p[k] as string) : '');
-    const l = (k: string) => (Array.isArray(p[k]) ? (p[k] as string[]) : []);
+  // Cuenta de intentos, para reconstruir el formulario tras cada respuesta.
+  //
+  // React vacía el formulario del navegador cuando termina una acción. Es lo
+  // que se quiere en el caso normal —enviaste, se guardó, empiezas de nuevo—
+  // pero aquí el envío puede volver con errores, y entonces vaciarlo tira cinco
+  // minutos de trabajo a la basura.
+  //
+  // Con las casillas de texto no se nota, porque React las repinta desde el
+  // estado. Con las marcadas sí: el navegador las desmarca y React, que no ve
+  // ningún cambio en el estado, no tiene motivo para volver a tocarlas.
+  //
+  // Cambiar la `key` del formulario lo desmonta y lo vuelve a montar entero.
+  // Los campos se crean otra vez leyendo `v`, que vive aquí fuera y nadie ha
+  // tocado. Es el patrón de React para reiniciar un trozo de interfaz.
+  //
+  // El ajuste se hace durante el pintado y no en un `useEffect` a propósito:
+  // así no hay un pintado intermedio con las casillas vacías.
+  const [respuestaVista, setRespuestaVista] = useState(estado);
+  const [intento, setIntento] = useState(0);
 
-    setV((actual) => ({
-      ...actual,
-      nombre: t('nombre') || actual.nombre,
-      apellidos: t('apellidos') || actual.apellidos,
-      email: t('email') || actual.email,
-      colegioId: t('colegioId') || actual.colegioId,
-      colegioOtro: t('colegioOtro') || actual.colegioOtro,
-      titulacion: t('titulacion') || actual.titulacion,
-      universidad: t('universidad') || actual.universidad,
-      cursoActual: t('cursoActual') || actual.cursoActual,
-      zona: t('zona') || actual.zona,
-      puntosFuertes: t('puntosFuertes') || actual.puntosFuertes,
-      modalidad: t('modalidad') || actual.modalidad,
-      titulacionFinalizada: t('titulacionFinalizada') === 'on',
-      aceptaPublicacion: t('aceptaPublicacion') === 'on',
-      asignaturas: l('asignaturas'),
-      niveles: l('niveles'),
-      certificaciones: l('certificaciones'),
-      disponibilidad: l('disponibilidad'),
-    }));
-  }, [estado]);
+  if (respuestaVista !== estado) {
+    setRespuestaVista(estado);
+    setIntento((n) => n + 1);
+  }
 
   const errores = estado.errores ?? {};
 
@@ -175,7 +215,7 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
   }
 
   return (
-    <form action={accion} className="space-y-8" noValidate>
+    <form key={intento} action={accion} className="space-y-8" noValidate>
       {estado.mensaje && (
         <div className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
           <p className="font-medium">{estado.mensaje}</p>

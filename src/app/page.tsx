@@ -17,10 +17,16 @@ export default function Portada() {
         </p>
 
         <p className="mt-8 text-base text-gris-medio">
-          Estamos preparando el nuevo directorio de profesores. Muy pronto podrás
-          buscar por colegio, asignatura y nivel, y escribir directamente a quien
-          encaje contigo.
+          Busca por colegio, asignatura y curso, y escribe directamente a quien
+          encaje contigo. Sin intermediarios y sin coste.
         </p>
+
+        <a
+          href="/profesores"
+          className="mt-8 inline-block rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro"
+        >
+          Ver profesores
+        </a>
 
         <div className="mt-10 border-t border-gris-borde pt-8">
           <p className="text-sm text-gris-medio">
@@ -28,7 +34,7 @@ export default function Portada() {
           </p>
           <a
             href="/registro"
-            className="mt-3 inline-block rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro"
+            className="mt-3 inline-block rounded-lg border border-verde-avanza px-6 py-3 font-semibold text-verde-avanza-oscuro transition hover:bg-verde-avanza-claro"
           >
             Publicar mi ficha
           </a>

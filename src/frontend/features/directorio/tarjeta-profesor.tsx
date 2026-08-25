@@ -1,0 +1,122 @@
+import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
+import type { ProfesorPublico } from '@/shared/types/directorio';
+
+/**
+ * Una ficha vista por una familia.
+ *
+ * El colegio va arriba y destacado porque es la razón por la que alguien elige
+ * esta plataforma en vez de cualquier tablón de anuncios: saber de dónde viene
+ * quien va a dar clase a su hijo.
+ *
+ * Y va sin adjetivos. Ni «verificado», ni «de confianza», ni «avalado». La
+ * plataforma no ha examinado a nadie: ha comprobado de qué colegio viene, que es
+ * mucho menos y hay que decirlo con esas palabras.
+ */
+
+const DIA_CORTO = Object.fromEntries(DIAS.map((d) => [d.numero, d.corta]));
+
+const MODALIDAD = {
+  online: 'Online',
+  presencial: 'Presencial',
+  ambas: 'Online y presencial',
+} as const;
+
+function Etiqueta({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full bg-gris-claro px-2.5 py-1 text-xs font-medium text-carbon">
+      {children}
+    </span>
+  );
+}
+
+export function TarjetaProfesor({ f }: { f: ProfesorPublico }) {
+  const estudios = f.titulacionFinalizada
+    ? `${f.titulacion}, terminada`
+    : f.cursoActual
+      ? `${f.titulacion}, ${f.cursoActual}.º curso`
+      : f.titulacion;
+
+  const donde =
+    f.modalidad === 'online' || !f.zona
+      ? MODALIDAD[f.modalidad]
+      : `${MODALIDAD[f.modalidad]} · ${f.zona}`;
+
+  return (
+    <article className="flex h-full flex-col rounded-xl border border-gris-borde bg-white p-5">
+      <h3 className="text-lg font-bold text-azul-confianza">
+        {f.nombrePublico}
+      </h3>
+
+      {f.colegio && (
+        <p className="mt-1 text-sm font-medium text-verde-avanza-oscuro">
+          Estudió en {f.colegio}
+        </p>
+      )}
+
+      {estudios && (
+        <p className="mt-2 text-sm text-gris-medio">
+          {estudios}
+          {f.universidad ? ` · ${f.universidad}` : ''}
+        </p>
+      )}
+
+      {f.puntosFuertes && (
+        <blockquote className="mt-4 border-l-2 border-verde-avanza pl-3 text-sm italic text-carbon">
+          «{f.puntosFuertes}»
+        </blockquote>
+      )}
+
+      <dl className="mt-4 space-y-2 text-sm">
+        <div>
+          <dt className="inline font-medium text-carbon">Da: </dt>
+          <dd className="inline text-carbon">{f.asignaturas.join(', ')}</dd>
+        </div>
+        <div>
+          <dt className="inline font-medium text-carbon">A: </dt>
+          <dd className="inline text-carbon">{f.niveles.join(', ')}</dd>
+        </div>
+        <div>
+          <dt className="inline font-medium text-carbon">Dónde: </dt>
+          <dd className="inline text-carbon">{donde}</dd>
+        </div>
+      </dl>
+
+      {(f.idiomas.length > 0 || f.disponibilidad.length > 0) && (
+        <div className="mt-4 space-y-3 border-t border-gris-borde pt-4">
+          {f.idiomas.length > 0 && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-gris-medio">
+                Idiomas
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {f.idiomas.map((i) => (
+                  <Etiqueta key={i}>{i}</Etiqueta>
+                ))}
+              </div>
+              {/* Lo declara quien se da de alta. No se pide el título, y por eso
+                  no se puede decir que esté comprobado. */}
+              <p className="mt-1.5 text-xs text-gris-medio">
+                Según lo indicado por el profesor
+              </p>
+            </div>
+          )}
+
+          {f.disponibilidad.length > 0 && (
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-gris-medio">
+                Suele poder
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {f.disponibilidad.map((d) => (
+                  <Etiqueta key={`${d.dia}-${d.franja}`}>
+                    {DIA_CORTO[d.dia]} {FRANJAS[d.franja].etiqueta.toLowerCase()}
+                  </Etiqueta>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
