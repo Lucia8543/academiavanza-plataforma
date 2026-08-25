@@ -81,6 +81,15 @@ export function TarjetaProfesor({ f }: { f: ProfesorPublico }) {
         </div>
       </dl>
 
+      <div className="mt-5">
+        <a
+          href={`/profesor/${f.slug}`}
+          className="inline-block rounded-lg bg-verde-avanza px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-verde-avanza-oscuro"
+        >
+          Ver ficha y escribirle
+        </a>
+      </div>
+
       {(f.idiomas.length > 0 || f.disponibilidad.length > 0) && (
         <div className="mt-4 space-y-3 border-t border-gris-borde pt-4">
           {f.idiomas.length > 0 && (

@@ -67,3 +67,33 @@ export type Ficha = Awaited<ReturnType<typeof listarPendientes>>[number];
 export async function contarPendientes() {
   return db.profesores.count({ where: { estado: 'pendiente' } });
 }
+
+/**
+ * Los mensajes que han dejado las familias.
+ *
+ * Mientras no haya correo saliente, esta lista es la única forma de que un
+ * mensaje llegue a su destino: Lucía lo lee aquí y llama ella al profesor. No
+ * es automático y no pretende serlo; es la red que evita que se pierda algo
+ * mientras se resuelve lo del dominio.
+ *
+ * En cuanto el correo funcione, esta pantalla sigue sirviendo para lo mismo que
+ * el campo `correo_entregado`: ver qué avisos no salieron.
+ */
+export async function listarContactos(limite = 50) {
+  return db.contactos.findMany({
+    select: {
+      id: true,
+      nombre_familia: true,
+      telefono_familia: true,
+      mensaje: true,
+      enviado_en: true,
+      correo_entregado: true,
+      niveles: { select: { nombre: true } },
+      profesores: { select: { nombre: true, apellidos: true, email: true } },
+    },
+    orderBy: { enviado_en: 'desc' },
+    take: limite,
+  });
+}
+
+export type Contacto = Awaited<ReturnType<typeof listarContactos>>[number];

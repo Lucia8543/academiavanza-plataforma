@@ -164,6 +164,66 @@ export async function buscarProfesores(
 }
 
 /**
+ * Una ficha concreta, por su dirección.
+ *
+ * Devuelve null si no existe o no está publicada. Que una ficha retirada
+ * responda igual que una que nunca existió es deliberado: por la dirección de
+ * una página nadie debería poder deducir quién se dio de baja.
+ */
+export async function buscarPorSlug(
+  slug: string,
+): Promise<ProfesorPublico | null> {
+  const f = await db.profesores.findFirst({
+    where: { slug, estado: 'activo', disponible: true },
+    select: CAMPOS,
+  });
+
+  if (!f) return null;
+
+  return {
+    id: f.id,
+    slug: f.slug,
+    nombrePublico: nombrePublico(f.nombre, f.apellidos),
+    colegio: f.colegios?.nombre_corto ?? f.colegios?.nombre ?? null,
+    titulacion: f.titulacion,
+    universidad: f.universidad,
+    cursoActual: f.curso_actual,
+    titulacionFinalizada: f.titulacion_finalizada,
+    puntosFuertes: f.puntos_fuertes,
+    modalidad: f.modalidad as Modalidad,
+    zona: f.zonas?.nombre ?? f.zona_otra ?? null,
+    asignaturas: f.profesor_asignaturas.map((a) => a.asignaturas.nombre),
+    niveles: f.profesor_niveles.map((n) => n.niveles.nombre),
+    idiomas: f.profesor_certificaciones.map((c) =>
+      `${c.certificaciones_idioma.idioma} ${c.certificaciones_idioma.nivel_mcer ?? ''}`.trim(),
+    ),
+    disponibilidad: f.profesor_disponibilidad.flatMap((d) => {
+      const franja = franjaDeHora(d.hora_inicio);
+      return franja ? [{ dia: d.dia_semana, franja }] : [];
+    }),
+  };
+}
+
+/**
+ * Los cursos que da un profesor, con su identificador.
+ *
+ * Hace falta para el desplegable del formulario de contacto: la familia elige
+ * el curso de su hijo entre los que ese profesor da, no entre los veinte del
+ * catálogo.
+ */
+export async function nivelesDe(profesorId: string) {
+  const filas = await db.profesor_niveles.findMany({
+    where: { profesor_id: profesorId },
+    select: { niveles: { select: { id: true, nombre: true, orden_visual: true } } },
+  });
+
+  return filas
+    .map((f) => f.niveles)
+    .sort((a, b) => a.orden_visual - b.orden_visual)
+    .map((n) => ({ id: n.id, nombre: n.nombre }));
+}
+
+/**
  * Opciones de los filtros.
  *
  * Sólo se ofrecen las que devuelven a alguien. Un desplegable con ochenta y dos

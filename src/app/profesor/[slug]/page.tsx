@@ -1,0 +1,235 @@
+import { notFound } from 'next/navigation';
+import { buscarPorSlug, nivelesDe } from '@/backend/repositories/directorio';
+import { FormularioContacto } from '@/frontend/features/directorio/formulario-contacto';
+import { DIAS, FRANJAS, type Franja } from '@/shared/schemas/profesor';
+
+export const dynamic = 'force-dynamic';
+
+const MODALIDAD = {
+  online: 'Online',
+  presencial: 'Presencial',
+  ambas: 'Online y presencial',
+} as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const f = await buscarPorSlug(slug);
+
+  if (!f) return { title: 'Profesor no encontrado · AcademiAvanza' };
+
+  return {
+    title: `${f.nombrePublico} · AcademiAvanza`,
+    description: f.colegio
+      ? `${f.nombrePublico}, de ${f.colegio}. Da ${f.asignaturas.join(', ')}.`
+      : `${f.nombrePublico} da ${f.asignaturas.join(', ')}.`,
+  };
+}
+
+function Bloque({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="border-t border-gris-borde pt-6">
+      <h2 className="text-sm font-medium uppercase tracking-wide text-gris-medio">
+        {titulo}
+      </h2>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function Etiqueta({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full bg-gris-claro px-3 py-1 text-sm text-carbon">
+      {children}
+    </span>
+  );
+}
+
+/**
+ * La disponibilidad, como una rejilla y no como una lista.
+ *
+ * Una lista de «L mañana · X tarde · V tarde» obliga a leerla entera para saber
+ * si encaja con la tarde de los martes. La rejilla se mira de un vistazo, que
+ * es lo que hace alguien decidiendo entre cinco profesores.
+ */
+function Rejilla({
+  disponibilidad,
+}: {
+  disponibilidad: { dia: number; franja: Franja }[];
+}) {
+  const marcado = new Set(disponibilidad.map((d) => `${d.dia}-${d.franja}`));
+  const franjas = Object.keys(FRANJAS) as Franja[];
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[26rem] text-center text-sm">
+        <thead>
+          <tr>
+            <th className="w-20" />
+            {DIAS.map((d) => (
+              <th key={d.numero} className="pb-2 font-medium text-gris-medio">
+                <abbr title={d.etiqueta} className="no-underline">
+                  {d.corta}
+                </abbr>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {franjas.map((f) => (
+            <tr key={f}>
+              <th className="py-1 pr-3 text-right font-medium text-gris-medio">
+                {FRANJAS[f].etiqueta}
+              </th>
+              {DIAS.map((d) => {
+                const libre = marcado.has(`${d.numero}-${f}`);
+                return (
+                  <td key={d.numero} className="p-1">
+                    <div
+                      className={`mx-auto h-7 rounded ${
+                        libre ? 'bg-verde-avanza' : 'bg-gris-claro'
+                      }`}
+                      aria-label={`${d.etiqueta} ${FRANJAS[f].etiqueta}: ${
+                        libre ? 'disponible' : 'no disponible'
+                      }`}
+                    />
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-3 text-xs text-gris-medio">
+        Horario orientativo, según lo que nos ha dicho. Lo concreto lo acordáis
+        vosotros.
+      </p>
+    </div>
+  );
+}
+
+export default async function PaginaProfesor({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const f = await buscarPorSlug(slug);
+
+  if (!f) notFound();
+
+  const niveles = await nivelesDe(f.id);
+
+  const estudios = f.titulacionFinalizada
+    ? `${f.titulacion}, terminada`
+    : f.cursoActual
+      ? `${f.titulacion}, ${f.cursoActual}.º curso`
+      : f.titulacion;
+
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <a
+        href="/profesores"
+        className="text-sm text-gris-medio underline underline-offset-4"
+      >
+        ← Volver al directorio
+      </a>
+
+      <header className="mt-6">
+        <h1 className="text-3xl font-extrabold tracking-tight text-azul-confianza sm:text-4xl">
+          {f.nombrePublico}
+        </h1>
+
+        {f.colegio && (
+          <p className="mt-2 text-lg font-medium text-verde-avanza-oscuro">
+            Estudió en {f.colegio}
+          </p>
+        )}
+
+        {estudios && (
+          <p className="mt-1 text-carbon">
+            {estudios}
+            {f.universidad ? ` · ${f.universidad}` : ''}
+          </p>
+        )}
+      </header>
+
+      {f.puntosFuertes && (
+        <blockquote className="mt-6 border-l-4 border-verde-avanza bg-gris-claro p-4 text-lg italic text-carbon">
+          «{f.puntosFuertes}»
+        </blockquote>
+      )}
+
+      <div className="mt-10 space-y-6">
+        <Bloque titulo="Asignaturas">
+          <div className="flex flex-wrap gap-2">
+            {f.asignaturas.map((a) => (
+              <Etiqueta key={a}>{a}</Etiqueta>
+            ))}
+          </div>
+        </Bloque>
+
+        <Bloque titulo="Cursos">
+          <div className="flex flex-wrap gap-2">
+            {f.niveles.map((n) => (
+              <Etiqueta key={n}>{n}</Etiqueta>
+            ))}
+          </div>
+        </Bloque>
+
+        <Bloque titulo="Cómo da clase">
+          <p className="text-carbon">
+            {MODALIDAD[f.modalidad]}
+            {f.modalidad !== 'online' && f.zona ? ` · ${f.zona}` : ''}
+          </p>
+        </Bloque>
+
+        {f.idiomas.length > 0 && (
+          <Bloque titulo="Idiomas">
+            <div className="flex flex-wrap gap-2">
+              {f.idiomas.map((i) => (
+                <Etiqueta key={i}>{i}</Etiqueta>
+              ))}
+            </div>
+            {/* Lo declara quien se da de alta. No pedimos el título, y por eso
+                no podemos decir que esté comprobado. */}
+            <p className="mt-2 text-xs text-gris-medio">
+              Según lo indicado por el profesor. No hemos visto los títulos.
+            </p>
+          </Bloque>
+        )}
+
+        {f.disponibilidad.length > 0 && (
+          <Bloque titulo="Cuándo suele poder">
+            <Rejilla disponibilidad={f.disponibilidad} />
+          </Bloque>
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      <div className="mt-12">
+        <FormularioContacto
+          slug={f.slug}
+          nombreProfesor={f.nombrePublico}
+          niveles={niveles}
+        />
+      </div>
+
+      <p className="mt-6 text-xs leading-relaxed text-gris-medio">
+        AcademiAvanza pone en contacto a familias y profesores y no interviene en
+        nada más. El precio, los horarios y la forma de pago los acordáis
+        directamente entre vosotros. El colegio que aparece en esta ficha lo ha
+        declarado el propio profesor.
+      </p>
+    </main>
+  );
+}
