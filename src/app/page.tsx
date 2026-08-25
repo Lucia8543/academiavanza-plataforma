@@ -22,15 +22,15 @@ export default function Portada() {
           encaje contigo.
         </p>
 
-        <div className="mt-10 border-t border-gris-borde pt-6 text-sm text-gris-medio">
-          ¿Eres profesor y quieres aparecer en el directorio?
-          <br />
-          Escríbenos a{' '}
+        <div className="mt-10 border-t border-gris-borde pt-8">
+          <p className="text-sm text-gris-medio">
+            ¿Eres profesor y quieres aparecer en el directorio?
+          </p>
           <a
-            className="font-medium text-verde-avanza underline underline-offset-4 hover:text-verde-avanza-oscuro"
-            href="mailto:info@academiavanza.es"
+            href="/registro"
+            className="mt-3 inline-block rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro"
           >
-            info@academiavanza.es
+            Publicar mi ficha
           </a>
         </div>
       </div>
