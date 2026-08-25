@@ -1,0 +1,276 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["app", "catalogo"]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model accesos {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profesor_id String     @db.Uuid
+  token_hash  String     @unique
+  proposito   String     @default("acceso")
+  expira_en   DateTime   @db.Timestamptz(6)
+  usado_en    DateTime?  @db.Timestamptz(6)
+  creado_en   DateTime   @default(now()) @db.Timestamptz(6)
+  profesores  profesores @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expira_en], map: "idx_accesos_purga")
+  @@index([token_hash], map: "idx_accesos_token")
+  @@schema("app")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contactos {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profesor_id       String     @db.Uuid
+  nombre_familia    String
+  email_familia     String?    @db.Citext
+  telefono_familia  String?
+  nivel_id          String?    @db.Uuid
+  modalidad         modalidad?
+  zona              String?
+  mensaje           String?
+  es_tutor_legal    Boolean    @default(false)
+  acepta_privacidad Boolean    @default(false)
+  enviado_en        DateTime   @default(now()) @db.Timestamptz(6)
+  correo_entregado  Boolean    @default(false)
+  niveles           niveles?   @relation(fields: [nivel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profesores        profesores @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([enviado_en], map: "idx_contactos_fecha")
+  @@index([profesor_id, enviado_en(sort: Desc)], map: "idx_contactos_profesor")
+  @@schema("app")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profesor_asignaturas {
+  profesor_id   String      @db.Uuid
+  asignatura_id String      @db.Uuid
+  asignaturas   asignaturas @relation(fields: [asignatura_id], references: [id], onUpdate: NoAction)
+  profesores    profesores  @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([profesor_id, asignatura_id])
+  @@schema("app")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profesor_certificaciones {
+  profesor_id            String                 @db.Uuid
+  certificacion_id       String                 @db.Uuid
+  certificaciones_idioma certificaciones_idioma @relation(fields: [certificacion_id], references: [id], onUpdate: NoAction)
+  profesores             profesores             @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([profesor_id, certificacion_id])
+  @@schema("app")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profesor_disponibilidad {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profesor_id String     @db.Uuid
+  dia_semana  Int        @db.SmallInt
+  hora_inicio DateTime   @db.Time(6)
+  hora_fin    DateTime   @db.Time(6)
+  profesores  profesores @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([profesor_id, dia_semana, hora_inicio], map: "disp_franja_unica")
+  @@index([profesor_id], map: "idx_disponibilidad_profesor")
+  @@schema("app")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profesor_niveles {
+  profesor_id String     @db.Uuid
+  nivel_id    String     @db.Uuid
+  niveles     niveles    @relation(fields: [nivel_id], references: [id], onUpdate: NoAction)
+  profesores  profesores @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([profesor_id, nivel_id])
+  @@schema("app")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model profesores {
+  id                           String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug                         String                     @unique
+  nombre                       String
+  apellidos                    String
+  email                        String                     @unique @db.Citext
+  colegio_id                   String?                    @db.Uuid
+  colegio_otro                 String?
+  titulacion                   String?
+  universidad                  String?
+  curso_actual                 Int?                       @db.SmallInt
+  titulacion_finalizada        Boolean                    @default(false)
+  puntos_fuertes               String?
+  modalidad                    modalidad                  @default(online)
+  zona_id                      String?                    @db.Uuid
+  zona_otra                    String?
+  estado                       estado_profesor            @default(pendiente)
+  disponible                   Boolean                    @default(true)
+  disponibilidad_confirmada_en DateTime                   @default(now()) @db.Timestamptz(6)
+  ultimo_recordatorio_en       DateTime?                  @db.Timestamptz(6)
+  aprobado_en                  DateTime?                  @db.Timestamptz(6)
+  motivo_rechazo               String?
+  acepta_publicacion           Boolean                    @default(false)
+  acepta_publicacion_en        DateTime?                  @db.Timestamptz(6)
+  version_privacidad           String?
+  creado_en                    DateTime                   @default(now()) @db.Timestamptz(6)
+  actualizado_en               DateTime                   @default(now()) @db.Timestamptz(6)
+  accesos                      accesos[]
+  contactos                    contactos[]
+  profesor_asignaturas         profesor_asignaturas[]
+  profesor_certificaciones     profesor_certificaciones[]
+  profesor_disponibilidad      profesor_disponibilidad[]
+  profesor_niveles             profesor_niveles[]
+  colegios                     colegios?                  @relation(fields: [colegio_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  zonas                        zonas?                     @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([colegio_id], map: "idx_profesores_colegio")
+  @@index([estado, disponible], map: "idx_profesores_directorio", where: raw("((estado = 'activo'::app.estado_profesor) AND disponible)"))
+  @@index([email], map: "idx_profesores_email")
+  @@schema("app")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tarifas {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  concepto          String    @default("match")
+  importe           Decimal   @db.Decimal(8, 2)
+  moneda            String    @default("EUR") @db.Char(3)
+  vigente_desde     DateTime  @default(now()) @db.Timestamptz(6)
+  vigente_hasta     DateTime? @db.Timestamptz(6)
+  stripe_price_id   String?
+  stripe_product_id String?
+  motivo            String?
+  creado_en         DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@schema("app")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model asignaturas {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug                 String                 @unique
+  nombre               String                 @unique
+  categoria            String?
+  icono                String?
+  orden_visual         Int                    @default(100)
+  activa               Boolean                @default(true)
+  creado_en            DateTime               @default(now()) @db.Timestamptz(6)
+  profesor_asignaturas profesor_asignaturas[]
+
+  @@index([activa, orden_visual], map: "idx_asignaturas_activa", where: raw("activa"))
+  @@schema("catalogo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model certificaciones_idioma {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug                     String                     @unique
+  idioma                   String
+  nombre                   String
+  nivel_mcer               String?
+  organismo                String?
+  orden_visual             Int                        @default(100)
+  activa                   Boolean                    @default(true)
+  profesor_certificaciones profesor_certificaciones[]
+
+  @@schema("catalogo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model colegios {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug           String       @unique
+  nombre         String
+  nombre_corto   String?
+  logo_url       String?
+  web_url        String?
+  municipio      String?
+  provincia      String?      @default("Madrid")
+  destacado      Boolean      @default(false)
+  orden_visual   Int          @default(100)
+  activo         Boolean      @default(true)
+  creado_en      DateTime     @default(now()) @db.Timestamptz(6)
+  actualizado_en DateTime     @default(now()) @db.Timestamptz(6)
+  profesores     profesores[]
+
+  @@index([activo, orden_visual], map: "idx_colegios_activo", where: raw("activo"))
+  @@schema("catalogo")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model niveles {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug             String             @unique
+  nombre           String             @unique
+  etapa            etapa_educativa
+  orden_visual     Int
+  activo           Boolean            @default(true)
+  creado_en        DateTime           @default(now()) @db.Timestamptz(6)
+  contactos        contactos[]
+  profesor_niveles profesor_niveles[]
+
+  @@index([etapa, orden_visual], map: "idx_niveles_etapa", where: raw("activo"))
+  @@schema("catalogo")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model zonas {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug       String       @unique
+  nombre     String
+  municipio  String       @default("Madrid")
+  activa     Boolean      @default(true)
+  creado_en  DateTime     @default(now()) @db.Timestamptz(6)
+  profesores profesores[]
+
+  @@schema("catalogo")
+}
+
+enum estado_profesor {
+  pendiente
+  activo
+  pausado
+  inactivo
+  rechazado
+
+  @@schema("app")
+}
+
+enum modalidad {
+  online
+  presencial
+  ambas
+
+  @@schema("app")
+}
+
+enum etapa_educativa {
+  primaria
+  eso
+  bachillerato
+  evau
+  universidad
+  otros
+
+  @@schema("catalogo")
+}

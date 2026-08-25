@@ -123,12 +123,11 @@ INSERT INTO catalogo.colegios
   ('trilce-surco',                         'Colegio Trilce Surco',                           'Trilce',                         'Lima',                     'Perú',         FALSE, 96),
   ('colegio-zazuar',                       'Colegio Zazuar',                                 'Zazuar',                         'Madrid',                   'Madrid',       FALSE, 97),
   ('colegio-montserrat',                   'Colegio Montserrat',                             'Montserrat',                     'Madrid',                   'Madrid',       FALSE, 98),
-  ('ievc-blanch-londres',                  'IEVC Blanch',                                    'Blanch',                         NULL,                       NULL,           FALSE, 99);
-
+  ('ievc-blanch-londres',                  'IEVC Blanch',                                    'Blanch',                         NULL,                       NULL,           FALSE, 99)
 ON CONFLICT (slug) DO NOTHING;
 
--- El ON CONFLICT va aparte para que un slug repetido no anule la inserción
--- completa si se vuelve a ejecutar el guion.
+-- El ON CONFLICT hace que volver a ejecutar el guion no dé error: los slugs
+-- que ya existan se ignoran en silencio y los nuevos se insertan.
 
 
 -- =============================================================================

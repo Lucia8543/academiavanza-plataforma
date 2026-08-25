@@ -4,11 +4,15 @@
 # ordenador con tus permisos, y es la vía habitual de los paquetes maliciosos.
 # Sólo se aprueba lo que hace falta y se sabe para qué.
 #
-#   esbuild        lo usa vitest para ejecutar las pruebas. Necesita descargar
-#                  su binario al instalarse, así que sí.
-#   sharp          optimiza imágenes en el servidor. No lo usamos.
-#   unrs-resolver  resolución de módulos de ESLint. Funciona sin su binario.
+#   prisma            descarga los motores de consulta al instalarse. Sin esto
+#   @prisma/engines   no puede hablar con PostgreSQL, así que sí.
+#   esbuild           lo usa vitest para ejecutar las pruebas. También necesita
+#                     descargar su binario.
+#   sharp             optimiza imágenes en el servidor. No lo usamos.
+#   unrs-resolver     resolución de módulos de ESLint. Funciona sin su binario.
 allowBuilds:
+  prisma: true
+  '@prisma/engines': true
   esbuild: true
   sharp: false
   unrs-resolver: false
