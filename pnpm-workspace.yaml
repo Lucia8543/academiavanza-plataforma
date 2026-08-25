@@ -1,0 +1,14 @@
+# Qué dependencias pueden ejecutar scripts al instalarse.
+#
+# pnpm los bloquea por defecto: un script de instalación se ejecuta en tu
+# ordenador con tus permisos, y es la vía habitual de los paquetes maliciosos.
+# Sólo se aprueba lo que hace falta y se sabe para qué.
+#
+#   esbuild        lo usa vitest para ejecutar las pruebas. Necesita descargar
+#                  su binario al instalarse, así que sí.
+#   sharp          optimiza imágenes en el servidor. No lo usamos.
+#   unrs-resolver  resolución de módulos de ESLint. Funciona sin su binario.
+allowBuilds:
+  esbuild: true
+  sharp: false
+  unrs-resolver: false

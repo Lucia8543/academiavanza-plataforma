@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Sistema de diseño de AcademiAvanza
+   Los valores salen de docs/03-diseno/sistema-diseno.md. Si algo cambia allí,
+   cambia aquí, y no al revés.
+   =========================================================================== */
+
+@theme {
+  /* Primario */
+  --color-verde-avanza: #2e7d5e;
+  --color-verde-avanza-claro: #e8f5ef;
+  --color-verde-avanza-oscuro: #256650;
+
+  /* Secundario */
+  --color-azul-confianza: #1a4a7a;
+  --color-azul-confianza-claro: #e8f0f8;
+
+  /* Neutros */
+  --color-carbon: #1f2937;
+  --color-gris-medio: #6b7280;
+  --color-gris-claro: #f3f4f6;
+  --color-gris-borde: #e5e7eb;
+
+  /* Estado */
+  --color-exito: #16a34a;
+  --color-aviso: #d97706;
+  --color-error: #dc2626;
+  --color-estrella: #f59e0b;
+
+  /* Tipografía */
+  --font-titulo: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-texto: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-texto);
+  color: var(--color-carbon);
+  background: #ffffff;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-titulo);
+}

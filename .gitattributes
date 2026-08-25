@@ -1,0 +1,20 @@
+# Normalización de saltos de línea
+#
+# Git guarda todo con saltos de línea de Unix y los convierte a los de Windows
+# al sacarlos al disco. Esto evita los avisos de «LF will be replaced by CRLF»
+# y que el repositorio se comporte distinto en un portátil que en el servidor.
+* text=auto eol=lf
+
+# Ficheros binarios: no se tocan nunca
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.docx  binary
+*.pptx  binary
+*.xlsx  binary
+*.7z    binary
+*.zip   binary
