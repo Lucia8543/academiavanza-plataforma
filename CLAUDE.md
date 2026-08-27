@@ -272,12 +272,28 @@ reproducir, no entra.
 
 ```bash
 pnpm lint          # estilo y reglas de dependencia
-pnpm typecheck     # tipos
-pnpm test          # unitarias
+pnpm typecheck     # tipos, incluidos los de las pruebas
+pnpm test          # unitarias: funciones puras, sin base de datos
 pnpm build         # que compile de verdad
 
 git status --ignored   # que ningún dato personal se haya colado
 ```
+
+Hay un quinto comando que **no se ejecuta en local**, `pnpm test:integracion`.
+Recorre los flujos completos —crear, aceptar, cobrar, el vale, las tareas
+diarias— contra un PostgreSQL de verdad, y necesita uno levantado. Lo ejecuta
+GitHub en cada subida, así que basta con mirar que el CI salga en verde.
+
+Si alguna vez hace falta lanzarlo a mano, exige una base de datos de usar y
+tirar: se niega a arrancar si `DATABASE_URL` apunta a Supabase o si la base no
+se llama `academiavanza_test`. No es una molestia, es lo que impide que unas
+pruebas que vacían tablas se lleven por delante los datos de las familias.
+
+Estas pruebas existen porque los dos fallos más graves que ha tenido la
+plataforma —el precio que se quedaba a cero y abría los teléfonos sin cobrar, y
+el aviso de pago que dejaba solicitudes vivas para siempre— pasaron los cuatro
+comandos de arriba sin despeinarse. El estilo estaba bien, los tipos estaban
+bien, las unitarias pasaban y compilaba.
 
 Todos son de sólo lectura o de comprobación, así que Claude puede ejecutarlos. Lo
 que viene después —preparar, guardar y publicar el cambio— es de Lucía, con los

@@ -126,6 +126,69 @@ jobs:
             psql -h localhost -U postgres -d academiavanza_test -v ON_ERROR_STOP=1 -f "$f"
           done
 
+  # ---------------------------------------------------------------------------
+  # Las pruebas que de verdad protegen el dinero.
+  #
+  # Existen porque los dos fallos más graves que ha tenido esta plataforma no
+  # los habría cazado ninguna de las otras comprobaciones: el estilo estaba
+  # bien, los tipos estaban bien, las pruebas unitarias pasaban y compilaba. Los
+  # dos estaban en cómo hablan entre sí el código y la base de datos.
+  #
+  # Uno hacía que la web regalara contactos —abriendo los teléfonos de las dos
+  # partes— en cuanto se quedara sin tarifa vigente. El otro dejaba solicitudes
+  # vivas para siempre con el profesor esperando. Los dos silenciosos: la web
+  # funcionando y nadie quejándose.
+  # ---------------------------------------------------------------------------
+  integracion:
+    name: Flujos contra base de datos
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: academiavanza_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Preparar la base de datos
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -e
+          for f in database/v1/*.sql database/seeds/*.sql; do
+            psql -h localhost -U postgres -d academiavanza_test -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+        env:
+          DIRECT_URL: ${{ env.BD_PRUEBAS }}
+
+      # Sin RESEND_API_KEY a propósito. Es el escenario en el que estuvo la
+      # plataforma durante semanas, y donde una de las pruebas comprueba que el
+      # directorio no se vacía solo cuando el correo no sale.
+      - name: Recorrer los flujos
+        run: pnpm test:integracion
+        env:
+          DATABASE_URL: ${{ env.BD_PRUEBAS }}
+          DIRECT_URL: ${{ env.BD_PRUEBAS }}
+          NEXT_PUBLIC_APP_URL: https://academiavanza.es
+
   compilacion:
     name: Compilación
     runs-on: ubuntu-latest

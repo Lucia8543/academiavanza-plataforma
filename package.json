@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "test:integracion": "vitest run --config vitest.integracion.config.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
