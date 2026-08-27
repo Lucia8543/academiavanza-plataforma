@@ -47,6 +47,15 @@ export async function quitarTarifaVigente(): Promise<void> {
   });
 }
 
+/**
+ * Un profesor publicado y listo para recibir solicitudes.
+ *
+ * Lleva más campos de los que parecen necesarios, y no es por adorno: la tabla
+ * tiene ocho restricciones y tres de ellas se cumplen aquí. Una ficha activa
+ * exige teléfono y consentimiento, y toda ficha exige colegio —del catálogo o
+ * escrito a mano—. Son las mismas reglas que impiden publicar una ficha a
+ * medias desde el panel.
+ */
 export async function crearProfesor(
   opciones: { disponible?: boolean; estado?: 'activo' | 'pendiente' } = {},
 ) {
@@ -58,6 +67,9 @@ export async function crearProfesor(
       apellidos: `DePrueba ${id}`,
       email: `profe-${id}@ejemplo.invalid`,
       telefono: '600000001',
+      colegio_otro: 'Colegio de prueba',
+      acepta_publicacion: true,
+      acepta_publicacion_en: new Date(),
       estado: opciones.estado ?? 'activo',
       disponible: opciones.disponible ?? true,
     },
