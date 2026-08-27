@@ -97,11 +97,20 @@ export function GuardarEnlace({
         misma, o a quien lleve esto en casa.
       </p>
 
+      {/*
+        Lo de los minutos no es un adorno. Quien no ve el correo al instante
+        piensa que ha escrito mal su dirección, y lo siguiente que hace es
+        rellenar el formulario otra vez o escribir preguntando qué ha pasado.
+        Decir de antemano que puede tardar evita las dos cosas.
+      */}
       {email && (
         <p className="mt-4 border-t border-gris-borde pt-3 text-sm text-carbon">
           También te lo hemos mandado por correo a{' '}
-          <strong className="break-all">{email}</strong>. Si no lo ves, mira en
-          la carpeta de spam.
+          <strong className="break-all">{email}</strong>.{' '}
+          <span className="text-gris-medio">
+            Puede tardar unos minutos en llegar. Si pasado un rato no lo ves,
+            mira en la carpeta de spam.
+          </span>
         </p>
       )}
 
