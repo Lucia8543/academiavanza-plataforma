@@ -565,7 +565,19 @@ export function correoSolicitudRecibida(datos: {
   };
 }
 
-/** 2 · Ha aceptado. El correo que hace que se pague. */
+/**
+ * 2 · Ha aceptado. El correo que hace que se pague.
+ *
+ * Son **dos pasos y no uno**, y la primera versión de este correo sólo contaba
+ * el primero. Quien lo leía hacía el Bizum y se quedaba esperando una llamada
+ * que no llegaba, sin saber que faltaba avisar de que había pagado.
+ *
+ * El segundo paso no es un requisito para cobrar —el Bizum llega igual y se
+ * confirma a mano— sino la forma de que la plataforma sepa que hay un pago suyo
+ * esperando. Sin esa señal, a los dos días le reclama un pago que ya hizo y a
+ * los siete le cierra la solicitud. Por eso se le pide, y por eso se le explica
+ * para qué sirve en vez de dárselo como una orden.
+ */
 export function correoProfesorAcepta(datos: {
   para: string;
   nombreFamilia: string;
@@ -582,13 +594,20 @@ export function correoProfesorAcepta(datos: {
     '',
     `${datos.nombreProfesor} puede darte clase.`,
     '',
-    `Para que os paséis el teléfono queda un paso: ${precio} por el contacto,`,
-    `por Bizum, poniendo ${datos.codigo} en el concepto. Las instrucciones`,
-    'están aquí:',
+    `Para que os paséis el teléfono quedan dos cosas, y las dos son rápidas.`,
+    '',
+    `1. Haz un Bizum de ${precio} poniendo ${datos.codigo} en el concepto.`,
+    '',
+    '2. Vuelve a tu página y pulsa el botón «Ya he hecho el Bizum». Sin ese',
+    '   aviso no sabemos que tu pago está esperando, y te seguiremos',
+    '   recordando que pagues algo que ya has pagado.',
+    '',
+    'Tu página es ésta, y ahí están el código, el número y el botón:',
     seguimiento,
     '',
-    'En cuanto lo confirmemos te mandamos su teléfono y él tendrá el tuyo.',
-    'Lo que cueste la clase lo acordáis vosotros.',
+    'Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté,',
+    'te mandamos su teléfono y él tendrá el tuyo. Lo que cueste la clase lo',
+    'acordáis vosotros.',
     '',
     'AcademiAvanza',
   ].join('\n');
@@ -599,15 +618,27 @@ export function correoProfesorAcepta(datos: {
       <strong>${escapar(datos.nombreProfesor)} puede darte clase.</strong>
     </p>
     <p style="margin:0 0 16px;">
-      Para que os paséis el teléfono queda un paso: <strong>${precio}</strong> por el contacto,
-      por Bizum, poniendo este código en el concepto.
+      Para que os paséis el teléfono quedan <strong>dos cosas</strong>, y las dos son rápidas.
     </p>
-    <p style="margin:0 0 8px;text-align:center;font-family:monospace;font-size:26px;font-weight:bold;letter-spacing:4px;color:${VERDE};">
+
+    <p style="margin:0 0 4px;"><strong>1.</strong> Haz un Bizum de <strong>${precio}</strong> poniendo este código en el concepto:</p>
+    <p style="margin:0 0 20px;text-align:center;font-family:monospace;font-size:26px;font-weight:bold;letter-spacing:4px;color:${VERDE};">
       ${escapar(datos.codigo)}
     </p>
-    ${boton('Ver las instrucciones', seguimiento)}
+
+    <p style="margin:0 0 4px;">
+      <strong>2.</strong> Vuelve a tu página y pulsa <strong>«Ya he hecho el Bizum»</strong>.
+    </p>
+    <p style="margin:0 0 4px;color:${GRIS};font-size:14px;">
+      Es el paso que más se olvida. Sin ese aviso no sabemos que tu pago está esperando,
+      y te seguiremos recordando que pagues algo que ya has pagado.
+    </p>
+
+    ${boton('Ir a mi página', seguimiento)}
+
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      En cuanto lo confirmemos te mandamos su teléfono. Lo que cueste la clase lo acordáis vosotros.
+      Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté, te mandamos
+      su teléfono. Lo que cueste la clase lo acordáis vosotros.
     </p>
   `);
 
@@ -745,7 +776,10 @@ export function correoRecordatorioPago(datos: {
     `Para que os paséis el teléfono falta el Bizum de ${precio} con el código`,
     `${datos.codigo} en el concepto.`,
     '',
-    'Y si ya no te hace falta, dínoslo también: es un botón, y así él deja de',
+    'Si ya lo hiciste y se te pasó avisarnos, entra y pulsa «Ya he hecho el',
+    'Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.',
+    '',
+    'Y si ya no te hace falta, dínoslo también: es otro botón, y así él deja de',
     'esperar. No pasa absolutamente nada.',
     '',
     seguimiento,
@@ -765,10 +799,14 @@ export function correoRecordatorioPago(datos: {
       Para que os paséis el teléfono falta el Bizum de <strong>${precio}</strong> con el código
       <strong style="font-family:monospace;letter-spacing:2px;">${escapar(datos.codigo)}</strong> en el concepto.
     </p>
-    <p style="margin:0 0 16px;color:${GRIS};">
-      Y si ya no te hace falta, dínoslo también: es un botón, y así él deja de esperar. No pasa nada.
+    <p style="margin:0 0 12px;color:${GRIS};">
+      <strong style="color:${CARBON};">¿Ya lo has hecho y se te pasó avisarnos?</strong>
+      Entra y pulsa «Ya he hecho el Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.
     </p>
-    ${boton('Pagar o decir que lo dejo', seguimiento)}
+    <p style="margin:0 0 16px;color:${GRIS};">
+      Y si ya no te hace falta, dínoslo también: es otro botón, y así él deja de esperar. No pasa nada.
+    </p>
+    ${boton('Ir a mi página', seguimiento)}
     <p style="margin:0;color:${GRIS};font-size:14px;">
       Si no nos dices nada, en ${datos.diasParaCerrar} días cerraremos la solicitud.
       Podrás volver a escribirle cuando quieras.
