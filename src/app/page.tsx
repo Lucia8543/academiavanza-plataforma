@@ -59,7 +59,20 @@ export default async function Portada() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-16">
       <div className="text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight text-azul-confianza sm:text-5xl">
+        {/* El logo va en SVG y no en PNG: es el mismo fichero para el móvil y
+            para una pantalla de retina, pesa trece kilobytes y no se pixela
+            nunca. Lleva alt vacío a propósito —el nombre está justo debajo, en
+            el h1— para que un lector de pantalla no lo lea dos veces. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.svg"
+          alt=""
+          width={96}
+          height={96}
+          className="mx-auto h-24 w-24"
+        />
+
+        <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-azul-confianza sm:text-5xl">
           Academi<span className="text-verde-avanza">Avanza</span>
         </h1>
 
@@ -171,6 +184,84 @@ export default async function Portada() {
           Cuando son presenciales, es el profesor quien se desplaza a casa del
           alumno, no al revés.
         </p>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Lo que AcademiAvanza dice de sí misma.
+          Viene de la web anterior, pero no copiado tal cual: aquel texto
+          prometía «asignación personalizada», y eso era Lucía emparejando a
+          mano. La plataforma no asigna a nadie, así que prometerlo dejaría a las
+          familias esperando a que alguien les asignara algo que no va a llegar.
+          Aquí dice lo que sí hace: enseñar quién es cada uno y dejar elegir.
+
+          Se quedaron fuera dos cosas del original, y por motivos distintos. La
+          comunidad de alumnos y exalumnos, porque no existe. Y las «necesidades
+          especiales del alumno», porque el formulario rechaza a propósito
+          cualquier mensaje que mencione un diagnóstico: anunciarlas sería
+          invitar a escribir justo lo que luego se bloquea. */}
+      <section className="mt-16 border-t border-gris-borde pt-10">
+        <h2 className="text-xl font-bold text-azul-confianza">
+          Cómo entendemos las clases particulares
+        </h2>
+
+        <div className="mt-6 space-y-6">
+          <div>
+            <h3 className="font-semibold text-carbon">Eliges tú, y rápido</h3>
+            <p className="mt-1 text-sm leading-relaxed text-gris-medio">
+              Filtras por asignatura, curso, modalidad, colegio e idioma, y
+              escribes directamente a quien te encaje. Sin formularios que se
+              pierden y sin esperar a que nadie te asigne a nadie.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-carbon">
+              Tus preferencias mandan
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-gris-medio">
+              Cada alumno necesita una cosa. Puedes buscar por horario, por si
+              prefieres las clases online o en casa, y por el colegio del que
+              viene el profesor. Y si lo que buscas es preparar un examen
+              concreto, se lo cuentas a él en la primera llamada.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-carbon">
+              Clases adaptadas al ritmo de cada alumno
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-gris-medio">
+              Las dan profesores particulares que han pasado por el mismo
+              colegio y por los mismos exámenes. No es una academia con un
+              temario cerrado: es alguien que se sienta con tu hijo donde él se
+              haya quedado.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-carbon">
+              Paciencia y comprensión
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-gris-medio">
+              Es nuestro pilar fundamental, y lo que de verdad distingue a un
+              buen profesor particular. Si algo no va bien, escríbenos:
+              contestamos siempre.
+            </p>
+          </div>
+        </div>
+
+        <blockquote className="mt-8 border-l-4 border-verde-avanza bg-gris-claro px-5 py-4">
+          <p className="leading-relaxed text-carbon">
+            Nuestro objetivo es proporcionar un servicio educativo de alta
+            calidad, adaptado a cada alumno y con un enfoque en el aprendizaje
+            efectivo. Para nosotros la enseñanza es más que transmitir
+            conocimientos: es formar mentes críticas y preparadas para el
+            futuro.
+          </p>
+          <footer className="mt-3 text-sm font-medium text-verde-avanza-oscuro">
+            El equipo de AcademiAvanza
+          </footer>
+        </blockquote>
       </section>
 
       {/* ------------------------------------------------------------------ */}
