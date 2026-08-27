@@ -243,10 +243,25 @@ export default async function PaginaCobros() {
         ) : (
           <div className="mt-4 space-y-4">
             {solicitudes.map((s) => {
-              const etiqueta = ETIQUETA[String(s.estado)] ?? {
-                texto: String(s.estado),
-                clase: 'bg-gris-claro text-gris-medio',
-              };
+              /*
+               * Una solicitud aceptada y una aceptada-con-pago-avisado no son
+               * lo mismo, y hasta ahora se veían idénticas en esta lista: misma
+               * etiqueta ámbar, mismo texto. En una no hay nada que hacer; en
+               * la otra hay una familia que ya ha puesto su dinero y está
+               * esperando. Es la diferencia que decide por dónde empezar.
+               */
+              const dicePagado =
+                s.estado === 'aceptada' && s.pago_avisado_en !== null;
+
+              const etiqueta = dicePagado
+                ? {
+                    texto: 'dice que ha pagado',
+                    clase: 'bg-azul-confianza text-white',
+                  }
+                : (ETIQUETA[String(s.estado)] ?? {
+                    texto: String(s.estado),
+                    clase: 'bg-gris-claro text-gris-medio',
+                  });
 
               return (
                 <article
@@ -358,14 +373,34 @@ export default async function PaginaCobros() {
                     {s.estado === 'aceptada' && (
                       <div>
                         <p className="text-carbon">
-                          Ha aceptado. Esperando el Bizum con el concepto{' '}
-                          <span className="font-mono font-bold">
-                            {s.codigo}
-                          </span>
-                          .
-                          {s.intencion_pago === 'si' &&
+                          {dicePagado ? (
+                            <>
+                              <strong>La familia dice que ya ha pagado.</strong>{' '}
+                              Busca el Bizum con el concepto{' '}
+                              <span className="font-mono font-bold">
+                                {s.codigo}
+                              </span>{' '}
+                              y confírmalo arriba.
+                            </>
+                          ) : (
+                            <>
+                              Ha aceptado. Esperando el Bizum con el concepto{' '}
+                              <span className="font-mono font-bold">
+                                {s.codigo}
+                              </span>
+                              .
+                            </>
+                          )}
+                          {/* Estas dos coletillas hablan de alguien que aún no
+                              ha pagado. Sobre quien ya ha avisado del pago se
+                              contradicen: «dice que va a pagar» cuando ya lo
+                              hizo, o «no ha contestado» cuando acaba de
+                              contestar. */}
+                          {!dicePagado &&
+                            s.intencion_pago === 'si' &&
                             ' La familia dice que va a pagar.'}
-                          {s.recordatorio_pago_en &&
+                          {!dicePagado &&
+                            s.recordatorio_pago_en &&
                             !s.intencion_pago &&
                             ' Ya se le recordó y no ha contestado.'}
                         </p>
