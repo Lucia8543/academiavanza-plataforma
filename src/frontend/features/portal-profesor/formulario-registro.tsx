@@ -224,6 +224,17 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
             La revisamos y te avisamos por correo en cuanto esté publicada.
             Suele ser cuestión de un día o dos.
           </p>
+          {/*
+            El resguardo lleva su enlace permanente, así que si lo da por
+            perdido a los treinta segundos se queda sin llave y sin saberlo.
+            Decir de antemano que tarda evita que lo busque, no lo vea, y
+            concluya que escribió mal su correo.
+          */}
+          <p className="mx-auto mt-3 max-w-md text-sm text-verde-avanza-oscuro">
+            Ahora mismo te llega un correo confirmando que la hemos recibido, y
+            dentro va tu enlace para editarla. Puede tardar unos minutos; si
+            pasado un rato no lo ves, mira en la carpeta de spam.
+          </p>
         </div>
 
         {/* Lo primero que va a pasarle de verdad, dicho antes de que pase. Un
