@@ -821,6 +821,7 @@ async function avisarAlProfesor(
       nivel: nivel?.nombre ?? 'sin especificar',
       mensaje: datos.mensaje || null,
       tokenProfesor,
+      tokenPanel: await tokenDelPanel(profesor.id),
       importe: await precioVigente(),
     }),
   );
@@ -860,6 +861,7 @@ async function avisarDelPago(solicitud: {
       telefonoFamilia: formatearTelefono(solicitud.telefono_familia ?? ''),
       nivel: solicitud.niveles?.nombre ?? 'sin especificar',
       mensaje: solicitud.mensaje,
+      tokenPanel: await tokenDelPanel(solicitud.profesor_id),
     }),
   );
 }

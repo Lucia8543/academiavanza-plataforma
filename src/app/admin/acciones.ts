@@ -104,6 +104,7 @@ export async function rechazar(formulario: FormData) {
       para: profesor.email,
       nombreProfesor: profesor.nombre,
       motivo,
+      tokenPanel: await tokenDelPanel(id),
     }),
   );
 

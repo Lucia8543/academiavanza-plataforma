@@ -89,6 +89,38 @@ function escapar(texto: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * El enlace a su propia ficha, al pie de todo lo que se le manda.
+ *
+ * Un profesor no tiene contraseña: ese enlace **es** su llave. Y hasta ahora
+ * viajaba en tres correos de catorce —el de «ya está publicada», el de la pausa
+ * automática y el recordatorio trimestral—, lo que significa que quien borrara
+ * el primero se quedaba sin poder entrar hasta tres meses después.
+ *
+ * El momento en que peor venía era justo el bueno: acaba de aceptar a una
+ * familia, se le llena la agenda, quiere marcar que va justo… y el correo que
+ * tiene delante no lleva la puerta.
+ *
+ * Va en pequeño y en gris. No es la acción del correo, es la llave de repuesto
+ * que conviene que esté siempre en el mismo sitio.
+ */
+function pieDeSuFicha(tokenPanel: string): string {
+  return `<p style="margin:24px 0 0;padding-top:16px;border-top:1px solid ${BORDE};color:${GRIS};font-size:13px;">
+    Tu ficha, para cambiar horarios, asignaturas o avisar de que vas justo de sitio:
+    <a href="${baseUrl()}/mi-ficha/${tokenPanel}" style="color:${GRIS};">${baseUrl()}/mi-ficha/${tokenPanel}</a>
+  </p>`;
+}
+
+/** Lo mismo para la versión en texto plano. */
+function lineasDeSuFicha(tokenPanel: string): string[] {
+  return [
+    '',
+    '—',
+    'Tu ficha, para cambiar horarios, asignaturas o avisar de que vas justo:',
+    `${baseUrl()}/mi-ficha/${tokenPanel}`,
+  ];
+}
+
 function cita(texto: string): string {
   return `<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid ${VERDE};background:#F7FAFC;font-style:italic;">${escapar(texto)}</blockquote>`;
 }
@@ -103,6 +135,7 @@ export function correoSolicitud(datos: {
   nivel: string;
   mensaje: string | null;
   tokenProfesor: string;
+  tokenPanel: string;
   importe: number;
 }): Correo {
   const enlace = `${baseUrl()}/aceptar/${datos.tokenProfesor}`;
@@ -127,6 +160,7 @@ export function correoSolicitud(datos: {
     'Si ahora no puedes, dilo y ya está. No pasa nada y la familia no paga nada.',
     '',
     'AcademiAvanza',
+    ...lineasDeSuFicha(datos.tokenPanel),
   ].join('\n');
 
   const html = envoltorio(`
@@ -144,6 +178,7 @@ export function correoSolicitud(datos: {
     <p style="margin:0;color:${GRIS};font-size:14px;">
       Si ahora no puedes, dilo y ya está. La familia no paga nada.
     </p>
+    ${pieDeSuFicha(datos.tokenPanel)}
   `);
 
   return {
@@ -165,6 +200,7 @@ export function correoContactoAbierto(datos: {
   telefonoFamilia: string;
   nivel: string;
   mensaje: string | null;
+  tokenPanel: string;
 }): Correo {
   const cuerpo = [
     `Hola ${datos.nombreProfesor}:`,
@@ -180,6 +216,7 @@ export function correoContactoAbierto(datos: {
     'desde tu lado.',
     '',
     'AcademiAvanza',
+    ...lineasDeSuFicha(datos.tokenPanel),
   ].join('\n');
 
   const telefonoLimpio = datos.telefonoFamilia.replace(/\s/g, '');
@@ -196,6 +233,7 @@ export function correoContactoAbierto(datos: {
     <p style="margin:0;color:${GRIS};font-size:14px;">
       Llámala tú. Ella tiene también tu número, pero el primer paso se agradece desde tu lado.
     </p>
+    ${pieDeSuFicha(datos.tokenPanel)}
   `);
 
   return {
@@ -300,7 +338,10 @@ export function correoFichaRechazada(datos: {
   para: string;
   nombreProfesor: string;
   motivo: string;
+  tokenPanel: string;
 }): Correo {
+  const panel = `${baseUrl()}/mi-ficha/${datos.tokenPanel}`;
+
   const cuerpo = [
     `Hola ${datos.nombreProfesor}:`,
     '',
@@ -308,8 +349,11 @@ export function correoFichaRechazada(datos: {
     '',
     datos.motivo,
     '',
-    'Si crees que es un error o quieres corregirlo, contéstanos a este correo y',
-    'lo miramos.',
+    'Puedes arreglarlo tú mismo aquí, y en cuanto lo guardes la volvemos a',
+    'revisar. No hace falta que nos escribas ni que esperes a nada:',
+    panel,
+    '',
+    'Y si crees que nos hemos equivocado, contesta a este correo y lo miramos.',
     '',
     'AcademiAvanza',
   ].join('\n');
@@ -318,8 +362,13 @@ export function correoFichaRechazada(datos: {
     <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
     <p style="margin:0 0 16px;">Hemos revisado tu ficha y de momento no podemos publicarla:</p>
     ${cita(datos.motivo)}
+    <p style="margin:0 0 8px;">
+      <strong>Puedes arreglarlo tú mismo.</strong> En cuanto guardes el cambio, la volvemos a
+      revisar. No tienes que escribirnos ni esperar a nada.
+    </p>
+    ${boton('Corregir mi ficha', panel)}
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      Si crees que es un error o quieres corregirlo, contesta a este correo y lo miramos.
+      Y si crees que nos hemos equivocado, contesta a este correo y lo miramos.
     </p>
   `);
 
