@@ -1,3 +1,25 @@
+# =============================================================================
+# Comprobaciones automáticas
+#
+# Corren en GitHub con cada subida a main. Su trabajo es avisar de lo que se
+# rompe antes de que lo descubra una familia.
+#
+# Dos cosas que conviene saber para no volver a romperlo:
+#
+# 1. Se valida `database/v1/`, no `database/schema/`. La segunda es el diseño
+#    original de cuando el proyecto era un documento, y describe una base de
+#    datos que nunca se construyó: pagos, reseñas, alumnos, permisos por fila.
+#    Lo que hay en Supabase de verdad son los ficheros de `v1`, que son los que
+#    se han ido ejecutando uno a uno. Validar el diseño viejo dejaba el CI en
+#    rojo permanente, y un CI siempre rojo deja de mirarse.
+#
+# 2. La compilación necesita base de datos. La página `/registro` se genera al
+#    compilar y para eso consulta el catálogo de colegios. Por eso este fichero
+#    levanta un PostgreSQL de usar y tirar, le aplica el esquema y compila
+#    contra él. La base de datos de verdad no se toca nunca desde aquí: contiene
+#    datos de familias con menores y GitHub no tiene por qué poder llegar a ella.
+# =============================================================================
+
 name: CI
 
 on:
@@ -10,15 +32,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Base de datos de mentira, creada y destruida en cada ejecución.
+  BD_PRUEBAS: postgresql://postgres:postgres@localhost:5432/academiavanza_test
+
 jobs:
   calidad:
     name: Estilo y tipos
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -38,9 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -73,30 +95,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Preparar dependencias del esquema
-        env:
-          PGPASSWORD: postgres
-        run: |
-          # El esquema referencia auth.users y auth.uid(), que en producción
-          # los aporta Supabase. Aquí se simulan para poder validar el SQL.
-          psql -h localhost -U postgres -d academiavanza_test <<'SQL'
-            CREATE SCHEMA IF NOT EXISTS auth;
-            CREATE TABLE IF NOT EXISTS auth.users (id UUID PRIMARY KEY);
-            CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID
-              LANGUAGE sql STABLE AS $$ SELECT NULL::UUID $$;
-          SQL
-
-      - name: Aplicar esquema
+      - name: Aplicar las migraciones en orden
         env:
           PGPASSWORD: postgres
         run: |
           set -e
-          for f in database/schema/*.sql; do
+          for f in database/v1/*.sql; do
             echo "── $f"
             psql -h localhost -U postgres -d academiavanza_test -v ON_ERROR_STOP=1 -f "$f"
           done
 
-      - name: Aplicar datos iniciales
+      - name: Aplicar los datos iniciales
         env:
           PGPASSWORD: postgres
         run: |
@@ -106,26 +115,63 @@ jobs:
             psql -h localhost -U postgres -d academiavanza_test -v ON_ERROR_STOP=1 -f "$f"
           done
 
+      - name: Comprobar que las semillas son idempotentes
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -e
+          # Ejecutarlas dos veces no puede romper nada: está prometido en el
+          # CLAUDE.md y es lo que permite volver a lanzarlas sin miedo.
+          for f in database/seeds/*.sql; do
+            psql -h localhost -U postgres -d academiavanza_test -v ON_ERROR_STOP=1 -f "$f"
+          done
+
   compilacion:
     name: Compilación
     runs-on: ubuntu-latest
     needs: [calidad]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: academiavanza_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
 
+      # La base de datos se prepara antes de instalar nada: si el esquema está
+      # roto, es mejor enterarse aquí que veinte pasos después.
+      - name: Preparar la base de datos de pruebas
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -e
+          for f in database/v1/*.sql database/seeds/*.sql; do
+            psql -h localhost -U postgres -d academiavanza_test -v ON_ERROR_STOP=1 -f "$f"
+          done
+
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
+        env:
+          DIRECT_URL: ${{ env.BD_PRUEBAS }}
 
       - name: Compilar
         run: pnpm build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://ejemplo.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: clave-de-ejemplo
+          DATABASE_URL: ${{ env.BD_PRUEBAS }}
+          DIRECT_URL: ${{ env.BD_PRUEBAS }}
           NEXT_PUBLIC_APP_URL: https://academiavanza.es
