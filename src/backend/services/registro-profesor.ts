@@ -1,6 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import { db } from '@/backend/repositories/cliente';
+import { tokenDelPanel } from '@/backend/services/acceso-profesor';
+import { enviar } from '@/backend/services/correo';
 import { seAceptanAltas } from '@/backend/services/limites';
+import { correoFichaRecibida } from '@/backend/services/plantillas-correo';
 import {
   interpretarFranja,
   type RegistroProfesor,
@@ -64,6 +67,10 @@ export async function registrarProfesor(
   const tokenAvisos = randomBytes(32).toString('base64url');
 
   try {
+    // Se saca de la transacción para poder mandarle el correo después, cuando
+    // el alta ya está confirmada y no hay nada que pueda deshacerse.
+    let idNuevo = '';
+
     await db.$transaction(async (tx) => {
       const profesor = await tx.profesores.create({
         data: {
@@ -100,6 +107,8 @@ export async function registrarProfesor(
         },
         select: { id: true, slug: true },
       });
+
+      idNuevo = profesor.id;
 
       await tx.profesor_asignaturas.createMany({
         data: datos.asignaturas.map((asignatura_id) => ({
@@ -145,6 +154,21 @@ export async function registrarProfesor(
         },
       });
     });
+
+    /*
+     * El resguardo, y con él su llave.
+     *
+     * Va fuera de la transacción a propósito: si el correo falla, el alta ya
+     * está hecha y no tiene por qué deshacerse. Lo contrario —perder una ficha
+     * porque un servidor de correo tuvo un mal minuto— sería mucho peor.
+     */
+    await enviar(
+      correoFichaRecibida({
+        para: datos.email,
+        nombreProfesor: datos.nombre,
+        tokenPanel: await tokenDelPanel(idNuevo),
+      }),
+    );
 
     return { ok: true, slug, tokenAvisos };
   } catch (error) {

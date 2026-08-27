@@ -901,7 +901,7 @@ async function avisarDelPago(solicitud: {
   await avisar(
     solicitud.profesor_id,
     {
-      titulo: `Ya puedes llamar a ${solicitud.nombre_familia}`,
+      titulo: `Ya tienes el teléfono de ${solicitud.nombre_familia}`,
       cuerpo: formatearTelefono(solicitud.telefono_familia ?? ''),
       url: '/',
       etiqueta: `pagada-${solicitud.id}`,

@@ -190,7 +190,7 @@ export function correoSolicitud(datos: {
 }
 
 // -----------------------------------------------------------------------------
-// 2 · Ya puedes llamar a la familia
+// 2 · Ya tienes el teléfono de la familia
 // -----------------------------------------------------------------------------
 
 export function correoContactoAbierto(datos: {
@@ -212,8 +212,8 @@ export function correoContactoAbierto(datos: {
     `Curso:    ${datos.nivel}`,
     ...(datos.mensaje ? ['', 'Lo que te contaba:', datos.mensaje] : []),
     '',
-    'Llámala tú. Ella tiene también tu número, pero el primer paso se agradece',
-    'desde tu lado.',
+    'Da tú el primer paso, por teléfono o por WhatsApp, como prefieras. Ella',
+    'tiene también tu número, pero se agradece que empieces tú.',
     '',
     'AcademiAvanza',
     ...lineasDeSuFicha(datos.tokenPanel),
@@ -228,17 +228,21 @@ export function correoContactoAbierto(datos: {
       ${dato('Nombre', datos.nombreFamilia)}
       ${dato('Curso', datos.nivel)}
     </table>
-    ${boton(`Llamar al ${datos.telefonoFamilia}`, `tel:${telefonoLimpio}`)}
+    ${boton(datos.telefonoFamilia, `tel:${telefonoLimpio}`)}
     ${datos.mensaje ? cita(datos.mensaje) : ''}
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      Llámala tú. Ella tiene también tu número, pero el primer paso se agradece desde tu lado.
+      Da tú el primer paso, por teléfono o por WhatsApp, como prefieras.
+      Ella tiene también tu número, pero se agradece que empieces tú.
     </p>
     ${pieDeSuFicha(datos.tokenPanel)}
   `);
 
   return {
     para: datos.para,
-    asunto: `Ya puedes llamar a ${datos.nombreFamilia}`,
+    // «Ya tienes el teléfono» y no «ya puedes llamar»: hay profesores que
+    // prefieren escribir un WhatsApp antes que llamar a un desconocido, y
+    // decirles cómo tienen que hacerlo es meterse donde no nos llaman.
+    asunto: `Ya tienes el teléfono de ${datos.nombreFamilia}`,
     cuerpo,
     html,
   };
@@ -710,7 +714,7 @@ export function correoPagoConfirmado(datos: {
     '',
     `Teléfono de ${datos.nombreProfesor}: ${datos.telefonoProfesor}`,
     '',
-    'Le hemos dado también el tuyo, así que puede que te llame él primero.',
+    'Le hemos dado también el tuyo, así que puede que te escriba él primero.',
     'El precio de las clases y los horarios los acordáis vosotros: nosotros ya',
     'no intervenimos.',
     '',
@@ -728,7 +732,7 @@ export function correoPagoConfirmado(datos: {
     <p style="margin:0 0 4px;color:${GRIS};">Teléfono de ${escapar(datos.nombreProfesor)}</p>
     ${boton(datos.telefonoProfesor, `tel:${limpio}`)}
     <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
-      Le hemos dado también el tuyo, así que puede que te llame él primero.
+      Le hemos dado también el tuyo, así que puede que te escriba él primero.
       El precio de las clases y los horarios los acordáis vosotros.
     </p>
     <p style="margin:0;font-size:14px;">
@@ -739,7 +743,7 @@ export function correoPagoConfirmado(datos: {
 
   return {
     para: datos.para,
-    asunto: `Ya puedes llamar a ${datos.nombreProfesor}`,
+    asunto: `Ya tienes el teléfono de ${datos.nombreProfesor}`,
     cuerpo,
     html,
   };
@@ -1182,6 +1186,77 @@ export function correoValeConcedido(datos: {
   return {
     para: datos.para,
     asunto: `Tu contacto gratis: código ${datos.codigo}`,
+    cuerpo,
+    html,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 17 · Hemos recibido tu ficha
+// -----------------------------------------------------------------------------
+
+/**
+ * El resguardo del profesor, en el momento de darse de alta.
+ *
+ * Faltaba, y era el primer correo que debería existir. Quien rellenaba el
+ * formulario veía una pantalla de «la revisamos» y a partir de ahí, silencio:
+ * ni prueba de que se había recibido, ni idea de cuánto tarda, ni forma de
+ * corregir una errata, ni manera de volver a entrar. Sólo esperar.
+ *
+ * Lleva su enlace permanente desde el primer minuto, antes incluso de que la
+ * ficha esté aprobada. Es deliberado: así puede arreglar él un apellido mal
+ * escrito o una asignatura que se dejó, sin que nadie tenga que atenderle.
+ */
+export function correoFichaRecibida(datos: {
+  para: string;
+  nombreProfesor: string;
+  tokenPanel: string;
+}): Correo {
+  const panel = `${baseUrl()}/mi-ficha/${datos.tokenPanel}`;
+
+  const cuerpo = [
+    `Hola ${datos.nombreProfesor}:`,
+    '',
+    'Hemos recibido tu ficha. La revisamos a mano —sobre todo el colegio, que es',
+    'lo que las familias miran— y te escribimos en cuanto esté publicada. Suele',
+    'ser cosa de un día o dos.',
+    '',
+    'Mientras tanto, guarda este enlace. Es tu acceso permanente: desde ahí',
+    'puedes corregir lo que sea, cambiar horarios o pausar la ficha. No hay',
+    'contraseña, así que si pierdes el enlace pierdes la entrada.',
+    '',
+    panel,
+    '',
+    'Publicar tu ficha es gratis y siempre lo será. A ti no te cobramos nada,',
+    'ni por aparecer ni por dar clases.',
+    '',
+    'AcademiAvanza',
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
+    <p style="margin:0 0 16px;">
+      <strong>Hemos recibido tu ficha.</strong> La revisamos a mano —sobre todo el colegio,
+      que es lo que las familias miran— y te escribimos en cuanto esté publicada.
+      Suele ser cosa de un día o dos.
+    </p>
+    <p style="margin:0 0 4px;">
+      <strong>Guarda este correo.</strong> Ese botón es tu acceso permanente: desde ahí
+      corriges lo que sea, cambias horarios o pausas la ficha.
+    </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      No hay contraseña. Si pierdes el enlace, pierdes la entrada.
+    </p>
+    ${boton('Ver mi ficha', panel)}
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Publicar es gratis y siempre lo será. A ti no te cobramos nada, ni por aparecer
+      ni por dar clases.
+    </p>
+  `);
+
+  return {
+    para: datos.para,
+    asunto: 'Hemos recibido tu ficha',
     cuerpo,
     html,
   };
