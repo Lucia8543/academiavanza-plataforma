@@ -15,6 +15,7 @@ import {
   correoProfesorRechaza,
   correoSolicitud,
   correoSolicitudRecibida,
+  correoValeConcedido,
 } from '@/backend/services/plantillas-correo';
 import type { DatosContacto } from '@/shared/schemas/contacto';
 import { nombrePublico } from '@/backend/repositories/directorio';
@@ -386,15 +387,25 @@ export async function confirmarPago(codigo: string): Promise<ResultadoPago> {
 export async function concederVale(codigo: string): Promise<boolean> {
   const solicitud = await db.contactos.findFirst({
     where: { codigo: codigo.trim().toUpperCase(), estado: 'pagada' },
-    select: { id: true },
+    select: {
+      id: true,
+      email_familia: true,
+      nombre_familia: true,
+      codigo: true,
+      token_familia: true,
+    },
   });
 
   if (!solicitud) return false;
 
+  const caduca = caducidadDelVale();
+
   await db.contactos.update({
     where: { id: solicitud.id },
-    data: { vale_concedido: true, vale_caduca_en: caducidadDelVale() },
+    data: { vale_concedido: true, vale_caduca_en: caduca },
   });
+
+  await mandarElVale(solicitud, caduca);
 
   return true;
 }
@@ -659,6 +670,10 @@ export async function pedirVale(
       vale_concedido: true,
       profesor_id: true,
       telefono_familia: true,
+      email_familia: true,
+      nombre_familia: true,
+      codigo: true,
+      token_familia: true,
     },
   });
 
@@ -695,11 +710,13 @@ export async function pedirVale(
     return { ok: false, motivo: 'demasiado-pronto' };
   }
 
+  const caduca = caducidadDelVale();
+
   await db.contactos.update({
     where: { id: solicitud.id },
     data: {
       vale_concedido: true,
-      vale_caduca_en: caducidadDelVale(),
+      vale_caduca_en: caduca,
       motivo_vale: motivo,
       vale_pedido_en: new Date(),
       motivo_cierre: cierre,
@@ -711,7 +728,42 @@ export async function pedirVale(
     await revisarProfesor(solicitud.profesor_id);
   }
 
+  await mandarElVale(solicitud, caduca);
+
   return { ok: true };
+}
+
+/**
+ * El vale por escrito, para que exista fuera de una pestaña abierta.
+ *
+ * Sin este correo, el vale vive sólo en la página de seguimiento. Y ahí hay un
+ * círculo del que no se sale: el código está en esa página, y para recuperar esa
+ * página si se pierde el enlace hace falta el código.
+ *
+ * No se comprueba si el envío ha salido ni se reintenta: el vale ya está
+ * concedido en la base de datos, y no se le va a quitar a nadie porque un correo
+ * haya fallado.
+ */
+async function mandarElVale(
+  solicitud: {
+    email_familia: string | null;
+    nombre_familia: string;
+    codigo: string;
+    token_familia: string;
+  },
+  caducaEn: Date,
+): Promise<void> {
+  if (!solicitud.email_familia) return;
+
+  await enviar(
+    correoValeConcedido({
+      para: solicitud.email_familia,
+      nombreFamilia: solicitud.nombre_familia,
+      codigo: solicitud.codigo,
+      caducaEn,
+      tokenFamilia: solicitud.token_familia,
+    }),
+  );
 }
 
 /**

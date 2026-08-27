@@ -1097,3 +1097,92 @@ export function correoResumenDiario(datos: {
 
   return { para: datos.para, asunto, cuerpo, html };
 }
+
+// -----------------------------------------------------------------------------
+// 16 · Tienes un contacto gratis
+// -----------------------------------------------------------------------------
+
+/**
+ * El vale, por escrito.
+ *
+ * Hasta ahora el vale se concedía y se enseñaba sólo en la página de la familia.
+ * Bastaba con que cerrara la pestaña para quedarse sin nada: el código está en
+ * esa página, y para volver a entrar en esa página hace falta el código. Un
+ * círculo cerrado del que no se sale.
+ *
+ * Este correo lo rompe, y por eso se manda en el momento de concederlo y no
+ * después. Lo que lleva dentro es lo único que hace falta para gastarlo: el
+ * código, hasta cuándo vale, y dónde se mete.
+ */
+export function correoValeConcedido(datos: {
+  para: string;
+  nombreFamilia: string;
+  codigo: string;
+  caducaEn: Date;
+  tokenFamilia: string;
+}): Correo {
+  const seguimiento = `${baseUrl()}/solicitud/${datos.tokenFamilia}`;
+  const directorio = `${baseUrl()}/profesores`;
+  const fecha = new Date(datos.caducaEn).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const cuerpo = [
+    `Hola ${datos.nombreFamilia}:`,
+    '',
+    'Sentimos que no haya salido. Tienes un contacto gratis con otro profesor,',
+    'y no tienes que pagar nada más.',
+    '',
+    `Tu código es ${datos.codigo}. Guárdalo.`,
+    '',
+    'Para gastarlo: elige a otro profesor en el directorio, rellena el',
+    'formulario, y antes de enviarlo abre donde pone «Tengo un vale de un',
+    'contacto anterior». Ahí metes el código y el contacto te sale a 0 €.',
+    '',
+    directorio,
+    '',
+    `Tienes hasta el ${fecha}.`,
+    '',
+    'Tu página de siempre sigue aquí:',
+    seguimiento,
+    '',
+    'AcademiAvanza',
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreFamilia)}:</p>
+    <p style="margin:0 0 16px;">
+      Sentimos que no haya salido. <strong>Tienes un contacto gratis</strong> con otro
+      profesor, y no tienes que pagar nada más.
+    </p>
+
+    <p style="margin:0 0 8px;">Tu código, el que hay que guardar:</p>
+    <p style="margin:0 0 20px;text-align:center;font-family:monospace;font-size:26px;font-weight:bold;letter-spacing:4px;color:${VERDE};">
+      ${escapar(datos.codigo)}
+    </p>
+
+    <p style="margin:0 0 4px;"><strong>Cómo se gasta</strong></p>
+    <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
+      Elige a otro profesor, rellena el formulario, y antes de enviarlo abre donde pone
+      «Tengo un vale de un contacto anterior». Metes ahí el código y el contacto te sale a 0 €.
+    </p>
+
+    ${boton('Ver profesores', directorio)}
+
+    <p style="margin:0 0 8px;color:${GRIS};font-size:14px;">
+      Tienes hasta el <strong>${fecha}</strong>.
+    </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Y tu página de siempre sigue <a href="${seguimiento}" style="color:${GRIS};">aquí</a>.
+    </p>
+  `);
+
+  return {
+    para: datos.para,
+    asunto: `Tu contacto gratis: código ${datos.codigo}`,
+    cuerpo,
+    html,
+  };
+}
