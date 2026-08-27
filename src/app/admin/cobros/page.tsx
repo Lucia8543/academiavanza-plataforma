@@ -328,6 +328,24 @@ export default async function PaginaCobros() {
                           Avisar por WhatsApp
                         </a>
 
+                        {/*
+                          El enlace, a la vista y no sólo dentro del mensaje de
+                          WhatsApp. Hace falta más de lo que parece: para probar
+                          el recorrido entero sin tener un profesor de verdad al
+                          otro lado, y sobre todo para el día que alguien diga
+                          «no me ha llegado nada» y haya que mandárselo por
+                          donde sea. Tenerlo escondido obligaba a abrir WhatsApp
+                          y sacarlo del texto a mano.
+                        */}
+                        <a
+                          href={`${base}/aceptar/${s.token_profesor}`}
+                          target="_blank"
+                          rel="noopener"
+                          className="ml-3 text-sm text-gris-medio underline underline-offset-4"
+                        >
+                          Abrir su página
+                        </a>
+
                         <p className="mt-3 text-xs text-gris-medio">
                           {s.profesores.email}
                           {s.profesores.telefono
