@@ -14,6 +14,7 @@ const FICHA_COMPLETA = {
   nombre: true,
   apellidos: true,
   email: true,
+  telefono: true,
   colegio_otro: true,
   titulacion: true,
   universidad: true,
@@ -44,6 +45,36 @@ const FICHA_COMPLETA = {
   // sin convertirlo en sólo lectura, que es lo que hacía fallar la consulta.
 } satisfies Prisma.profesoresSelect;
 
+/**
+ * Fichas que se han despublicado solas.
+ *
+ * Ocurre cuando dos familias distintas dicen que no han conseguido hablar con
+ * ese profesor. Es lo correcto —cada familia que le escriba a partir de ahí
+ * pierde tiempo y dinero— pero deja a alguien fuera del directorio sin haberlo
+ * pedido, y probablemente sin saberlo.
+ *
+ * Se le avisa por correo y por el móvil, pero ninguno de los dos está
+ * garantizado: el correo puede caer en spam y el aviso al móvil sólo lo tiene
+ * quien lo activó. Esta lista es la tercera red, la que se mira con los ojos.
+ *
+ * No es urgente ni hay que actuar cada día. Es para que, cuando el directorio
+ * parezca más corto de lo que debería, se sepa por qué.
+ */
+export async function listarPausadasSolas() {
+  return db.profesores.findMany({
+    where: { pausada_auto_en: { not: null }, disponible: false },
+    select: {
+      id: true,
+      nombre: true,
+      apellidos: true,
+      email: true,
+      telefono: true,
+      pausada_auto_en: true,
+    },
+    orderBy: { pausada_auto_en: 'desc' },
+  });
+}
+
 /** Fichas esperando revisión. Las más antiguas primero: no se deja a nadie atrás. */
 export async function listarPendientes() {
   return db.profesores.findMany({
@@ -64,36 +95,3 @@ export async function listarRevisadas() {
 
 export type Ficha = Awaited<ReturnType<typeof listarPendientes>>[number];
 
-export async function contarPendientes() {
-  return db.profesores.count({ where: { estado: 'pendiente' } });
-}
-
-/**
- * Los mensajes que han dejado las familias.
- *
- * Mientras no haya correo saliente, esta lista es la única forma de que un
- * mensaje llegue a su destino: Lucía lo lee aquí y llama ella al profesor. No
- * es automático y no pretende serlo; es la red que evita que se pierda algo
- * mientras se resuelve lo del dominio.
- *
- * En cuanto el correo funcione, esta pantalla sigue sirviendo para lo mismo que
- * el campo `correo_entregado`: ver qué avisos no salieron.
- */
-export async function listarContactos(limite = 50) {
-  return db.contactos.findMany({
-    select: {
-      id: true,
-      nombre_familia: true,
-      telefono_familia: true,
-      mensaje: true,
-      enviado_en: true,
-      correo_entregado: true,
-      niveles: { select: { nombre: true } },
-      profesores: { select: { nombre: true, apellidos: true, email: true } },
-    },
-    orderBy: { enviado_en: 'desc' },
-    take: limite,
-  });
-}
-
-export type Contacto = Awaited<ReturnType<typeof listarContactos>>[number];

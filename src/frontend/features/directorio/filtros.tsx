@@ -96,7 +96,7 @@ export function Filtrado({
           valor={actuales.modalidad ?? ''}
           opciones={[
             { valor: 'online', texto: 'Online' },
-            { valor: 'presencial', texto: 'Presencial' },
+            { valor: 'presencial', texto: 'A domicilio' },
           ]}
         />
 

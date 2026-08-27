@@ -1,13 +1,14 @@
 import { redirect } from 'next/navigation';
 import { salir } from '@/app/admin/acciones';
 import {
-  listarContactos,
+  listarPausadasSolas,
   listarPendientes,
   listarRevisadas,
 } from '@/backend/repositories/profesores';
+import { contarPorEstado } from '@/backend/repositories/solicitudes';
 import { correoConfigurado } from '@/backend/services/correo';
 import { haySesion } from '@/backend/services/sesion-admin';
-import { ListaMensajes } from '@/frontend/features/administracion/lista-mensajes';
+import { SaludDelProceso } from '@/frontend/features/administracion/salud-del-proceso';
 import { TarjetaFicha } from '@/frontend/features/administracion/tarjeta-ficha';
 
 export const metadata = { title: 'Panel · AcademiAvanza' };
@@ -18,14 +19,16 @@ export const dynamic = 'force-dynamic';
 export default async function PaginaAdmin() {
   if (!(await haySesion())) redirect('/admin/entrar');
 
-  const [pendientes, revisadas, mensajes] = await Promise.all([
+  const [pendientes, revisadas, porEstado, pausadasSolas] = await Promise.all([
     listarPendientes(),
     listarRevisadas(),
-    listarContactos(),
+    contarPorEstado(),
+    listarPausadasSolas(),
   ]);
 
   const publicadas = revisadas.filter((f) => f.estado === 'activo');
-  const sinAvisar = mensajes.filter((m) => !m.correo_entregado).length;
+  const esperandoBizum = porEstado.aceptada ?? 0;
+  const sinAvisar = porEstado.pendiente_profesor ?? 0;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -45,30 +48,68 @@ export default async function PaginaAdmin() {
         </form>
       </header>
 
+      <SaludDelProceso />
+
       {/* ---------------------------------------------------------------- */}
-      {!correoConfigurado() && (
-        <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-medium">El envío de correo está apagado.</p>
-          <p className="mt-1">
-            Los mensajes de las familias se guardan, pero al profesor no le llega
-            ningún aviso. Hasta que el dominio esté verificado, tienes que
-            escribirle tú desde la lista de mensajes.
+      {/*
+        Profesores que han salido del directorio sin pedirlo.
+        Ya se les ha avisado por correo y por el móvil, pero ninguno de los dos
+        llega siempre. Esto es la tercera red: si el directorio se queda corto,
+        aquí está la explicación y el teléfono para llamar.
+      */}
+      {pausadasSolas.length > 0 && (
+        <section className="mt-6 rounded-xl border border-aviso bg-amber-50 p-4">
+          <h2 className="font-bold text-amber-900">
+            {pausadasSolas.length} ficha{pausadasSolas.length === 1 ? '' : 's'} se
+            ha{pausadasSolas.length === 1 ? '' : 'n'} pausado sola
+            {pausadasSolas.length === 1 ? '' : 's'}
+          </h2>
+          <p className="mt-1 text-sm text-amber-900">
+            Dos familias no consiguieron hablar con ell{pausadasSolas.length === 1 ? 'a' : 'as'}.
+            Ya se le{pausadasSolas.length === 1 ? '' : 's'} ha avisado, pero puede que
+            no se hayan enterado. Vuelven al directorio en cuanto entren en su
+            enlace y le den a reactivar.
           </p>
-        </div>
+          <ul className="mt-3 space-y-1">
+            {pausadasSolas.map((p) => (
+              <li
+                key={p.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm"
+              >
+                <span className="font-medium text-carbon">
+                  {p.nombre} {p.apellidos}
+                </span>
+                <span className="text-gris-medio">{p.telefono ?? p.email}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {/* ---------------------------------------------------------------- */}
-      <section className="mt-8">
-        <h2 className="text-lg font-bold text-carbon">
-          Mensajes de familias
-          {sinAvisar > 0 && (
-            <span className="ml-2 rounded-full bg-aviso px-2 py-0.5 text-sm text-white">
-              {sinAvisar} sin avisar
-            </span>
-          )}
-        </h2>
-        <ListaMensajes mensajes={mensajes} />
-      </section>
+      <a
+        href="/admin/cobros"
+        className="mt-6 flex items-center justify-between gap-3 rounded-xl border-2 border-azul-confianza bg-white p-5 transition hover:bg-gris-claro"
+      >
+        <div>
+          <h2 className="font-bold text-azul-confianza">Cobros</h2>
+          <p className="mt-1 text-sm text-gris-medio">
+            {esperandoBizum} esperando Bizum · {sinAvisar} sin avisar al profesor
+          </p>
+        </div>
+        <span className="text-2xl text-azul-confianza">→</span>
+      </a>
+
+      {!correoConfigurado() && (
+        <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-medium">El envío de correo está apagado.</p>
+          <p className="mt-1">
+            Ni los profesores se enteran de que tienen una solicitud, ni las
+            familias de que han sido aceptadas. Hasta que el dominio esté
+            verificado tienes que avisar tú, desde la pantalla de cobros.
+          </p>
+        </div>
+      )}
 
       {/* ---------------------------------------------------------------- */}
       <section className="mt-12">

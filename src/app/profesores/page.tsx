@@ -3,9 +3,15 @@ import {
   contarPublicadas,
   opcionesDeFiltro,
 } from '@/backend/repositories/directorio';
+import { precioVigente } from '@/backend/repositories/tarifas';
 import { Filtrado } from '@/frontend/features/directorio/filtros';
 import { TarjetaProfesor } from '@/frontend/features/directorio/tarjeta-profesor';
 import type { Filtros } from '@/shared/types/directorio';
+
+const euros = (n: number) =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
+    n,
+  );
 
 export const metadata = {
   title: 'Profesores · AcademiAvanza',
@@ -43,10 +49,11 @@ export default async function PaginaProfesores({
   const filtros = leerFiltros(await searchParams);
   const hayFiltros = Object.values(filtros).some(Boolean);
 
-  const [fichas, opciones, total] = await Promise.all([
+  const [fichas, opciones, total, precio] = await Promise.all([
     buscarProfesores(filtros),
     opcionesDeFiltro(),
     contarPublicadas(),
+    precioVigente(),
   ]);
 
   return (
@@ -57,8 +64,9 @@ export default async function PaginaProfesores({
         </h1>
         <p className="mt-3 max-w-2xl text-carbon">
           Todos han estudiado en un colegio de Madrid y nos han dicho en cuál.
-          Escribe a quien encaje contigo: el primer contacto no cuesta nada y no
-          hay ningún intermediario.
+          Escribir es gratis. Solo pagas {euros(precio)} si el profesor acepta
+          darte clase, y entonces os pasamos el teléfono el uno del otro. Lo que
+          cueste la clase lo acordáis vosotros.
         </p>
       </header>
 
@@ -116,8 +124,9 @@ export default async function PaginaProfesores({
           ¿Eres profesor y quieres aparecer aquí?
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-gris-medio">
-          Publicar tu ficha es gratis. Rellenas el formulario, la revisamos y
-          aparece en el directorio.
+          Aparecer aquí no te cuesta nada, ni ahora ni nunca: quien paga el
+          contacto es la familia, y solo si tú aceptas darle clase. Rellenas el
+          formulario, lo revisamos y tu ficha se publica.
         </p>
         <a
           href="/registro"

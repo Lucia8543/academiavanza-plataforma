@@ -3,6 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db } from '@/backend/repositories/cliente';
+import { tokenDelPanel } from '@/backend/services/acceso-profesor';
+import { enviar } from '@/backend/services/correo';
+import {
+  correoFichaPublicada,
+  correoFichaRechazada,
+} from '@/backend/services/plantillas-correo';
 import {
   abrirSesion,
   cerrarSesion,
@@ -49,27 +55,57 @@ export async function aprobar(formulario: FormData) {
   await exigirSesion();
   const id = String(formulario.get('id'));
 
-  await db.profesores.update({
+  const profesor = await db.profesores.update({
     where: { id },
-    data: { estado: 'activo', aprobado_en: new Date(), motivo_rechazo: null },
+    data: {
+      estado: 'activo',
+      aprobado_en: new Date(),
+      motivo_rechazo: null,
+      // Publicar cuenta como confirmar que está disponible: el reloj del
+      // recordatorio trimestral empieza a contar aquí.
+      disponibilidad_confirmada_en: new Date(),
+    },
+    select: { id: true, nombre: true, email: true, slug: true },
   });
+
+  // Y ahora se lo decimos. Sin esto, quien se dio de alta esperó dos días y no
+  // se enteró nunca de que su ficha había salido.
+  await enviar(
+    correoFichaPublicada({
+      para: profesor.email,
+      nombreProfesor: profesor.nombre,
+      slug: profesor.slug,
+      tokenPanel: await tokenDelPanel(profesor.id),
+    }),
+  );
 
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidatePath('/profesores');
 }
 
 export async function rechazar(formulario: FormData) {
   await exigirSesion();
   const id = String(formulario.get('id'));
-  const motivo = String(formulario.get('motivo') ?? '').trim();
+  const motivo =
+    String(formulario.get('motivo') ?? '').trim() ||
+    'La ficha no cumple los requisitos';
 
-  await db.profesores.update({
+  const profesor = await db.profesores.update({
     where: { id },
-    data: {
-      estado: 'rechazado',
-      motivo_rechazo: motivo || 'La ficha no cumple los requisitos',
-    },
+    data: { estado: 'rechazado', motivo_rechazo: motivo },
+    select: { nombre: true, email: true },
   });
+
+  // Decirle por qué, y en sus palabras, no en las nuestras. Un rechazo mudo
+  // deja a alguien esperando indefinidamente algo que no va a llegar.
+  await enviar(
+    correoFichaRechazada({
+      para: profesor.email,
+      nombreProfesor: profesor.nombre,
+      motivo,
+    }),
+  );
 
   revalidatePath('/admin');
 }
@@ -79,9 +115,21 @@ export async function retirar(formulario: FormData) {
   await exigirSesion();
   const id = String(formulario.get('id'));
 
+  /*
+   * Retirar es pausar, no devolver a la cola.
+   *
+   * Antes dejaba la ficha en `pendiente`, así que volvía a la lista de «por
+   * revisar» y, al aprobarla de nuevo, se le mandaba otra vez el correo de «tu
+   * ficha está publicada» a alguien que ya lo había recibido.
+   *
+   * Con `disponible = false` desaparece del directorio igual, pero sigue
+   * aprobada: reactivarla es un botón y no genera ningún correo. Es además lo
+   * mismo que hace el profesor cuando se pausa a sí mismo, así que hay un solo
+   * mecanismo y no dos.
+   */
   await db.profesores.update({
     where: { id },
-    data: { estado: 'pendiente', aprobado_en: null },
+    data: { disponible: false },
   });
 
   revalidatePath('/admin');
@@ -96,8 +144,31 @@ export async function borrar(formulario: FormData) {
   await exigirSesion();
   const id = String(formulario.get('id'));
 
-  await db.profesores.delete({ where: { id } });
+  /*
+   * Una ficha con contactos cobrados no se borra: se retira.
+   *
+   * Borrarla se lleva por delante sus solicitudes, y con ellas la página de
+   * seguimiento de una familia que pagó y el único registro de que ese dinero
+   * entró. Nadie va a acordarse de eso a las once de la noche revisando
+   * fichas, así que lo impide el código y no la memoria.
+   *
+   * Retirar hace lo que se buscaba —desaparece del directorio— y no destruye
+   * nada.
+   */
+  const cobrados = await db.contactos.count({
+    where: { profesor_id: id, estado: { in: ['pagada', 'devuelta'] } },
+  });
+
+  if (cobrados > 0) {
+    await db.profesores.update({
+      where: { id },
+      data: { estado: 'inactivo', disponible: false },
+    });
+  } else {
+    await db.profesores.delete({ where: { id } });
+  }
 
   revalidatePath('/admin');
   revalidatePath('/');
+  revalidatePath('/profesores');
 }

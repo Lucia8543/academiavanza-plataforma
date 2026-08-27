@@ -21,44 +21,57 @@
 BEGIN;
 
 -- -----------------------------------------------------------------------------
+-- 0 · Borrar las de una carga anterior
+--
+-- Así este fichero se puede ejecutar las veces que haga falta sin duplicar
+-- nada. Se lleva por delante también sus solicitudes, por el ON DELETE CASCADE.
+-- -----------------------------------------------------------------------------
+DELETE FROM app.profesores WHERE email LIKE '%@ejemplo.invalid';
+
+
+-- -----------------------------------------------------------------------------
 -- 1 · Las fichas
+--
+-- Los teléfonos son inventados y con formato válido: 600 000 00X. No se llaman
+-- desde ningún sitio, sólo se enseñan al final del recorrido para comprobar que
+-- aparecen cuando deben y no antes.
 -- -----------------------------------------------------------------------------
 INSERT INTO app.profesores
-  (slug, nombre, apellidos, email, colegio_id, titulacion, universidad,
+  (slug, nombre, apellidos, email, telefono, colegio_id, titulacion, universidad,
    curso_actual, titulacion_finalizada, puntos_fuertes, modalidad, zona_otra,
    estado, disponible, acepta_publicacion, acepta_publicacion_en, aprobado_en)
 VALUES
-  ('prueba-marta-r', 'Marta', 'Ruiz Lozano', 'marta@ejemplo.invalid',
+  ('prueba-marta-r', 'Marta', 'Ruiz Lozano', 'marta@ejemplo.invalid', '600000001',
    (SELECT id FROM catalogo.colegios WHERE slug = 'montpellier'),
    'Matemáticas', 'Universidad Complutense de Madrid', 3, FALSE,
    'Tengo mucha paciencia con quien se ha atascado y cree que no se le dan las mates. Empiezo por lo que falla de verdad, aunque sea de dos cursos atrás.',
    'ambas', 'Chamberí', 'activo', TRUE, TRUE, NOW(), NOW()),
 
-  ('prueba-diego-s', 'Diego', 'Serrano Vidal', 'diego@ejemplo.invalid',
+  ('prueba-diego-s', 'Diego', 'Serrano Vidal', 'diego@ejemplo.invalid', '600000002',
    (SELECT id FROM catalogo.colegios WHERE slug = 'san-patricio'),
    'Medicina', 'Universidad Autónoma de Madrid', 4, FALSE,
    'Preparé la EvAU hace poco y me acuerdo de todo: de lo que cae, de cómo corrigen y de los nervios.',
    'online', NULL, 'activo', TRUE, TRUE, NOW(), NOW()),
 
-  ('prueba-elena-b', 'Elena', 'Bermúdez Cano', 'elena@ejemplo.invalid',
+  ('prueba-elena-b', 'Elena', 'Bermúdez Cano', 'elena@ejemplo.invalid', '600000003',
    (SELECT id FROM catalogo.colegios WHERE slug = 'brains'),
    'Filología Inglesa', 'Universidad Complutense de Madrid', NULL, TRUE,
    'Doy clase hablando en inglés desde el primer día. Al principio cuesta y luego es lo que más se agradece.',
    'presencial', 'Pozuelo de Alarcón', 'activo', TRUE, TRUE, NOW(), NOW()),
 
-  ('prueba-javier-m', 'Javier', 'Molina Peña', 'javier@ejemplo.invalid',
+  ('prueba-javier-m', 'Javier', 'Molina Peña', 'javier@ejemplo.invalid', '600000004',
    (SELECT id FROM catalogo.colegios WHERE slug = 'nuestra-senora-pilar'),
    'Ingeniería Industrial', 'Universidad Politécnica de Madrid', 2, FALSE,
    'Se me da bien tratar con adolescentes que no quieren estar ahí. No les riño; busco por dónde entrarles.',
    'ambas', 'Salamanca', 'activo', TRUE, TRUE, NOW(), NOW()),
 
-  ('prueba-lucia-t', 'Lucía', 'Tejada Ortiz', 'lucia.t@ejemplo.invalid',
+  ('prueba-lucia-t', 'Lucía', 'Tejada Ortiz', 'lucia.t@ejemplo.invalid', '600000005',
    (SELECT id FROM catalogo.colegios WHERE slug = 'montpellier'),
    'Derecho y ADE', 'Universidad Carlos III', 5, FALSE,
    'Explico despacio y por escrito: al terminar la clase se queda un esquema hecho, no unos apuntes copiados.',
    'online', NULL, 'activo', TRUE, TRUE, NOW(), NOW()),
 
-  ('prueba-nerea-g', 'Nerea', 'Gálvez Ibáñez', 'nerea@ejemplo.invalid',
+  ('prueba-nerea-g', 'Nerea', 'Gálvez Ibáñez', 'nerea@ejemplo.invalid', '600000006',
    (SELECT id FROM catalogo.colegios WHERE slug = 'highlands'),
    'Historia', 'Universidad Autónoma de Madrid', NULL, TRUE,
    'Me gusta que entiendan por qué pasaron las cosas antes de aprenderse las fechas. Luego las fechas se quedan solas.',

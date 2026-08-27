@@ -12,25 +12,19 @@ export const metadata: Metadata = {
 // queremos que aparezca sin esperar. Una hora es un buen punto medio.
 export const revalidate = 3600;
 
+/**
+ * El encabezado no está aquí, sino dentro del formulario.
+ *
+ * Es la única forma de que desaparezca cuando la ficha ya se ha enviado. Antes
+ * se quedaba arriba diciendo «rellena tu ficha una vez» y «a ti no te cobramos
+ * nada» encima de un «Ficha recibida», y un texto que invita a hacer algo que
+ * ya has hecho sobra y confunde.
+ */
 export default async function PaginaRegistro() {
   const catalogos = await cargarCatalogos();
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-3xl font-extrabold tracking-tight text-azul-confianza sm:text-4xl">
-          Da clases con Academi<span className="text-verde-avanza">Avanza</span>
-        </h1>
-        <p className="mt-4 text-lg text-carbon">
-          Rellena tu ficha una vez. Las familias te encontrarán por colegio,
-          asignatura y curso, y te escribirán directamente.
-        </p>
-        <p className="mt-4 text-sm text-gris-medio">
-          Tarda unos cinco minutos. No pedimos foto, ni notas, ni justificantes.
-          Tampoco cobramos nada, ni a ti ni a las familias.
-        </p>
-      </header>
-
       <FormularioRegistro catalogos={catalogos} />
     </main>
   );

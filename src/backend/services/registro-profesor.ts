@@ -1,4 +1,6 @@
+import { randomBytes } from 'node:crypto';
 import { db } from '@/backend/repositories/cliente';
+import { seAceptanAltas } from '@/backend/services/limites';
 import {
   interpretarFranja,
   type RegistroProfesor,
@@ -23,12 +25,21 @@ import { slugDeProfesor } from '@/shared/utils/slug';
 export const VERSION_PRIVACIDAD = '2026-08-v1';
 
 export type ResultadoRegistro =
-  | { ok: true; slug: string }
-  | { ok: false; motivo: 'correo-repetido' | 'error' };
+  | { ok: true; slug: string; tokenAvisos: string }
+  | { ok: false; motivo: 'correo-repetido' | 'error' }
+  | { ok: false; motivo: 'demasiadas'; explicacion: string };
 
 export async function registrarProfesor(
   datos: RegistroProfesor,
 ): Promise<ResultadoRegistro> {
+  // Tope global de altas al día. Es diez veces más de lo que esperamos en el
+  // mejor día del curso, así que un profesor real no se lo va a encontrar
+  // nunca; lo que corta es el guion que llena el panel de fichas basura.
+  const cupo = await seAceptanAltas();
+  if (!cupo.permitido) {
+    return { ok: false, motivo: 'demasiadas', explicacion: cupo.motivo };
+  }
+
   const yaExiste = await db.profesores.findUnique({
     where: { email: datos.email },
     select: { id: true },
@@ -46,6 +57,12 @@ export async function registrarProfesor(
     .map(interpretarFranja)
     .filter((f): f is NonNullable<typeof f> => f !== null);
 
+  // Con este token, y sólo dentro de los próximos treinta días, esa persona
+  // puede activar los avisos al móvil desde la pantalla de «ficha recibida».
+  // Caduca para que un enlace olvidado en un ordenador compartido no sirva
+  // dentro de medio año.
+  const tokenAvisos = randomBytes(32).toString('base64url');
+
   try {
     await db.$transaction(async (tx) => {
       const profesor = await tx.profesores.create({
@@ -54,6 +71,8 @@ export async function registrarProfesor(
           nombre: datos.nombre,
           apellidos: datos.apellidos,
           email: datos.email,
+          // Privado. Sólo lo verá una familia que haya pagado el contacto.
+          telefono: datos.telefono,
 
           colegio_id: datos.colegioId || null,
           colegio_otro: datos.colegioId ? null : datos.colegioOtro || null,
@@ -64,10 +83,13 @@ export async function registrarProfesor(
             ? null
             : (datos.cursoActual ?? null),
           titulacion_finalizada: datos.titulacionFinalizada,
+          anos_experiencia: datos.anosExperiencia ?? null,
 
           puntos_fuertes: datos.puntosFuertes,
           modalidad: datos.modalidad,
           zona_otra: datos.modalidad === 'online' ? null : datos.zona || null,
+          desplazamiento_flexible:
+            datos.modalidad !== 'online' && datos.desplazamientoFlexible,
 
           // Nace pendiente. Publicar es una decisión de administración.
           estado: 'pendiente',
@@ -113,9 +135,18 @@ export async function registrarProfesor(
           skipDuplicates: true,
         });
       }
+
+      await tx.accesos.create({
+        data: {
+          profesor_id: profesor.id,
+          token_hash: tokenAvisos,
+          proposito: 'avisos',
+          expira_en: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
     });
 
-    return { ok: true, slug };
+    return { ok: true, slug, tokenAvisos };
   } catch (error) {
     console.error('[registro-profesor] fallo al dar de alta:', error);
     return { ok: false, motivo: 'error' };

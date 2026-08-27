@@ -1,15 +1,22 @@
 import { notFound } from 'next/navigation';
-import { buscarPorSlug, nivelesDe } from '@/backend/repositories/directorio';
+import {
+  buscarPorSlug,
+  nivelesDe,
+  tiempoDeRespuesta,
+} from '@/backend/repositories/directorio';
+import { precioVigente } from '@/backend/repositories/tarifas';
 import { FormularioContacto } from '@/frontend/features/directorio/formulario-contacto';
 import { DIAS, FRANJAS, type Franja } from '@/shared/schemas/profesor';
+import {
+  ANIMO_FUERA_DE_ZONA,
+  AVISO_CUPO_JUSTO,
+  comoDaClase,
+  ETIQUETA_CUPO_JUSTO,
+  EXPLICACION_PRESENCIAL,
+} from '@/shared/textos/modalidad';
+import { porHora, PRECIO_EXPLICACION } from '@/shared/textos/precios';
 
 export const dynamic = 'force-dynamic';
-
-const MODALIDAD = {
-  online: 'Online',
-  presencial: 'Presencial',
-  ambas: 'Online y presencial',
-} as const;
 
 export async function generateMetadata({
   params,
@@ -127,7 +134,11 @@ export default async function PaginaProfesor({
 
   if (!f) notFound();
 
-  const niveles = await nivelesDe(f.id);
+  const [niveles, precio, respuesta] = await Promise.all([
+    nivelesDe(f.id),
+    precioVigente(),
+    tiempoDeRespuesta(f.id),
+  ]);
 
   const estudios = f.titulacionFinalizada
     ? `${f.titulacion}, terminada`
@@ -161,7 +172,40 @@ export default async function PaginaProfesor({
             {f.universidad ? ` · ${f.universidad}` : ''}
           </p>
         )}
+
+        {/* Dos señales de confianza que no cuestan nada y no prometen nada:
+            una la declara él, la otra la hemos medido nosotros. */}
+        {(f.anosExperiencia !== null || respuesta) && (
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
+            {f.anosExperiencia !== null && (
+              <span className="rounded-full bg-gris-claro px-3 py-1 text-carbon">
+                {f.anosExperiencia === 0
+                  ? 'Empieza ahora a dar clases'
+                  : f.anosExperiencia === 1
+                    ? 'Un año dando clases'
+                    : `${f.anosExperiencia} años dando clases`}
+              </span>
+            )}
+
+            {respuesta && (
+              <span className="rounded-full bg-verde-avanza-claro px-3 py-1 font-medium text-verde-avanza-oscuro">
+                {respuesta === 'mismo-dia'
+                  ? 'Suele contestar el mismo día'
+                  : respuesta === 'un-dia'
+                    ? 'Suele contestar en un día'
+                    : 'Suele tardar unos días en contestar'}
+              </span>
+            )}
+          </div>
+        )}
       </header>
+
+      {f.cupo === 'justo' && (
+        <p className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <span className="font-medium">{ETIQUETA_CUPO_JUSTO}.</span>{' '}
+          {AVISO_CUPO_JUSTO}
+        </p>
+      )}
 
       {f.puntosFuertes && (
         <blockquote className="mt-6 border-l-4 border-verde-avanza bg-gris-claro p-4 text-lg italic text-carbon">
@@ -178,19 +222,46 @@ export default async function PaginaProfesor({
           </div>
         </Bloque>
 
-        <Bloque titulo="Cursos">
-          <div className="flex flex-wrap gap-2">
-            {f.niveles.map((n) => (
-              <Etiqueta key={n}>{n}</Etiqueta>
+        {/* Los cursos con su precio de referencia al lado.
+            Es el hueco más caro que quedaba: una familia pagaba el contacto,
+            llamaba, y descubría una tarifa que no podía permitirse. Ahora lo
+            sabe antes de escribir. */}
+        <Bloque titulo="Cursos y precio de referencia">
+          <ul className="divide-y divide-gris-borde">
+            {niveles.map((n) => (
+              <li
+                key={n.id}
+                className="flex items-baseline justify-between gap-3 py-2"
+              >
+                <span className="text-carbon">{n.nombre}</span>
+                <span className="font-semibold text-carbon">
+                  {n.precio === null ? 'A convenir' : porHora(n.precio)}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
+          <p className="mt-3 text-sm text-gris-medio">{PRECIO_EXPLICACION}</p>
         </Bloque>
 
         <Bloque titulo="Cómo da clase">
           <p className="text-carbon">
-            {MODALIDAD[f.modalidad]}
-            {f.modalidad !== 'online' && f.zona ? ` · ${f.zona}` : ''}
+            {comoDaClase(f.modalidad, f.zona, f.desplazamientoFlexible)}
           </p>
+          {f.modalidad !== 'online' && (
+            <>
+              <p className="mt-1 text-sm text-gris-medio">
+                {EXPLICACION_PRESENCIAL}
+              </p>
+              {/* La zona no es una frontera. Sin esta línea, una familia de
+                  fuera se descarta sola y el profesor nunca se entera de que
+                  la habría cogido. */}
+              {f.zona && (
+                <p className="mt-2 rounded-lg bg-gris-claro px-3 py-2 text-sm text-carbon">
+                  {ANIMO_FUERA_DE_ZONA}
+                </p>
+              )}
+            </>
+          )}
         </Bloque>
 
         {f.idiomas.length > 0 && (
@@ -221,6 +292,8 @@ export default async function PaginaProfesor({
           slug={f.slug}
           nombreProfesor={f.nombrePublico}
           niveles={niveles}
+          precio={precio}
+          daPresencial={f.modalidad !== 'online'}
         />
       </div>
 

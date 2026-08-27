@@ -1,12 +1,20 @@
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
+import {
+  comoDaClase,
+  ETIQUETA_CUPO_JUSTO,
+} from '@/shared/textos/modalidad';
 import type { ProfesorPublico } from '@/shared/types/directorio';
 
 /**
  * Una ficha vista por una familia.
  *
  * El colegio va arriba y destacado porque es la razón por la que alguien elige
- * esta plataforma en vez de cualquier tablón de anuncios: saber de dónde viene
- * quien va a dar clase a su hijo.
+ * esta plataforma en vez de cualquier tablón de anuncios: saber en qué colegio
+ * estudió quien va a dar clase a su hijo.
+ *
+ * Se dice «en qué colegio estudió» y no «de dónde viene», que era la redacción
+ * original. Fuera de contexto, «de dónde viene» una persona no suena a colegio;
+ * suena a origen, y no es en absoluto lo que se comprueba aquí.
  *
  * Y va sin adjetivos. Ni «verificado», ni «de confianza», ni «avalado». La
  * plataforma no ha examinado a nadie: ha comprobado de qué colegio viene, que es
@@ -15,11 +23,6 @@ import type { ProfesorPublico } from '@/shared/types/directorio';
 
 const DIA_CORTO = Object.fromEntries(DIAS.map((d) => [d.numero, d.corta]));
 
-const MODALIDAD = {
-  online: 'Online',
-  presencial: 'Presencial',
-  ambas: 'Online y presencial',
-} as const;
 
 function Etiqueta({ children }: { children: React.ReactNode }) {
   return (
@@ -36,16 +39,25 @@ export function TarjetaProfesor({ f }: { f: ProfesorPublico }) {
       ? `${f.titulacion}, ${f.cursoActual}.º curso`
       : f.titulacion;
 
-  const donde =
-    f.modalidad === 'online' || !f.zona
-      ? MODALIDAD[f.modalidad]
-      : `${MODALIDAD[f.modalidad]} · ${f.zona}`;
+  // «A domicilio», no «presencial»: es el profesor quien se desplaza a casa del
+  // alumno, y darlo por supuesto al revés es de las cosas que acaban en una
+  // devolución.
+  const donde = comoDaClase(f.modalidad, f.zona, f.desplazamientoFlexible);
 
   return (
     <article className="flex h-full flex-col rounded-xl border border-gris-borde bg-white p-5">
-      <h3 className="text-lg font-bold text-azul-confianza">
-        {f.nombrePublico}
-      </h3>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-lg font-bold text-azul-confianza">
+          {f.nombrePublico}
+        </h3>
+
+        {/* Se dice, no se esconde. La familia decide a quién escribe primero. */}
+        {f.cupo === 'justo' && (
+          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+            {ETIQUETA_CUPO_JUSTO}
+          </span>
+        )}
+      </div>
 
       {f.colegio && (
         <p className="mt-1 text-sm font-medium text-verde-avanza-oscuro">
@@ -57,6 +69,17 @@ export function TarjetaProfesor({ f }: { f: ProfesorPublico }) {
         <p className="mt-2 text-sm text-gris-medio">
           {estudios}
           {f.universidad ? ` · ${f.universidad}` : ''}
+        </p>
+      )}
+
+      {/* Sólo si tiene alguno. Poner «0 años» sería una etiqueta de novato
+          puesta por la propia plataforma, la misma razón por la que el
+          contador de clases del histórico no se enseña por debajo de 20. */}
+      {f.anosExperiencia !== null && f.anosExperiencia > 0 && (
+        <p className="mt-1 text-sm font-medium text-carbon">
+          {f.anosExperiencia === 1
+            ? 'Un año dando clases'
+            : `${f.anosExperiencia} años dando clases`}
         </p>
       )}
 

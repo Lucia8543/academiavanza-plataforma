@@ -23,7 +23,7 @@ familia no tiene forma de saber si quien elige tiene algo que ver con el entorno
 académico de su hijo.
 
 AcademiAvanza hace visible y filtrable el dato que a las familias más les importa:
-**de dónde viene el profesor**.
+**en qué colegio estudió el profesor**.
 
 ---
 

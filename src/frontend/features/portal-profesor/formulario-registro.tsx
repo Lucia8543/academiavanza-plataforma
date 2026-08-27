@@ -3,7 +3,9 @@
 import { useActionState, useState } from 'react';
 import { enviarRegistro, type EstadoFormulario } from '@/app/registro/acciones';
 import type { Catalogos } from '@/backend/repositories/catalogos';
+import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
 import { SelectorColegio } from '@/frontend/components/shared/selector-colegio';
+import { ActivarAvisos } from '@/frontend/features/portal-profesor/activar-avisos';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
 
 /**
@@ -25,11 +27,14 @@ type Valores = {
   nombre: string;
   apellidos: string;
   email: string;
+  telefono: string;
   colegioId: string;
   colegioOtro: string;
   titulacion: string;
   universidad: string;
   cursoActual: string;
+  anosExperiencia: string;
+  desplazamientoFlexible: boolean;
   titulacionFinalizada: boolean;
   asignaturas: string[];
   niveles: string[];
@@ -45,11 +50,14 @@ const VACIO: Valores = {
   nombre: '',
   apellidos: '',
   email: '',
+  telefono: '',
   colegioId: '',
   colegioOtro: '',
   titulacion: '',
   universidad: '',
   cursoActual: '',
+  anosExperiencia: '',
+  desplazamientoFlexible: false,
   titulacionFinalizada: false,
   asignaturas: [],
   niveles: [],
@@ -79,11 +87,14 @@ function desdeRespuesta(
     nombre: t('nombre'),
     apellidos: t('apellidos'),
     email: t('email'),
+    telefono: t('telefono'),
     colegioId: t('colegioId'),
     colegioOtro: t('colegioOtro'),
     titulacion: t('titulacion'),
     universidad: t('universidad'),
     cursoActual: t('cursoActual'),
+    anosExperiencia: t('anosExperiencia'),
+    desplazamientoFlexible: t('desplazamientoFlexible') === 'on',
     titulacionFinalizada: t('titulacionFinalizada') === 'on',
     asignaturas: l('asignaturas'),
     niveles: l('niveles'),
@@ -178,9 +189,11 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
     nombre: 'Nombre',
     apellidos: 'Apellidos',
     email: 'Correo electrónico',
+    telefono: 'Teléfono',
     colegioId: 'Colegio',
     titulacion: 'Carrera',
     universidad: 'Universidad',
+    anosExperiencia: 'Años dando clase',
     asignaturas: 'Asignaturas',
     niveles: 'Cursos',
     zona: 'Zona',
@@ -202,20 +215,95 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
 
   if (estado.ok) {
     return (
-      <div className="rounded-xl border border-verde-avanza bg-verde-avanza-claro p-8 text-center">
-        <h2 className="text-2xl font-bold text-verde-avanza-oscuro">
-          Ficha recibida
-        </h2>
-        <p className="mx-auto mt-3 max-w-md text-carbon">
-          La revisamos y te avisamos por correo en cuanto esté publicada. Suele
-          ser cuestión de un día o dos.
-        </p>
+      <div className="space-y-6">
+        <div className="rounded-xl border border-verde-avanza bg-verde-avanza-claro p-8 text-center">
+          <h1 className="text-2xl font-bold text-verde-avanza-oscuro">
+            Ficha recibida
+          </h1>
+          <p className="mx-auto mt-3 max-w-md text-carbon">
+            La revisamos y te avisamos por correo en cuanto esté publicada.
+            Suele ser cuestión de un día o dos.
+          </p>
+        </div>
+
+        {/* Lo primero que va a pasarle de verdad, dicho antes de que pase. Un
+            mensaje de un número desconocido con un enlace dentro se ignora; el
+            mismo mensaje, esperado, se abre. */}
+        <div className="rounded-xl border border-gris-borde bg-gris-claro p-5 text-sm text-carbon">
+          <p className="font-medium">
+            Cómo te avisaremos cuando una familia te quiera
+          </p>
+          <p className="mt-2">
+            Por hasta tres vías, para que no se te escape ninguna:
+          </p>
+          <ol className="mt-3 space-y-2">
+            <li>
+              <strong>Un aviso al móvil</strong>, al momento, si activas los
+              avisos aquí abajo. Es la vía rápida: lo tocas y contestas desde
+              ahí.
+            </li>
+            <li>
+              <strong>Un correo, siempre</strong>, hayas activado los avisos o
+              no. Así que{' '}
+              <span className="font-medium">
+                estate pendiente de tu correo
+              </span>
+              : es la vía que no falla nunca. Mira también la carpeta de spam
+              las primeras veces.
+            </li>
+            <li>
+              <strong>Un WhatsApp</strong>, solo si las dos anteriores no han
+              llegado. Te lo mandaremos desde el número de AcademiAvanza.
+            </li>
+          </ol>
+          <p className="mt-3">
+            En el aviso verás el curso y lo que la familia cuenta, y un enlace
+            para decir si puedes cogerla o no.{' '}
+            <strong>No damos tu teléfono a nadie</strong> hasta que tú aceptas y
+            la familia paga el contacto.
+          </p>
+        </div>
+
+        {estado.tokenAvisos && <ActivarAvisos token={estado.tokenAvisos} />}
       </div>
     );
   }
 
   return (
-    <form key={intento} action={accion} className="space-y-8" noValidate>
+    <form
+      key={intento}
+      action={accion}
+      className="relative space-y-8"
+      noValidate
+    >
+      <CamposTrampa />
+
+      {/* El encabezado vive dentro del formulario para que desaparezca cuando
+          la ficha ya se ha enviado. Un texto que invita a rellenar algo que ya
+          has rellenado sobra, y encima de un «Ficha recibida» despista. */}
+      <header className="mb-10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-azul-confianza sm:text-4xl">
+          Da clases con Academi<span className="text-verde-avanza">Avanza</span>
+        </h1>
+        <p className="mt-4 text-lg text-carbon">
+          Rellena tu ficha una vez. Las familias te encontrarán por colegio,
+          asignatura y curso, y te escribirán directamente.
+        </p>
+        <p className="mt-4 text-sm text-gris-medio">
+          Tarda unos cinco minutos. No pedimos foto, ni notas, ni justificantes.
+        </p>
+        {/* Quién paga y quién no, dicho en la primera pantalla y sin rodeos.
+            Que un profesor descubra a mitad del recorrido que hay dinero de por
+            medio es la forma más rápida de que se vaya. */}
+        <p className="mt-2 text-sm text-gris-medio">
+          <span className="font-medium text-carbon">
+            A ti no te cobramos nada
+          </span>{' '}
+          por aparecer ni por dar clase. Es la familia quien paga 10 € por el
+          contacto, y solo después de que tú hayas dicho que sí. Lo que cobres
+          por las clases lo acuerdas con ella y no lo tocamos.
+        </p>
+      </header>
       {estado.mensaje && (
         <div className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
           <p className="font-medium">{estado.mensaje}</p>
@@ -286,6 +374,32 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
           </p>
           <Aviso mensaje={errores.email} />
         </div>
+
+        <div className="sm:w-1/2">
+          <label className={claseEtiqueta} htmlFor="telefono">
+            Teléfono
+          </label>
+          <input
+            id="telefono"
+            name="telefono"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="600 123 456"
+            className={claseCampo}
+            value={v.telefono}
+            onChange={(e) => cambiar('telefono', e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gris-medio">
+            <span className="font-medium text-carbon">
+              No aparece en tu ficha ni lo ve nadie que entre en la web.
+            </span>{' '}
+            Lo usamos para escribirte por WhatsApp cuando una familia te quiera,
+            y sólo se lo damos a esa familia cuando tú has aceptado y ha pagado
+            el contacto.
+          </p>
+          <Aviso mensaje={errores.telefono} />
+        </div>
       </Seccion>
 
       {/* --- Colegio ---------------------------------------------------- */}
@@ -355,6 +469,26 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
           />
           Ya la he terminado
         </label>
+
+        <div className="sm:w-56">
+          <label className={claseEtiqueta} htmlFor="anosExperiencia">
+            Años dando clases particulares{' '}
+            <span className="font-normal text-gris-medio">(opcional)</span>
+          </label>
+          <input
+            id="anosExperiencia"
+            name="anosExperiencia"
+            inputMode="numeric"
+            placeholder="2"
+            className={claseCampo}
+            value={v.anosExperiencia}
+            onChange={(e) => cambiar('anosExperiencia', e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gris-medio">
+            Aparece en tu ficha. Si empiezas ahora, déjalo en blanco: no resta.
+          </p>
+          <Aviso mensaje={errores.anosExperiencia} />
+        </div>
 
         {!v.titulacionFinalizada && (
           <div className="sm:w-40">
@@ -438,7 +572,7 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
           <div className="mt-2 flex flex-wrap gap-4">
             {[
               { valor: 'online', etiqueta: 'Sólo online' },
-              { valor: 'presencial', etiqueta: 'Sólo presencial' },
+              { valor: 'presencial', etiqueta: 'Sólo a domicilio del alumno' },
               { valor: 'ambas', etiqueta: 'Las dos' },
             ].map((o) => (
               <label
@@ -462,7 +596,7 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
         {v.modalidad !== 'online' && (
           <div>
             <label className={claseEtiqueta} htmlFor="zona">
-              Zona donde puedes dar clase
+              Zonas a las que te desplazas
             </label>
             <input
               id="zona"
@@ -475,7 +609,25 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
             <p className="mt-1 text-sm text-gris-medio">
               El barrio o el municipio. No pongas tu dirección.
             </p>
-            <Aviso mensaje={errores.zona} />
+<Aviso mensaje={errores.zona} />
+            <label className="mt-3 flex items-start gap-2 text-sm text-carbon">
+              <input
+                type="checkbox"
+                name="desplazamientoFlexible"
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[#2E7D5E]"
+                checked={v.desplazamientoFlexible}
+                onChange={(e) =>
+                  cambiar('desplazamientoFlexible', e.target.checked)
+                }
+              />
+              <span>
+                Puedo ir a otras zonas si el horario o la duración compensan.{' '}
+                <span className="text-gris-medio">
+                  Márcalo si te lo plantearías: hay familias de fuera de tu zona
+                  que, si no, ni te escriben.
+                </span>
+              </span>
+            </label>
           </div>
         )}
       </Seccion>
@@ -590,8 +742,16 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
           />
           <span>
             Autorizo a AcademiAvanza a publicar esta ficha en su directorio y a
-            usar mi correo para avisarme de los contactos que reciba. Puedo
-            retirarla cuando quiera.
+            usar mi correo y mi teléfono para avisarme de los contactos que
+            reciba, según la{' '}
+            <a
+              href="/legal/privacidad"
+              target="_blank"
+              className="underline underline-offset-2"
+            >
+              política de privacidad
+            </a>
+            . Puedo retirarla cuando quiera.
           </span>
         </label>
         <Aviso mensaje={errores.aceptaPublicacion} />

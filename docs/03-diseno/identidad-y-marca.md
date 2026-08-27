@@ -7,7 +7,13 @@
 Un directorio verificado de profesores particulares donde las familias saben de
 qué colegio viene cada profesor.
 
-**Lema principal:** *«Sabes de dónde viene tu profe»*
+**Lema principal:** *«Sabes en qué colegio estudió tu profe»*
+
+> El lema original era «Sabes de dónde viene tu profe». Se cambió en agosto de
+> 2026 porque, leído por alguien que no conoce la plataforma, «de dónde viene»
+> una persona no suena a colegio: suena a origen. Lo que aquí se comprueba es el
+> centro donde estudió, y decirlo con esas palabras no cuesta nada y no deja
+> lugar a una lectura que nadie quiere.
 
 **Variante para familias:** *«Profesores verificados que conocen el camino porque
 lo han recorrido»*
@@ -108,7 +114,7 @@ sistema.
 
 | Contexto | Así sí | Así no |
 |---|---|---|
-| Titular de portada | «Encuentra profesor para tu hijo. Sabiendo de dónde viene.» | «La plataforma líder en tutoría académica personalizada» |
+| Titular de portada | «Encuentra profesor para tu hijo. Sabiendo en qué colegio estudió.» | «La plataforma líder en tutoría académica personalizada» |
 | Antes de enviar propuesta | «Enviar esta propuesta es gratis. Solo pagarás si Ana confirma que está disponible.» | «El envío de solicitudes no conlleva coste alguno» |
 | Propuesta aceptada | «¡Buenas noticias! Ana está disponible para dar clase a Lucas.» | «Su solicitud ha sido aceptada por el tutor» |
 | Propuesta rechazada | «Ana no puede en este momento. Te dejamos tres profesores parecidos que sí tienen hueco.» | «Su solicitud ha sido rechazada» |

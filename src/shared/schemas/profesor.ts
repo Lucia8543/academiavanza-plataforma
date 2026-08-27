@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { telefonoEspanol } from '@/shared/schemas/telefono';
 
 /**
  * Validación del alta de un profesor.
@@ -47,6 +48,11 @@ export const esquemaRegistroProfesor = z
         message: 'Ese correo no parece válido',
       }),
 
+    // El teléfono no se publica en ninguna parte. Sólo lo recibe una familia
+    // que ha aceptado el profesor y que ha pagado el contacto, y en ese momento
+    // se lo damos igual que le damos el suyo a él.
+    telefono: telefonoEspanol,
+
     // --- Colegio -------------------------------------------------------------
     // O se elige del catálogo, o se escribe. Nunca las dos cosas.
     colegioId: z.string().optional().default(''),
@@ -58,6 +64,15 @@ export const esquemaRegistroProfesor = z
     cursoActual: z.coerce.number().int().min(1).max(8).optional(),
     titulacionFinalizada: z.boolean().default(false),
 
+    /**
+     * Años dando clases particulares.
+     *
+     * Es la señal de confianza más barata que existe, y la única que enseñan
+     * las plataformas grandes y aquí faltaba. Opcional: quien empieza ahora no
+     * tiene por qué sentirse mal por dejarlo en blanco.
+     */
+    anosExperiencia: z.coerce.number().int().min(0).max(50).optional(),
+
     // --- Oferta --------------------------------------------------------------
     asignaturas: z.array(z.string()).min(1, 'Elige al menos una asignatura'),
     niveles: z.array(z.string()).min(1, 'Elige al menos un curso'),
@@ -65,6 +80,15 @@ export const esquemaRegistroProfesor = z
 
     modalidad: z.enum(['online', 'presencial', 'ambas']),
     zona: texto(80).optional().default(''),
+
+    /**
+     * Está dispuesto a salir de su zona habitual.
+     *
+     * La zona no es una frontera: un profesor de Chamberí puede cruzarse Madrid
+     * si el horario compensa. Sin esta casilla, una familia de fuera lee la
+     * zona como un límite y se descarta sola sin escribir.
+     */
+    desplazamientoFlexible: z.boolean().default(false),
 
     // --- Disponibilidad ------------------------------------------------------
     // Se recibe como 'dia-franja', por ejemplo '2-tarde'.

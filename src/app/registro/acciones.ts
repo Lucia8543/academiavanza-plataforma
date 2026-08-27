@@ -2,6 +2,7 @@
 
 import { registrarProfesor } from '@/backend/services/registro-profesor';
 import { esquemaRegistroProfesor } from '@/shared/schemas/profesor';
+import { oler } from '@/shared/schemas/trampa-bots';
 
 /**
  * Recibe el formulario de alta.
@@ -14,6 +15,8 @@ export type EstadoFormulario = {
   ok: boolean;
   mensaje?: string;
   errores?: Record<string, string>;
+  /** Permite activar los avisos al móvil nada más terminar el alta. */
+  tokenAvisos?: string;
   /**
    * Lo que la persona había escrito.
    *
@@ -32,6 +35,17 @@ export async function enviarRegistro(
   // se elige colegio de la lista, y «zona» cuando la modalidad es sólo online.
   // En esos casos llega `null`, que no es lo mismo que una cadena vacía: hay
   // que traducirlo o la validación lo rechaza por «entrada no válida».
+  // Guiones automáticos, antes de tocar la base de datos.
+  //
+  // Se contesta que todo ha ido bien. Decirle a un guion «te he pillado» es
+  // decirle exactamente qué tiene que cambiar para colarse a la siguiente; que
+  // se crea que ha funcionado hace que se vaya tan tranquilo.
+  const sospecha = oler(formulario);
+  if (sospecha) {
+    console.warn(`[registro] alta descartada por ${sospecha}`);
+    return { ok: true, mensaje: 'Ficha recibida.' };
+  }
+
   const cadena = (campo: string) => String(formulario.get(campo) ?? '');
 
   // El desplegable de colegios tiene una opción «otro» que no es un colegio
@@ -43,17 +57,21 @@ export async function enviarRegistro(
     nombre: cadena('nombre'),
     apellidos: cadena('apellidos'),
     email: cadena('email'),
+    telefono: cadena('telefono'),
     colegioId: colegioEsOtro ? '' : colegioElegido,
     colegioOtro: cadena('colegioOtro'),
     titulacion: cadena('titulacion'),
     universidad: cadena('universidad'),
     cursoActual: cadena('cursoActual') || undefined,
+    anosExperiencia: cadena('anosExperiencia') || undefined,
     titulacionFinalizada: formulario.get('titulacionFinalizada') === 'on',
     asignaturas: formulario.getAll('asignaturas').map(String),
     niveles: formulario.getAll('niveles').map(String),
     certificaciones: formulario.getAll('certificaciones').map(String),
     modalidad: cadena('modalidad') || 'online',
     zona: cadena('zona'),
+    desplazamientoFlexible:
+      formulario.get('desplazamientoFlexible') === 'on',
     disponibilidad: formulario.getAll('disponibilidad').map(String),
     puntosFuertes: cadena('puntosFuertes'),
     aceptaPublicacion: formulario.get('aceptaPublicacion') === 'on',
@@ -64,14 +82,17 @@ export async function enviarRegistro(
     nombre: String(datos.nombre ?? ''),
     apellidos: String(datos.apellidos ?? ''),
     email: String(datos.email ?? ''),
+    telefono: String(datos.telefono ?? ''),
     colegioId: String(datos.colegioId ?? ''),
     colegioOtro: String(datos.colegioOtro ?? ''),
     titulacion: String(datos.titulacion ?? ''),
     universidad: String(datos.universidad ?? ''),
     cursoActual: String(datos.cursoActual ?? ''),
+    anosExperiencia: String(datos.anosExperiencia ?? ''),
     titulacionFinalizada: datos.titulacionFinalizada ? 'on' : '',
     modalidad: String(datos.modalidad ?? 'online'),
     zona: String(datos.zona ?? ''),
+    desplazamientoFlexible: datos.desplazamientoFlexible ? 'on' : '',
     puntosFuertes: String(datos.puntosFuertes ?? ''),
     aceptaPublicacion: datos.aceptaPublicacion ? 'on' : '',
     asignaturas: datos.asignaturas,
@@ -101,6 +122,10 @@ export async function enviarRegistro(
   const resultado = await registrarProfesor(validado.data);
 
   if (!resultado.ok) {
+    if (resultado.motivo === 'demasiadas') {
+      return { ok: false, mensaje: resultado.explicacion, valores };
+    }
+
     if (resultado.motivo === 'correo-repetido') {
       return {
         ok: false,
@@ -123,5 +148,10 @@ export async function enviarRegistro(
     ok: true,
     mensaje:
       'Ficha recibida. La revisamos y te avisamos por correo cuando esté publicada.',
+    // Sirve para activar los avisos al móvil ahí mismo, sin salir de la
+    // pantalla. Es el mejor momento: acaba de dedicarnos cinco minutos y
+    // entiende para qué es. Preguntárselo tres semanas después, por correo, es
+    // preguntárselo a alguien que ya no se acuerda de nosotros.
+    tokenAvisos: resultado.tokenAvisos,
   };
 }

@@ -14,14 +14,39 @@
 export type Correo = {
   para: string;
   asunto: string;
-  /** Texto plano. Sin HTML a propósito: llega mejor y no acaba en spam. */
+  /**
+   * Versión en texto plano.
+   *
+   * Se manda siempre, aunque haya HTML. No es una reliquia: los filtros de
+   * spam desconfían de los correos que sólo traen HTML, y hay quien los lee en
+   * un reloj o con un lector de pantalla.
+   */
   cuerpo: string;
+  /** Versión con formato. Opcional. */
+  html?: string;
   /** A dónde contesta quien recibe el correo, si pulsa «Responder». */
   responderA?: string;
 };
 
 const REMITENTE = process.env.EMAIL_REMITENTE;
 const CLAVE = process.env.RESEND_API_KEY;
+
+/**
+ * A dónde va lo que conteste la gente.
+ *
+ * Los correos salen desde un subdominio técnico —`send.academiavanza.es`— que
+ * existe para que enviar no toque el buzón de verdad. El problema es que ese
+ * subdominio no tiene buzón: quien le dé a «Responder» estaría escribiéndole a
+ * nadie, y encima sin enterarse de que su mensaje se ha perdido.
+ *
+ * Y responder es exactamente lo que hace la gente. Una madre que recibe «le
+ * hemos preguntado a Diego si puede darte clase» y quiere añadir algo no busca
+ * la web: contesta al correo, como contestaría a cualquier otro.
+ *
+ * Así que todo lo que sale lleva la respuesta apuntada al buzón que sí se lee.
+ * Una plantilla puede poner el suyo si lo necesita; si no dice nada, va aquí.
+ */
+const RESPUESTAS = process.env.EMAIL_RESPUESTAS ?? 'info@academiavanza.es';
 
 export function correoConfigurado(): boolean {
   return Boolean(CLAVE && REMITENTE);
@@ -56,7 +81,8 @@ export async function enviar(correo: Correo): Promise<boolean> {
         to: [correo.para],
         subject: correo.asunto,
         text: correo.cuerpo,
-        ...(correo.responderA ? { reply_to: correo.responderA } : {}),
+        ...(correo.html ? { html: correo.html } : {}),
+        reply_to: correo.responderA ?? RESPUESTAS,
       }),
     });
 

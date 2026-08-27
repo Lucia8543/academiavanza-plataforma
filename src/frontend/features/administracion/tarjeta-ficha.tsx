@@ -41,7 +41,22 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
         </span>
       </header>
 
-      <p className="mt-1 text-sm text-gris-medio">{f.email}</p>
+      <p className="mt-1 text-sm text-gris-medio">
+        {f.email}
+        {f.telefono ? ` · ${f.telefono}` : ''}
+      </p>
+
+      {/* Sin teléfono la ficha no puede publicarse: es lo que recibe la familia
+          al final del recorrido, y la base de datos lo exige para estar activa.
+          Son fichas de antes de que lo pidiéramos. */}
+      {!f.telefono && (
+        <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <span className="font-medium">Sin teléfono.</span> Esta ficha es de
+          antes de que lo pidiéramos y no se puede publicar: es lo que recibe la
+          familia cuando paga. Escríbele para pedírselo, o bórrala si es una
+          prueba.
+        </p>
+      )}
 
       <dl className="mt-4 space-y-2 text-sm">
         <div>

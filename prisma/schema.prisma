@@ -29,24 +29,56 @@ model accesos {
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model contactos {
-  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  profesor_id       String     @db.Uuid
-  nombre_familia    String
-  email_familia     String?    @db.Citext
-  telefono_familia  String?
-  nivel_id          String?    @db.Uuid
-  modalidad         modalidad?
-  zona              String?
-  mensaje           String?
-  es_tutor_legal    Boolean    @default(false)
-  acepta_privacidad Boolean    @default(false)
-  enviado_en        DateTime   @default(now()) @db.Timestamptz(6)
-  correo_entregado  Boolean    @default(false)
-  niveles           niveles?   @relation(fields: [nivel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  profesores        profesores @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profesor_id          String           @db.Uuid
+  nombre_familia       String
+  email_familia        String?          @db.Citext
+  telefono_familia     String?
+  nivel_id             String?          @db.Uuid
+  mensaje              String?
+  es_tutor_legal       Boolean          @default(false)
+  acepta_privacidad    Boolean          @default(false)
+  enviado_en           DateTime         @default(now()) @db.Timestamptz(6)
+  estado               estado_solicitud @default(pendiente_profesor)
+  codigo               String           @unique(map: "contacto_codigo_unico")
+  token_familia        String           @unique(map: "contacto_token_fam_unico")
+  token_profesor       String           @unique(map: "contacto_token_pro_unico")
+  aceptada_en          DateTime?        @db.Timestamptz(6)
+  rechazada_en         DateTime?        @db.Timestamptz(6)
+  pagada_en            DateTime?        @db.Timestamptz(6)
+  motivo_rechazo       String?
+  importe              Decimal?         @db.Decimal(8, 2)
+  vale_concedido       Boolean          @default(false)
+  vale_de              String?          @db.Uuid
+  avisado_push         Boolean          @default(false)
+  avisado_correo       Boolean          @default(false)
+  motivo_vale          String?
+  vale_pedido_en       DateTime?        @db.Timestamptz(6)
+  recordatorio_pago_en DateTime?        @db.Timestamptz(6)
+  intencion_pago       String?
+  cancelada_en         DateTime?        @db.Timestamptz(6)
+  devuelta_en          DateTime?        @db.Timestamptz(6)
+  importe_devuelto     Decimal?         @db.Decimal(8, 2)
+  motivo_devolucion    String?
+  aviso_vale_caduca_en DateTime?        @db.Timestamptz(6)
+  motivo_cierre        String?
+  motivo_cierre_en     DateTime?        @db.Timestamptz(6)
+  pago_avisado_en      DateTime?        @db.Timestamptz(6)
+  vale_caduca_en       DateTime?        @db.Timestamptz(6)
+  niveles              niveles?         @relation(fields: [nivel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profesores           profesores       @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  contactos            contactos?       @relation("contactosTocontactos", fields: [vale_de], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_contactos      contactos[]      @relation("contactosTocontactos")
 
   @@index([enviado_en], map: "idx_contactos_fecha")
   @@index([profesor_id, enviado_en(sort: Desc)], map: "idx_contactos_profesor")
+  @@index([estado, enviado_en], map: "idx_contactos_estado")
+  @@index([profesor_id, motivo_vale], map: "idx_contactos_vales", where: raw("(motivo_vale IS NOT NULL)"))
+  @@index([estado, aceptada_en], map: "idx_contactos_pago_pendiente", where: raw("(estado = 'aceptada'::app.estado_solicitud)"))
+  @@index([enviado_en], map: "idx_contactos_vale_vivo", where: raw("(vale_concedido AND (aviso_vale_caduca_en IS NULL))"))
+  @@index([profesor_id, motivo_cierre_en(sort: Desc)], map: "idx_contactos_motivo_cierre", where: raw("(motivo_cierre IS NOT NULL)"))
+  @@index([pago_avisado_en], map: "idx_contactos_pago_avisado", where: raw("((pago_avisado_en IS NOT NULL) AND (estado = 'aceptada'::app.estado_solicitud))"))
+  @@index([vale_caduca_en], map: "idx_contactos_vale_caduca", where: raw("(vale_concedido AND (vale_caduca_en IS NOT NULL))"))
   @@schema("app")
 }
 
@@ -115,12 +147,12 @@ model profesores {
   titulacion_finalizada        Boolean                    @default(false)
   puntos_fuertes               String?
   modalidad                    modalidad                  @default(online)
-  zona_id                      String?                    @db.Uuid
   zona_otra                    String?
   estado                       estado_profesor            @default(pendiente)
   disponible                   Boolean                    @default(true)
   disponibilidad_confirmada_en DateTime                   @default(now()) @db.Timestamptz(6)
   ultimo_recordatorio_en       DateTime?                  @db.Timestamptz(6)
+  pausada_auto_en              DateTime?                  @db.Timestamptz(6)
   aprobado_en                  DateTime?                  @db.Timestamptz(6)
   motivo_rechazo               String?
   acepta_publicacion           Boolean                    @default(false)
@@ -128,6 +160,10 @@ model profesores {
   version_privacidad           String?
   creado_en                    DateTime                   @default(now()) @db.Timestamptz(6)
   actualizado_en               DateTime                   @default(now()) @db.Timestamptz(6)
+  telefono                     String?
+  anos_experiencia             Int?                       @db.SmallInt
+  desplazamiento_flexible      Boolean                    @default(false)
+  cupo                         String                     @default("busca")
   accesos                      accesos[]
   contactos                    contactos[]
   profesor_asignaturas         profesor_asignaturas[]
@@ -135,16 +171,29 @@ model profesores {
   profesor_disponibilidad      profesor_disponibilidad[]
   profesor_niveles             profesor_niveles[]
   colegios                     colegios?                  @relation(fields: [colegio_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  zonas                        zonas?                     @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  suscripciones_push           suscripciones_push[]
 
   @@index([colegio_id], map: "idx_profesores_colegio")
   @@index([estado, disponible], map: "idx_profesores_directorio", where: raw("((estado = 'activo'::app.estado_profesor) AND disponible)"))
   @@index([email], map: "idx_profesores_email")
+  @@index([cupo], map: "idx_profesores_cupo", where: raw("((estado = 'activo'::app.estado_profesor) AND disponible)"))
   @@schema("app")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// Caja negra del proceso diario: cuándo corrió y qué falló.
+model mantenimiento_ejecuciones {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ejecutado_en DateTime @default(now()) @db.Timestamptz(6)
+  resumen      Json
+  errores      String[] @default([])
+  duracion_ms  Int?
+
+  @@index([ejecutado_en(sort: Desc)], map: "idx_mantenimiento_ultima")
+  @@schema("app")
+}
+
 model tarifas {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   concepto          String    @default("match")
@@ -218,15 +267,16 @@ model colegios {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model niveles {
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  slug             String             @unique
-  nombre           String             @unique
-  etapa            etapa_educativa
-  orden_visual     Int
-  activo           Boolean            @default(true)
-  creado_en        DateTime           @default(now()) @db.Timestamptz(6)
-  contactos        contactos[]
-  profesor_niveles profesor_niveles[]
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug              String             @unique
+  nombre            String             @unique
+  etapa             etapa_educativa
+  orden_visual      Int
+  activo            Boolean            @default(true)
+  creado_en         DateTime           @default(now()) @db.Timestamptz(6)
+  precio_referencia Decimal?           @db.Decimal(6, 2)
+  contactos         contactos[]
+  profesor_niveles  profesor_niveles[]
 
   @@index([etapa, orden_visual], map: "idx_niveles_etapa", where: raw("activo"))
   @@schema("catalogo")
@@ -234,16 +284,20 @@ model niveles {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model zonas {
-  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  slug       String       @unique
-  nombre     String
-  municipio  String       @default("Madrid")
-  activa     Boolean      @default(true)
-  creado_en  DateTime     @default(now()) @db.Timestamptz(6)
-  profesores profesores[]
+model suscripciones_push {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  profesor_id  String     @db.Uuid
+  endpoint     String     @unique
+  p256dh       String
+  auth         String
+  creado_en    DateTime   @default(now()) @db.Timestamptz(6)
+  usado_en     DateTime?  @db.Timestamptz(6)
+  fallo_en     DateTime?  @db.Timestamptz(6)
+  motivo_fallo String?
+  profesores   profesores @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@schema("catalogo")
+  @@index([profesor_id], map: "idx_push_profesor", where: raw("(fallo_en IS NULL)"))
+  @@schema("app")
 }
 
 enum estado_profesor {
@@ -273,4 +327,16 @@ enum etapa_educativa {
   otros
 
   @@schema("catalogo")
+}
+
+enum estado_solicitud {
+  pendiente_profesor
+  aceptada
+  pagada
+  rechazada
+  caducada
+  cancelada
+  devuelta
+
+  @@schema("app")
 }

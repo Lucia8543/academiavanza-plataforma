@@ -3,6 +3,7 @@ import {
   detectarDatosSensibles,
   mensajeDeAviso,
 } from '@/shared/schemas/datos-sensibles';
+import { telefonoEspanol } from '@/shared/schemas/telefono';
 
 /**
  * Lo que una familia rellena para escribir a un profesor.
@@ -17,25 +18,6 @@ import {
  * conciencia.
  */
 
-/**
- * Un teléfono español, escrito como lo escribe la gente.
- *
- * Se aceptan espacios, guiones y el prefijo +34, porque nadie teclea su número
- * de la misma manera y rechazar «600 12 34 56» por los espacios es una forma
- * tonta de perder a una familia. Se limpia y luego se comprueba.
- */
-export function normalizarTelefono(valor: string): string {
-  return valor.replace(/[\s.\-()]/g, '').replace(/^(\+34|0034)/, '');
-}
-
-const telefonoEspanol = z
-  .string()
-  .trim()
-  .transform(normalizarTelefono)
-  .refine((v) => /^[6789]\d{8}$/.test(v), {
-    message: 'Escribe un teléfono español de nueve cifras',
-  });
-
 export const esquemaContacto = z.object({
   nombreFamilia: z
     .string()
@@ -44,6 +26,27 @@ export const esquemaContacto = z.object({
     .max(80),
 
   telefono: telefonoEspanol,
+
+  /**
+   * El correo es nuestro, no del profesor.
+   *
+   * Sirve para avisarle de lo que pasa con su solicitud sin que tenga que
+   * acordarse de volver a mirar una página: que el profesor ha aceptado, que el
+   * pago está confirmado, que su vale va a caducar. **Al profesor no se le da
+   * nunca**; a él sólo le pasamos el nombre y el teléfono, y sólo cuando ha
+   * aceptado y la familia ha pagado.
+   *
+   * Es obligatorio porque sin él la familia depende de guardar un enlace, y
+   * quien lo pierde se queda sin forma de saber si le han aceptado.
+   */
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(120)
+    .refine((v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), {
+      message: 'Ese correo no parece válido',
+    }),
 
   /**
    * Curso del alumno, obligatorio.
@@ -77,6 +80,22 @@ export const esquemaContacto = z.object({
   aceptaPrivacidad: z.boolean().refine((v) => v === true, {
     message: 'Necesitamos tu permiso para pasarle tus datos al profesor',
   }),
+
+  /**
+   * Código de un vale, si la familia tiene uno.
+   *
+   * Se comprueba en el servidor: aquí sólo se limpia. Un código inventado no
+   * hace fallar el formulario, simplemente no descuenta nada, porque rechazar
+   * el envío entero por un vale mal escrito sería castigar a quien ya tuvo una
+   * mala experiencia.
+   */
+  vale: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .max(10)
+    .optional()
+    .default(''),
 })
   // El texto libre es el único hueco del formulario por donde puede colarse un
   // dato que no debemos tener. Se comprueba aquí, en el servidor, aunque el

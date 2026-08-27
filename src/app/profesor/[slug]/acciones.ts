@@ -1,10 +1,17 @@
 'use server';
 
-import { registrarContacto } from '@/backend/services/contacto-familia';
+import { redirect } from 'next/navigation';
+import { crearSolicitud } from '@/backend/services/solicitud';
 import { esquemaContacto } from '@/shared/schemas/contacto';
+import { oler } from '@/shared/schemas/trampa-bots';
 
 /**
  * Recibe el formulario con el que una familia escribe a un profesor.
+ *
+ * Si todo va bien no devuelve nada: lleva a la familia a su página privada de
+ * seguimiento. Esa página es su única referencia a partir de aquí, así que
+ * conviene que la vea cuanto antes y no dentro de un mensaje de confirmación
+ * que se cierra.
  */
 
 export type EstadoContacto = {
@@ -18,16 +25,26 @@ export async function enviarContacto(
   _previo: EstadoContacto,
   formulario: FormData,
 ): Promise<EstadoContacto> {
+  // Igual que en el alta: al guion se le contesta que todo ha ido bien y se
+  // descarta en silencio.
+  const sospecha = oler(formulario);
+  if (sospecha) {
+    console.warn(`[contacto] solicitud descartada por ${sospecha}`);
+    redirect('/profesores');
+  }
+
   const cadena = (campo: string) => String(formulario.get(campo) ?? '');
   const slug = cadena('slug');
 
   const enviado = {
     nombreFamilia: cadena('nombreFamilia'),
     telefono: cadena('telefono'),
+    email: cadena('email'),
     nivelId: cadena('nivelId'),
     mensaje: cadena('mensaje'),
     esTutorLegal: formulario.get('esTutorLegal') === 'on',
     aceptaPrivacidad: formulario.get('aceptaPrivacidad') === 'on',
+    vale: cadena('vale'),
   };
 
   // Lo escrito, para devolverlo si algo falla. Las casillas no se devuelven:
@@ -35,8 +52,10 @@ export async function enviarContacto(
   const valores = {
     nombreFamilia: enviado.nombreFamilia,
     telefono: enviado.telefono,
+    email: enviado.email,
     nivelId: enviado.nivelId,
     mensaje: enviado.mensaje,
+    vale: enviado.vale,
   };
 
   const validado = esquemaContacto.safeParse(enviado);
@@ -50,18 +69,23 @@ export async function enviarContacto(
     return { ok: false, mensaje: 'Revisa lo marcado.', errores, valores };
   }
 
-  const resultado = await registrarContacto(slug, validado.data);
+  const resultado = await crearSolicitud(
+    slug,
+    validado.data,
+    validado.data.vale || undefined,
+  );
 
   if (!resultado.ok) {
-    return {
-      ok: false,
-      mensaje:
-        resultado.motivo === 'no-disponible'
+    const mensaje =
+      resultado.motivo === 'demasiadas'
+        ? resultado.explicacion
+        : resultado.motivo === 'no-disponible'
           ? 'Este profesor ya no está disponible. Prueba con otro del directorio.'
-          : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.',
-      valores,
-    };
+          : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.';
+
+    return { ok: false, mensaje, valores };
   }
 
-  return { ok: true };
+  // `redirect` interrumpe la función lanzando: nada de lo de abajo se ejecuta.
+  redirect(`/solicitud/${resultado.token}`);
 }

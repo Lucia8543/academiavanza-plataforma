@@ -34,10 +34,26 @@ export type ProfesorPublico = {
   universidad: string | null;
   cursoActual: number | null;
   titulacionFinalizada: boolean;
+  /** Años dando clases particulares, declarados por él. Null si no lo dijo. */
+  anosExperiencia: number | null;
   puntosFuertes: string | null;
   modalidad: Modalidad;
-  /** Zona donde da clase presencial. Null si sólo da online. */
+  /** Zona donde suele dar clase presencial. Null si sólo da online. */
   zona: string | null;
+  /**
+   * Está dispuesto a salir de esa zona si compensa.
+   *
+   * Existe para que una familia de fuera no se descarte sola leyendo una zona
+   * que en realidad no es una frontera.
+   */
+  desplazamientoFlexible: boolean;
+  /**
+   * Si va justo de sitio.
+   *
+   * «busca» quiere alumnos; «justo» sigue en el directorio pero avisando de
+   * que puede decir que no. Quien no puede coger a nadie pausa la ficha entera.
+   */
+  cupo: 'busca' | 'justo';
   asignaturas: string[];
   niveles: string[];
   /** Ya compuestos: «Inglés C1». */

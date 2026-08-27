@@ -2,6 +2,10 @@
 
 import { useActionState, useState } from 'react';
 import { enviarContacto, type EstadoContacto } from '@/app/profesor/[slug]/acciones';
+import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
+import { EXPLICACION_PRESENCIAL } from '@/shared/textos/modalidad';
+import { porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
+import { sugerirCorreo } from '@/shared/schemas/correo-erratas';
 import {
   detectarDatosSensibles,
   mensajeDeAviso,
@@ -36,25 +40,39 @@ function Aviso({ mensaje }: { mensaje?: string }) {
 type Valores = {
   nombreFamilia: string;
   telefono: string;
+  email: string;
   nivelId: string;
   mensaje: string;
+  vale: string;
 };
 
 const VACIO: Valores = {
   nombreFamilia: '',
   telefono: '',
+  email: '',
   nivelId: '',
   mensaje: '',
+  vale: '',
 };
+
+const euros = (n: number) =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
+    n,
+  );
 
 export function FormularioContacto({
   slug,
   nombreProfesor,
   niveles,
+  precio,
+  daPresencial,
 }: {
   slug: string;
   nombreProfesor: string;
-  niveles: { id: string; nombre: string }[];
+  niveles: { id: string; nombre: string; precio: number | null }[];
+  precio: number;
+  /** Da clase a domicilio, así que hay que aclarar en casa de quién. */
+  daPresencial: boolean;
 }) {
   const [estado, accion, enviando] = useActionState(enviarContacto, INICIAL);
 
@@ -78,38 +96,39 @@ export function FormularioContacto({
   // Se calcula al pintar, no se guarda en un estado aparte: es una función del
   // texto y nada más. Guardarlo sería tener dos versiones de la misma verdad.
   const sospecha = detectarDatosSensibles(v.mensaje);
+  const sugerencia = sugerirCorreo(v.email);
+  const elegido = niveles.find((n) => n.id === v.nivelId);
 
-  if (estado.ok) {
-    return (
-      <div className="rounded-xl border border-verde-avanza bg-verde-avanza-claro p-6">
-        <h3 className="text-lg font-bold text-verde-avanza-oscuro">
-          Le hemos pasado tu teléfono
-        </h3>
-        <p className="mt-2 text-sm text-carbon">
-          {nombreProfesor} te llamará o te escribirá. Si en un par de días no
-          sabes nada, escribe a otro del directorio: no todo el mundo tiene hueco
-          en todo momento, y no queremos que te quedes esperando.
-        </p>
-      </div>
-    );
-  }
+  // Cuando sale bien no se pinta nada aquí: la acción lleva a la página de
+  // seguimiento de la familia, que es donde está todo lo que necesita saber.
 
   return (
     <form
       key={intento}
       action={accion}
-      className="rounded-xl border border-gris-borde bg-white p-6"
+      className="relative rounded-xl border border-gris-borde bg-white p-6"
       noValidate
     >
+      <CamposTrampa />
       <input type="hidden" name="slug" value={slug} />
 
       <h3 className="text-lg font-bold text-azul-confianza">
         Escribir a {nombreProfesor}
       </h3>
       <p className="mt-1 text-sm text-gris-medio">
-        Le pasamos tu nombre y tu teléfono, y te llama. No cuesta nada y no hay
-        ningún intermediario después.
+        Escribir es gratis. Le preguntamos si puede cogerte y te lo decimos.
+        Solo si acepta pagarás {euros(precio)} por el contacto, y entonces os
+        pasamos el teléfono el uno del otro.
       </p>
+
+      {/* Presencial significa que él va a casa del alumno, y la gente lo da
+          por supuesto en las dos direcciones. Enterarse en la primera llamada,
+          después de haber pagado, es de las cosas que acaban en devolución. */}
+      {daPresencial && (
+        <p className="mt-2 rounded-lg bg-gris-claro px-3 py-2 text-sm text-carbon">
+          {EXPLICACION_PRESENCIAL}
+        </p>
+      )}
 
       {estado.mensaje && (
         <div className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
@@ -148,9 +167,50 @@ export function FormularioContacto({
             onChange={(e) => cambiar('telefono', e.target.value)}
           />
           <p className="mt-1 text-sm text-gris-medio">
-            Solo lo ve este profesor. No se publica en ningún sitio.
+            No se lo damos a nadie todavía. Solo lo verá este profesor, y solo
+            si acepta y pagas el contacto.
           </p>
           <Aviso mensaje={errores.telefono} />
+        </div>
+
+        <div>
+          <label className={claseEtiqueta} htmlFor="email">
+            Tu correo
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            className={claseCampo}
+            value={v.email}
+            onChange={(e) => cambiar('email', e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gris-medio">
+            Es para avisarte de lo que pasa: cuando el profesor conteste y
+            cuando podáis hablar.{' '}
+            <span className="font-medium text-carbon">
+              A él no se lo damos.
+            </span>
+          </p>
+
+          {/* Un correo mal tecleado no da ningún error: la dirección existe
+              como texto y el aviso se va a un buzón de nadie. La familia no se
+              entera de que la han aceptado y no paga. Se sugiere, no se
+              corrige: alguien puede tener de verdad una dirección rara. */}
+          {sugerencia && (
+            <button
+              type="button"
+              onClick={() => cambiar('email', sugerencia)}
+              className="mt-2 w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-left text-sm text-amber-900"
+            >
+              ¿Querías decir <strong>{sugerencia}</strong>? Toca para
+              corregirlo.
+            </button>
+          )}
+
+          <Aviso mensaje={errores.email} />
         </div>
 
         {niveles.length > 0 && (
@@ -175,9 +235,28 @@ export function FormularioContacto({
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-sm text-gris-medio">
-              Son los cursos a los que da clase.
-            </p>
+            {/* El precio aparece en cuanto elige el curso, no escondido en
+                otra pantalla. Es el momento en que decide si le encaja. */}
+            {elegido ? (
+              <p className="mt-1 text-sm text-carbon">
+                {elegido.precio === null ? (
+                  <>Precio a convenir con el profesor.</>
+                ) : (
+                  <>
+                    Precio de referencia:{' '}
+                    <span className="font-semibold">
+                      {porHora(elegido.precio)}
+                    </span>
+                    . {PRECIO_ES_ORIENTATIVO}
+                  </>
+                )}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-gris-medio">
+                Son los cursos a los que da clase. Al elegir verás el precio de
+                referencia de la hora.
+              </p>
+            )}
             <Aviso mensaje={errores.nivelId} />
           </div>
         )}
@@ -220,6 +299,36 @@ export function FormularioContacto({
           <Aviso mensaje={errores.mensaje} />
         </div>
 
+        {/* --- Vale ------------------------------------------------------- */}
+        {/* Detrás de un desplegable cerrado. Lo va a usar una familia de cada
+            veinte, y un campo visible que la mayoría no entiende siembra la
+            duda de si le falta algo por poner. Quien tiene un vale lo sabe y lo
+            busca. */}
+        <details className="rounded-lg border border-gris-borde px-3 py-2">
+          <summary className="cursor-pointer text-sm text-gris-medio">
+            Tengo un vale de un contacto anterior
+          </summary>
+          <div className="mt-3">
+            <label className={claseEtiqueta} htmlFor="vale">
+              Código del vale
+            </label>
+            <input
+              id="vale"
+              name="vale"
+              placeholder="27XJS"
+              autoCapitalize="characters"
+              autoComplete="off"
+              className={`${claseCampo} font-mono uppercase tracking-widest`}
+              value={v.vale}
+              onChange={(e) => cambiar('vale', e.target.value.toUpperCase())}
+            />
+            <p className="mt-1 text-sm text-gris-medio">
+              Es el código del contacto que no funcionó. Si es válido, este no
+              te costará nada.
+            </p>
+          </div>
+        </details>
+
         {/* --- Consentimientos ------------------------------------------- */}
         <div className="space-y-3 border-t border-gris-borde pt-5">
           <label className="flex items-start gap-2.5 text-sm text-carbon">
@@ -239,7 +348,15 @@ export function FormularioContacto({
               className="mt-0.5 h-4 w-4 shrink-0 accent-[#2E7D5E]"
             />
             <span>
-              Acepto que le paséis mi nombre y mi teléfono a este profesor
+              Acepto que le paséis mi nombre y mi teléfono a este profesor si
+              acepta darme clase y pago el contacto, según la{' '}
+              <a
+                href="/legal/privacidad"
+                target="_blank"
+                className="underline underline-offset-2"
+              >
+                política de privacidad
+              </a>
             </span>
           </label>
           <Aviso mensaje={errores.aceptaPrivacidad} />

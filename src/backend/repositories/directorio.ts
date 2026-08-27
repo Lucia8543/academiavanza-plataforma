@@ -29,11 +29,13 @@ const CAMPOS = {
   universidad: true,
   curso_actual: true,
   titulacion_finalizada: true,
+  anos_experiencia: true,
   puntos_fuertes: true,
   modalidad: true,
   zona_otra: true,
+  desplazamiento_flexible: true,
+  cupo: true,
   colegios: { select: { nombre: true, nombre_corto: true } },
-  zonas: { select: { nombre: true } },
   profesor_asignaturas: { select: { asignaturas: { select: { nombre: true } } } },
   profesor_niveles: { select: { niveles: { select: { nombre: true } } } },
   profesor_certificaciones: {
@@ -137,7 +139,20 @@ export async function buscarProfesores(
     select: CAMPOS,
   });
 
-  return barajar(fichas).map((f) => ({
+  /*
+   * Primero quien busca alumnos, después quien va justo, y al azar dentro de
+   * cada grupo.
+   *
+   * No contradice el orden aleatorio: sigue sin repartirse visibilidad por
+   * mérito, antigüedad ni nada que premie a unos sobre otros. Lo único que se
+   * antepone es poder coger al alumno, que es lo que las dos partes quieren.
+   */
+  const ordenadas = [
+    ...barajar(fichas.filter((f) => f.cupo !== 'justo')),
+    ...barajar(fichas.filter((f) => f.cupo === 'justo')),
+  ];
+
+  return ordenadas.map((f) => ({
     id: f.id,
     slug: f.slug,
     nombrePublico: nombrePublico(f.nombre, f.apellidos),
@@ -146,9 +161,12 @@ export async function buscarProfesores(
     universidad: f.universidad,
     cursoActual: f.curso_actual,
     titulacionFinalizada: f.titulacion_finalizada,
+    anosExperiencia: f.anos_experiencia,
     puntosFuertes: f.puntos_fuertes,
     modalidad: f.modalidad as Modalidad,
-    zona: f.zonas?.nombre ?? f.zona_otra ?? null,
+    zona: f.zona_otra,
+    desplazamientoFlexible: f.desplazamiento_flexible,
+    cupo: f.cupo === 'justo' ? ('justo' as const) : ('busca' as const),
     asignaturas: f.profesor_asignaturas.map((a) => a.asignaturas.nombre),
     niveles: f.profesor_niveles.map((n) => n.niveles.nombre),
     idiomas: f.profesor_certificaciones.map((c) =>
@@ -189,9 +207,12 @@ export async function buscarPorSlug(
     universidad: f.universidad,
     cursoActual: f.curso_actual,
     titulacionFinalizada: f.titulacion_finalizada,
+    anosExperiencia: f.anos_experiencia,
     puntosFuertes: f.puntos_fuertes,
     modalidad: f.modalidad as Modalidad,
-    zona: f.zonas?.nombre ?? f.zona_otra ?? null,
+    zona: f.zona_otra,
+    desplazamientoFlexible: f.desplazamiento_flexible,
+    cupo: f.cupo === 'justo' ? ('justo' as const) : ('busca' as const),
     asignaturas: f.profesor_asignaturas.map((a) => a.asignaturas.nombre),
     niveles: f.profesor_niveles.map((n) => n.niveles.nombre),
     idiomas: f.profesor_certificaciones.map((c) =>
@@ -205,6 +226,58 @@ export async function buscarPorSlug(
 }
 
 /**
+ * Cuánto suele tardar en contestar.
+ *
+ * Se calcula con lo que ya tenemos: el tiempo entre que una familia escribe y
+ * el profesor acepta o rechaza. No hace falta preguntárselo a nadie ni fiarse
+ * de lo que diga.
+ *
+ * **Sólo se enseña con tres solicitudes o más.** Con una, «contesta en dos
+ * horas» es una casualidad presentada como una costumbre, y prometer algo que
+ * no se cumple es peor que no decir nada. Es la misma regla que en el contador
+ * de clases del histórico.
+ *
+ * Se usa la mediana y no la media: un profesor que contesta siempre el mismo
+ * día pero que una vez tardó tres semanas no debe salir como si tardara días.
+ */
+export async function tiempoDeRespuesta(
+  profesorId: string,
+): Promise<'mismo-dia' | 'un-dia' | 'varios-dias' | null> {
+  const contestadas = await db.contactos.findMany({
+    where: {
+      profesor_id: profesorId,
+      OR: [
+        { aceptada_en: { not: null } },
+        { rechazada_en: { not: null } },
+      ],
+    },
+    select: { enviado_en: true, aceptada_en: true, rechazada_en: true },
+    take: 20,
+    orderBy: { enviado_en: 'desc' },
+  });
+
+  if (contestadas.length < 3) return null;
+
+  const horas = contestadas
+    .map((c) => {
+      const fin = c.aceptada_en ?? c.rechazada_en;
+      if (!fin) return null;
+      return (
+        (new Date(fin).getTime() - new Date(c.enviado_en).getTime()) /
+        (1000 * 60 * 60)
+      );
+    })
+    .filter((h): h is number => h !== null)
+    .sort((a, b) => a - b);
+
+  const mediana = horas[Math.floor(horas.length / 2)];
+
+  if (mediana <= 12) return 'mismo-dia';
+  if (mediana <= 36) return 'un-dia';
+  return 'varios-dias';
+}
+
+/**
  * Los cursos que da un profesor, con su identificador.
  *
  * Hace falta para el desplegable del formulario de contacto: la familia elige
@@ -214,13 +287,29 @@ export async function buscarPorSlug(
 export async function nivelesDe(profesorId: string) {
   const filas = await db.profesor_niveles.findMany({
     where: { profesor_id: profesorId },
-    select: { niveles: { select: { id: true, nombre: true, orden_visual: true } } },
+    select: {
+      niveles: {
+        select: {
+          id: true,
+          nombre: true,
+          orden_visual: true,
+          precio_referencia: true,
+        },
+      },
+    },
   });
 
   return filas
     .map((f) => f.niveles)
     .sort((a, b) => a.orden_visual - b.orden_visual)
-    .map((n) => ({ id: n.id, nombre: n.nombre }));
+    .map((n) => ({
+      id: n.id,
+      nombre: n.nombre,
+      // Orientativo: lo que se ha venido cobrando. Null cuando no hay
+      // referencia, como en universidad, donde poner un número sería
+      // inventárselo.
+      precio: n.precio_referencia === null ? null : Number(n.precio_referencia),
+    }));
 }
 
 /**
@@ -271,6 +360,57 @@ export async function opcionesDeFiltro(): Promise<OpcionesFiltro> {
       ),
     idiomas: idiomas.map((c) => c.idioma),
   };
+}
+
+/**
+ * El colegio destacado y cuánta gente suya hay publicada.
+ *
+ * Está atado a la columna `destacado` del catálogo, no al Montpellier por su
+ * nombre. Hoy el destacado es el Montpellier porque de ahí sale casi la mitad
+ * del directorio y son las familias que ya conocen a Lucía; si mañana el peso
+ * se mueve a otro centro, se cambia una casilla en la base de datos y la
+ * portada cambia sola.
+ *
+ * Devuelve null si no hay ninguno destacado o si todavía no tiene profesores
+ * publicados. Un apartado que dice «somos del Montpellier» con cero profesores
+ * del Montpellier es peor que no tenerlo.
+ */
+export async function colegioDestacado() {
+  const colegio = await db.colegios.findFirst({
+    where: {
+      activo: true,
+      destacado: true,
+      profesores: { some: { estado: 'activo', disponible: true } },
+    },
+    select: {
+      id: true,
+      nombre: true,
+      nombre_corto: true,
+      _count: {
+        select: {
+          profesores: { where: { estado: 'activo', disponible: true } },
+        },
+      },
+    },
+  });
+
+  if (!colegio) return null;
+
+  return {
+    id: colegio.id,
+    nombre: colegio.nombre_corto ?? colegio.nombre,
+    profesores: colegio._count.profesores,
+  };
+}
+
+/** Cuántos colegios distintos tienen a alguien publicado. */
+export async function cuantosColegios(): Promise<number> {
+  return db.colegios.count({
+    where: {
+      activo: true,
+      profesores: { some: { estado: 'activo', disponible: true } },
+    },
+  });
 }
 
 /** Cuántas fichas hay publicadas en total, sin filtrar. */
