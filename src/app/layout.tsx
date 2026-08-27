@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Cabecera } from '@/frontend/components/shared/cabecera';
 import { Pie } from '@/frontend/components/shared/pie';
 import '@/frontend/styles/globals.css';
 
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body
         className={`${texto.variable} ${titulo.variable} flex min-h-screen flex-col antialiased`}
       >
+        <Cabecera />
         <div className="flex-1">{children}</div>
         <Pie />
       </body>

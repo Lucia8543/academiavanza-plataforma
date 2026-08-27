@@ -112,6 +112,24 @@ export default async function Portada() {
             {profesores} profesores publicados
           </p>
         )}
+
+        {/*
+          La bifurcación, arriba y sin scroll.
+          Media portada está escrita para familias, y un profesor que llegue
+          aquí —casi siempre porque alguien le pasó el enlace— no va a leerla
+          entera para averiguar si esto va con él. Esta línea le saca del
+          recorrido equivocado en el primer vistazo.
+        */}
+        <p className="mt-6 border-t border-gris-borde pt-6 text-sm text-gris-medio">
+          ¿Eres profesor?{' '}
+          <a
+            href="/registro"
+            className="font-semibold text-verde-avanza-oscuro underline underline-offset-4"
+          >
+            Publica tu ficha gratis
+          </a>
+          . Cinco minutos, y a ti no te cobramos nada nunca.
+        </p>
       </div>
 
       {/* ------------------------------------------------------------------ */}
