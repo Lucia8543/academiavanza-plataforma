@@ -144,18 +144,26 @@ describe('⭐ ningún teléfono antes de tiempo', () => {
    * dato que viaja escondido en el HTML está igual de filtrado que uno impreso
    * en pantalla, y se descubre con dos clics.
    */
+  /*
+   * Cada estado va con su fecha. No es adorno: la tabla tiene una restricción
+   * que rechaza una solicitud «aceptada» sin fecha de aceptación, y lo mismo
+   * con las demás. Una fila a medias no puede existir ni siquiera en pruebas.
+   */
   const sinTelefono = [
-    'pendiente_profesor',
-    'aceptada',
-    'rechazada',
-    'caducada',
-    'cancelada',
+    { estado: 'pendiente_profesor', fechas: {} },
+    { estado: 'aceptada', fechas: { aceptada_en: new Date() } },
+    { estado: 'rechazada', fechas: { rechazada_en: new Date() } },
+    { estado: 'caducada', fechas: {} },
+    { estado: 'cancelada', fechas: { cancelada_en: new Date() } },
   ] as const;
 
-  for (const estado of sinTelefono) {
+  for (const { estado, fechas } of sinTelefono) {
     it(`en «${estado}» no viaja ningún teléfono`, async () => {
       const { codigo, token } = await unaSolicitud();
-      await db.contactos.update({ where: { codigo }, data: { estado } });
+      await db.contactos.update({
+        where: { codigo },
+        data: { estado, ...fechas },
+      });
 
       const vista = await porTokenFamilia(token);
 
@@ -183,7 +191,8 @@ describe('⭐ ningún teléfono antes de tiempo', () => {
     await confirmarPago(codigo);
     await db.contactos.update({
       where: { codigo },
-      data: { estado: 'devuelta' },
+      // «devuelta» exige además fecha de devolución, y que siga la de pago.
+      data: { estado: 'devuelta', devuelta_en: new Date() },
     });
 
     expect((await porTokenFamilia(token))?.telefonoProfesor).toBeTruthy();

@@ -26,11 +26,25 @@ import {
  * un vale que hay que reclamar por correo no es un vale, es una promesa.
  */
 
-async function unaPagada(profesorDado?: { id: string; slug: string }) {
+/**
+ * Una solicitud ya pagada.
+ *
+ * El teléfono se puede cambiar porque los límites antiabuso cuentan por
+ * teléfono: el mismo número no puede escribir dos veces al mismo profesor en
+ * siete días. Cuando una prueba necesita dos familias distintas sobre el mismo
+ * profesor —la pausa automática, por ejemplo— hay que dárselas de verdad.
+ */
+async function unaPagada(
+  profesorDado?: { id: string; slug: string },
+  telefono = '600000099',
+) {
   const profesor = profesorDado ?? (await crearProfesor());
   const nivelId = await unNivel();
-  const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-  if (!alta.ok) throw new Error('No se ha creado la solicitud');
+  const alta = await crearSolicitud(
+    profesor.slug,
+    datosDeFamilia({ nivelId, telefono }),
+  );
+  if (!alta.ok) throw new Error(`No se ha creado la solicitud: ${alta.motivo}`);
 
   const s = await porCodigo(alta.codigo);
   await decidir(s.token_profesor, 'aceptar');
@@ -223,9 +237,10 @@ describe('la pausa automática del profesor', () => {
   it('dos «no conseguí hablar» le pausan la ficha', async () => {
     const profesor = await crearProfesor();
 
-    // Dos familias distintas escriben al mismo profesor y ninguna le localiza.
-    for (let vez = 0; vez < 2; vez += 1) {
-      const p = await unaPagada(profesor);
+    // Dos familias DISTINTAS: dos teléfonos, o el límite antiabuso frenaría a
+    // la segunda por escribir al mismo profesor en menos de siete días.
+    for (const telefono of ['600000011', '600000022']) {
+      const p = await unaPagada(profesor, telefono);
       await envejecer(p.codigo, { pagada_en: 4 });
       await pedirVale(p.token, 'sin-contacto');
     }
@@ -258,8 +273,11 @@ describe('la pausa automática del profesor', () => {
     // malo de nadie. Sólo cuenta que no consiguieran localizarle.
     const profesor = await crearProfesor();
 
-    for (const motivo of ['horarios', 'distancia'] as const) {
-      const p = await unaPagada(profesor);
+    for (const [telefono, motivo] of [
+      ['600000033', 'horarios'],
+      ['600000044', 'distancia'],
+    ] as const) {
+      const p = await unaPagada(profesor, telefono);
       await pedirVale(p.token, 'no-funciono', motivo);
     }
 
