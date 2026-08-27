@@ -5,6 +5,7 @@ import { tokenDelPanel } from '@/backend/services/acceso-profesor';
 import { avisar } from '@/backend/services/avisos';
 import { enviar } from '@/backend/services/correo';
 import { puedeEscribir } from '@/backend/services/limites';
+import { seAbreSinPagar } from '@/shared/reglas/cobro';
 import {
   correoContactoAbierto,
   correoDevolucion,
@@ -226,6 +227,7 @@ export async function decidir(
       email_familia: true,
       nombre_familia: true,
       importe: true,
+      vale_de: true,
       profesores: { select: { nombre: true, apellidos: true } },
     },
   });
@@ -245,17 +247,20 @@ export async function decidir(
   });
 
   /*
-   * Un contacto que no cuesta nada se abre solo.
+   * Un contacto pagado con vale se abre solo.
    *
-   * Pasa cuando la familia ha gastado un vale: el importe es cero y nadie va a
-   * hacer un Bizum de cero euros. Antes esto le decía «escríbenos y te lo
-   * abrimos», o sea que el vale que existe para no depender de nadie dependía
-   * de alguien.
+   * Nadie va a hacer un Bizum de cero euros. Antes esto le decía «escríbenos y
+   * te lo abrimos», o sea que el vale que existe para no depender de nadie
+   * dependía de alguien.
    *
-   * Se cobra a sí mismo, en el sentido de que pasa por el mismo camino que un
-   * pago normal: se abren los teléfonos y salen los mismos avisos.
+   * **La condición es el vale, no el importe.** Antes miraba si el importe era
+   * cero, y eso abría una puerta que no se ve hasta que se cruza: cualquier
+   * cosa que dejara el precio a cero —y quedarse sin tarifa vigente lo hacía—
+   * convertía todas las solicitudes en contactos gratis que se abrían solos.
+   * Preguntar por `vale_de` pregunta por lo que de verdad queríamos saber: si
+   * esta familia había pagado antes.
    */
-  if (decision === 'aceptar' && Number(solicitud.importe ?? 0) === 0) {
+  if (decision === 'aceptar' && seAbreSinPagar({ valeDe: solicitud.vale_de })) {
     await confirmarPago(solicitud.codigo);
     return true;
   }

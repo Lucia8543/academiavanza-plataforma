@@ -13,6 +13,7 @@ import {
   loQueEsperaAUnaPersona,
   ultimoMantenimiento,
 } from '@/backend/repositories/solicitudes';
+import { PLAZOS_DE_CIERRE } from '@/shared/reglas/cobro';
 
 /**
  * Lo que la plataforma hace sola, sin que nadie entre.
@@ -54,7 +55,7 @@ const DIAS_PARA_RECORDAR_PAGO = 2;
  * no va a llegar, y dejarle colgado indefinidamente es peor que cerrarlo. La
  * familia no pierde nada: puede volver a escribirle cuando quiera.
  */
-const DIAS_TRAS_RECORDATORIO = 5;
+const DIAS_TRAS_RECORDATORIO = PLAZOS_DE_CIERRE.trasRecordatorio;
 
 /**
  * Tope absoluto desde que el profesor acepta, pase lo que pase.
@@ -64,7 +65,21 @@ const DIAS_TRAS_RECORDATORIO = 5;
  * semana a alguien a quien nadie ha avisado de nada sería injusto; a las dos
  * semanas ya no hay nada que esperar.
  */
-const DIAS_LIMITE_ACEPTADA = 14;
+const DIAS_LIMITE_ACEPTADA = PLAZOS_DE_CIERRE.desdeAceptada;
+
+/**
+ * Tope desde que la familia dice que ha hecho el Bizum.
+ *
+ * Treinta días, el doble que el otro tope, porque este caso es el único en el
+ * que puede haber dinero de verdad esperando: si se cierra antes de tiempo, se
+ * le cierra la puerta a alguien que sí pagó. Pero tampoco puede ser infinito,
+ * que es lo que era: el botón no comprueba nada, así que sin plazo cualquiera
+ * podía dejar una solicitud viva para siempre pulsándolo sin pagar.
+ *
+ * Antes de que caduque hay treinta oportunidades de verlo: sale arriba del todo
+ * en el panel, en rojo pasadas veinticuatro horas, y entra en el correo diario.
+ */
+const DIAS_LIMITE_PAGO_AVISADO = PLAZOS_DE_CIERRE.desdeAvisoDePago;
 
 export type ResumenMantenimiento = {
   caducadas: number;
@@ -359,17 +374,36 @@ export async function recordarPagos(): Promise<number> {
  * Por eso hay un segundo plazo, absoluto y desde que el profesor aceptó, que no
  * depende de que salga ningún correo ni de que nadie conteste nada. Es más largo
  * a propósito: es una red, no el camino.
+ *
+ * **Y quien dice que ha pagado no queda fuera de esa red.** Esto fue un fallo.
+ * El botón de «ya he hecho el Bizum» se puso para que no se le reclamara el pago
+ * a quien ya había pagado, y de paso le sacaba de todos los cierres, incluido el
+ * absoluto. Como el botón no comprueba nada —ni puede: el Bizum se mira a mano—
+ * bastaba con pulsarlo sin pagar para dejar la solicitud viva indefinidamente y
+ * al profesor esperando algo que no iba a llegar.
+ *
+ * Lo que hace ese aviso es frenar los recordatorios, no la caducidad. Por eso se
+ * le da un plazo más largo, no infinito: tiempo de sobra para que alguien
+ * compruebe un Bizum, y un final si resulta que no había ninguno.
  */
 export async function caducarPagosSinRespuesta(): Promise<number> {
   const caducadas = await db.contactos.findMany({
     where: {
       estado: 'aceptada',
-      // Nunca se cierra a quien ha dicho que ya ha pagado. Esa solicitud está
-      // esperando a que alguien mire un Bizum, y eso no es culpa de la familia.
-      pago_avisado_en: null,
       OR: [
-        { recordatorio_pago_en: { lt: haceDias(DIAS_TRAS_RECORDATORIO) } },
-        { aceptada_en: { lt: haceDias(DIAS_LIMITE_ACEPTADA) } },
+        // El camino normal: se le recordó y no contestó.
+        {
+          pago_avisado_en: null,
+          recordatorio_pago_en: { lt: haceDias(DIAS_TRAS_RECORDATORIO) },
+        },
+        // La red, para quien nunca llegó a recibir el recordatorio.
+        {
+          pago_avisado_en: null,
+          aceptada_en: { lt: haceDias(DIAS_LIMITE_ACEPTADA) },
+        },
+        // Y la red de quien dijo que había pagado. Más larga, porque aquí sí
+        // puede haber dinero de verdad esperando a que alguien lo mire.
+        { pago_avisado_en: { lt: haceDias(DIAS_LIMITE_PAGO_AVISADO) } },
       ],
     },
     select: {
