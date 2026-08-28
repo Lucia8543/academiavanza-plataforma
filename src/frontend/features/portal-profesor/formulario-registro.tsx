@@ -260,8 +260,7 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
               <span className="font-medium">
                 estate pendiente de tu correo
               </span>
-              : es la vía que no falla nunca. Mira también la carpeta de spam
-              las primeras veces.
+              . Mira también la carpeta de spam las primeras veces.
             </li>
             <li>
               <strong>Un WhatsApp</strong>, solo si las dos anteriores no han

@@ -281,8 +281,8 @@ export function correoFichaPublicada(datos: {
     'Cuando una familia te quiera, te avisaremos por hasta tres vías:',
     '',
     '  1. Un aviso al móvil, al momento, si los has activado.',
-    '  2. Un correo como este, SIEMPRE. Estate pendiente: es la vía que no',
-    '     falla nunca. Añádenos a tus contactos para que no acabe en spam.',
+    '  2. Un correo como este, siempre. Estate pendiente, y añádenos a tus',
+    '     contactos para que no acabe en spam.',
     '  3. Un WhatsApp, sólo si las dos anteriores no te han llegado.',
     '',
     'Verás el curso y lo que te cuenta, y un enlace para decir si puedes',
@@ -313,8 +313,8 @@ export function correoFichaPublicada(datos: {
     <ol style="margin:0 0 16px;padding-left:20px;">
       <li style="margin-bottom:8px;">Un <strong>aviso al móvil</strong>, al momento, si los has activado.</li>
       <li style="margin-bottom:8px;">
-        Un <strong>correo como este, siempre</strong>. Estate pendiente:
-        es la vía que no falla nunca. Añádenos a tus contactos para que no acabe en spam.
+        Un <strong>correo como este, siempre</strong>. Estate pendiente, y añádenos
+        a tus contactos para que no acabe en spam.
       </li>
       <li>Un <strong>WhatsApp</strong>, solo si las dos anteriores no te han llegado.</li>
     </ol>
@@ -797,7 +797,7 @@ export function correoRecordatorioPago(datos: {
     'Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.',
     '',
     'Y si ya no te hace falta, dínoslo también: es otro botón, y así él deja de',
-    'esperar. No pasa absolutamente nada.',
+    'esperar. No pasa nada.',
     '',
     seguimiento,
     '',
@@ -1325,7 +1325,7 @@ export function correoSolicitudSinContestar(datos: {
     '',
     plazo,
     '',
-    'Con decir que no también nos vale, y no pasa absolutamente nada: es mejor',
+    'Con decir que no también nos vale, y no pasa nada: es mejor',
     'para ella saberlo hoy que seguir esperando.',
     ...(aviso ? ['', aviso] : []),
     '',

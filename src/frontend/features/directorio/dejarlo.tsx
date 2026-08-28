@@ -55,7 +55,7 @@ export function Dejarlo({ token }: { token: string }) {
         </legend>
         <p className="mt-1 mb-3 text-sm text-gris-medio">
           Nos ayuda a saber qué arreglar. No pagas nada y al profesor sólo le
-          decimos que no sigues, sin quién eres.
+          decimos que no sigues, sin decirle quién eres.
         </p>
 
         <div className="flex flex-col gap-1">

@@ -320,16 +320,34 @@ export default async function Portada() {
           </div>
         </div>
 
+        {/*
+          Esta cita decía antes que AcademiAvanza ofrece «un servicio educativo
+          de alta calidad» y que su fin es «formar mentes críticas». Venía de la
+          web anterior y contradecía al aviso legal, que tres clics más allá
+          dice lo contrario con todas las letras: «No damos clases» y «No somos
+          un centro educativo ni una academia, y no estamos autorizados como
+          tal».
+
+          Las dos cosas no pueden ser verdad, y la que lee una familia antes de
+          pagar es ésta. Es el mismo motivo por el que ya se quitaron de este
+          bloque la «asignación personalizada» y las «necesidades especiales
+          del alumno»: prometer lo que el aviso legal niega no es una cuestión
+          de redacción.
+
+          Y va firmada con un nombre, no con «el equipo». AcademiAvanza es una
+          persona, su nombre ya consta en el aviso legal porque la ley lo exige,
+          y en una web cuyo argumento es que sabes con quién estás hablando, un
+          plural inventado desentona.
+        */}
         <blockquote className="mt-8 border-l-4 border-verde-avanza bg-gris-claro px-5 py-4">
           <p className="leading-relaxed text-carbon">
-            Nuestro objetivo es proporcionar un servicio educativo de alta
-            calidad, adaptado a cada alumno y con un enfoque en el aprendizaje
-            efectivo. Para nosotros la enseñanza es más que transmitir
-            conocimientos: es formar mentes críticas y preparadas para el
-            futuro.
+            Esto empezó porque encontrar profesor para un hijo se hacía
+            preguntando en la puerta del colegio, y no siempre había a quién
+            preguntar. Nosotros no damos las clases: te enseñamos quién es cada
+            profesor y de dónde viene, y eliges tú.
           </p>
           <footer className="mt-3 text-sm font-medium text-verde-avanza-oscuro">
-            El equipo de AcademiAvanza
+            Lucía, AcademiAvanza
           </footer>
         </blockquote>
       </section>
