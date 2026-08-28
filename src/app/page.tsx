@@ -155,22 +155,37 @@ export default async function Portada() {
             numero={`+${miles(HISTORICO.clases)}`}
             texto="clases dadas"
           />
-          <Cifra numero={String(HISTORICO.familias)} texto="familias" />
-          {/* «Emparejamientos», no «familias y profesores». Son 104 parejas
-              familia-profesor, no 104 personas: una misma familia se emparejó
-              con varios profesores —dos hermanos, dos asignaturas, un relevo a
-              mitad de curso—. Con la etiqueta anterior, 100 al lado de 60
-              familias parecía un número inflado, y era el más honesto de los
-              tres. */}
+          {/* Las horas suben aquí y las 60 familias salen de la fila.
+              No es maquillaje: 60 era la cifra más baja y, puesta en medio,
+              empequeñecía a las otras dos. Las horas son el segundo número más
+              alto y dicen lo mismo por otra vía. */}
+          <Cifra
+            numero={`+${miles(HISTORICO.horas)}`}
+            texto="horas de clase"
+          />
+          {/* «Que funcionaron» no es un adjetivo puesto por quedar bien: lo
+              sostienen las dos cifras de la línea de abajo, y por eso van
+              juntas. Sin ellas sería una opinión; con ellas es un dato que
+              alguien podría comprobar.
+
+              Y se habla de emparejamientos y no de personas a propósito: son
+              104 parejas, y una misma familia aparece en varias —dos hermanos,
+              dos asignaturas, un relevo a mitad de curso—. */}
           <Cifra
             numero={`+${HISTORICO.emparejamientos}`}
-            texto="veces que juntamos a una familia con un profesor"
+            texto="emparejamientos que funcionaron"
           />
         </dl>
 
-        <p className="mt-6 text-xs leading-relaxed text-gris-medio">
-          Son más de {miles(HISTORICO.horas)} horas de clase en un curso
-          completo, de septiembre a julio. {NOTA_HISTORICO}
+        <p className="mt-6 text-sm leading-relaxed text-carbon">
+          <strong>
+            {HISTORICO.siguieronTrasLaPrimera} de cada 10 siguieron más allá de
+            la primera clase.
+          </strong>
+        </p>
+
+        <p className="mt-3 text-xs leading-relaxed text-gris-medio">
+          De septiembre a julio, en un curso completo. {NOTA_HISTORICO}
         </p>
       </section>
 

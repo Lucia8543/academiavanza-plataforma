@@ -44,8 +44,39 @@ export const HISTORICO = {
    */
   horas: 2100,
 
-  /** 60 familias distintas. Exacto, no hace falta redondear. */
+  /**
+   * 60 familias distintas. Exacto, no hace falta redondear.
+   *
+   * **Ya no sale en la portada, y se queda aquí a propósito.** Era la cifra más
+   * baja de las cuatro y, puesta en medio de las otras, las empequeñecía: al
+   * lado de «60» un «+1.900» se lee más pequeño de lo que es. Quitarla no es
+   * maquillar nada —las tres que quedan son igual de reales y salen del mismo
+   * guion— pero el dato sigue siendo verdad y hace falta tenerlo escrito por si
+   * algún día vuelve, o por si alguien pregunta de dónde sale el resto.
+   */
   familias: 60,
+
+  /**
+   * Parejas que pasaron de la primera clase: el 92 %.
+   *
+   * Se publica como «nueve de cada diez», redondeando **hacia abajo**. Es la
+   * cifra que permite decir que los emparejamientos funcionaron sin que sea una
+   * opinión: sólo el 8 % se quedó en una sola clase.
+   *
+   * Sale del apartado 4.5 del informe de migración, tabla «Parejas de una sola
+   * clase: 8 %».
+   */
+  siguieronTrasLaPrimera: 9,
+
+  /**
+   * Parejas que duraron más de tres meses: el 56 %.
+   *
+   * **No se publica.** Estuvo un rato en la portada, junto a la anterior, y se
+   * quitó: dos cifras seguidas se estorban, y la primera —nueve de cada diez—
+   * dice lo mismo de forma más rotunda. Se queda escrita porque es verdad, sale
+   * del mismo apartado del informe y puede volver a hacer falta.
+   */
+  duraronMasDeTresMeses: '56 %',
 
   /**
    * 104 parejas familia-profesor.
