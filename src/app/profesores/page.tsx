@@ -123,10 +123,13 @@ export default async function PaginaProfesores({
         <h2 className="text-lg font-bold text-carbon">
           ¿Eres profesor y quieres aparecer aquí?
         </h2>
+        {/* «Es gratuito» y no «no te cuesta nada»: esta página la lee sobre
+            todo una familia que sí va a pagar, y la fórmula anterior la
+            invitaba a compararse. Mismo criterio que en la portada. */}
         <p className="mt-2 max-w-2xl text-sm text-gris-medio">
-          Aparecer aquí no te cuesta nada, ni ahora ni nunca: quien paga el
-          contacto es la familia, y solo si tú aceptas darle clase. Rellenas el
-          formulario, lo revisamos y tu ficha se publica.
+          Publicar tu ficha es gratuito: quien paga el contacto es la familia, y
+          solo si tú aceptas darle clase. Rellenas el formulario, lo revisamos y
+          tu ficha se publica.
         </p>
         <a
           href="/registro"

@@ -387,12 +387,26 @@ export default async function Portada() {
             Ver los del {destacado.nombre}
           </a>
 
-          <p className="mt-5 border-t border-verde-avanza pt-4 text-sm text-carbon">
-            <span className="font-medium">¿De otro colegio? También.</span> En
-            el directorio hay profesores de {colegios} colegios de Madrid, y el
-            buscador te deja filtrar por el tuyo o dejarlo en «me es
-            indiferente».
-          </p>
+          {/*
+            Sólo si hay más de un colegio, y no es una cuestión de plurales.
+
+            Con uno solo, la frase se contradice a sí misma: dice «¿de otro
+            colegio? también» y a continuación reconoce que todos los profesores
+            vienen del mismo. A una familia de otro colegio le está diciendo,
+            sin querer, que ahí no hay nadie para ella.
+
+            El caso se dio de verdad el día del lanzamiento, con el directorio
+            recién vaciado de fichas de prueba, y salió publicado como «hay
+            profesores de 1 colegios de Madrid».
+          */}
+          {colegios > 1 && (
+            <p className="mt-5 border-t border-verde-avanza pt-4 text-sm text-carbon">
+              <span className="font-medium">¿De otro colegio? También.</span> En
+              el directorio hay profesores de {colegios} colegios de Madrid, y
+              el buscador te deja filtrar por el tuyo o dejarlo en «me es
+              indiferente».
+            </p>
+          )}
         </section>
       )}
 
