@@ -1,4 +1,10 @@
-import { aprobar, borrar, rechazar, retirar } from '@/app/admin/acciones';
+import {
+  aprobar,
+  borrar,
+  darDeAltaColegio,
+  rechazar,
+  retirar,
+} from '@/app/admin/acciones';
 import type { Ficha } from '@/backend/repositories/profesores';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
 
@@ -22,6 +28,9 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
   const colegio =
     f.colegios?.nombre_corto ?? f.colegios?.nombre ?? f.colegio_otro;
   const colegioNuevo = !f.colegios && Boolean(f.colegio_otro);
+
+  // Las dos condiciones que la base de datos y la acción exigen para publicar.
+  const sePuedePublicar = Boolean(f.colegios) && Boolean(f.telefono);
 
   const asignaturas = f.profesor_asignaturas.map((a) => a.asignaturas.nombre);
   const niveles = f.profesor_niveles.map((n) => n.niveles.nombre);
@@ -68,6 +77,31 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
             </span>
           )}
         </div>
+
+        {/* Sin colegio del catálogo la ficha no se puede publicar. Antes sí se
+            podía, y salía sin ningún colegio: ni el texto que escribió, ni un
+            hueco, ni un aviso. El badge del colegio es el producto. */}
+        {colegioNuevo && f.estado === 'pendiente' && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <p>
+              <span className="font-medium">Escribió el colegio a mano.</span>{' '}
+              Hasta que esté en el catálogo no se puede publicar: saldría sin
+              colegio y sin poder filtrarse por él.
+            </p>
+            <p className="mt-1">
+              Si es un colegio de verdad, dale de alta con este botón. Si está
+              mal escrito o no lo es, rechaza la ficha y pídele que lo corrija.
+            </p>
+            <form action={darDeAltaColegio} className="mt-3">
+              <input type="hidden" name="id" value={f.id} />
+              <button
+                className={`${boton} border border-amber-400 bg-white text-amber-900 hover:bg-amber-100`}
+              >
+                Dar de alta «{f.colegio_otro}» y asociarlo
+              </button>
+            </form>
+          </div>
+        )}
 
         <div>
           <dt className="inline font-medium text-carbon">Estudia: </dt>
@@ -139,9 +173,18 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
       <div className="mt-5 flex flex-wrap gap-2 border-t border-gris-borde pt-4">
         {f.estado === 'pendiente' ? (
           <>
+            {/* El servidor rechaza igualmente una ficha sin colegio o sin
+                teléfono. Apagar el botón es para no hacer pulsar algo que no
+                va a funcionar, no para impedirlo: eso está en la acción. */}
             <form action={aprobar}>
               <input type="hidden" name="id" value={f.id} />
               <button
+                disabled={!sePuedePublicar}
+                title={
+                  sePuedePublicar
+                    ? undefined
+                    : 'Antes hay que resolver el colegio y el teléfono'
+                }
                 className={`${boton} bg-verde-avanza text-white hover:bg-verde-avanza-oscuro`}
               >
                 Publicar

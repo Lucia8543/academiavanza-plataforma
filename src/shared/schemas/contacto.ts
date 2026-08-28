@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { URGENCIA_POR_DEFECTO } from '@/shared/reglas/cobro';
 import {
   detectarDatosSensibles,
   mensajeDeAviso,
@@ -26,6 +27,22 @@ export const esquemaContacto = z.object({
     .max(80),
 
   telefono: telefonoEspanol,
+
+  /**
+   * Para cuándo necesita las clases.
+   *
+   * Decide cuántos días tiene el profesor para contestar antes de que la
+   * solicitud se cierre sola. Lo elige la familia porque es la única que lo
+   * sabe: un plazo fijo trata igual a quien tiene examen el jueves y a quien
+   * busca profesor para octubre.
+   *
+   * Tiene valor por defecto para que una solicitud sin este campo —una antigua,
+   * o un formulario enviado sin JavaScript— siga siendo válida.
+   */
+  urgencia: z
+    .enum(['ya', 'semanas', 'adelante'])
+    .optional()
+    .default(URGENCIA_POR_DEFECTO),
 
   /**
    * El correo es nuestro, no del profesor.

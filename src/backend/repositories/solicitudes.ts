@@ -1,4 +1,5 @@
 import { nombrePublico } from '@/backend/repositories/directorio';
+import { PLAZOS, plazoDe, type Urgencia } from '@/shared/reglas/cobro';
 import { puedeVerTelefonos } from '@/shared/reglas/solicitud';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import type {
@@ -398,4 +399,100 @@ export async function porQueNoSiguen(): Promise<
   return filas
     .map((f) => ({ motivo: String(f.motivo_cierre), veces: f._count._all }))
     .sort((a, b) => b.veces - a.veces);
+}
+
+/**
+ * Solicitudes a punto de caducar, con el teléfono del profesor.
+ *
+ * Es la lista del apartado de rescate del panel: profesores a los que ya se les
+ * ha insistido dos veces por correo y por el móvil y siguen sin contestar, y a
+ * los que les quedan uno o dos días antes de que la solicitud se cierre sola.
+ *
+ * **Esto es un extra y no una pieza del circuito.** Todo lo que hay debajo
+ * funciona igual si nadie abre nunca esta pantalla: se recuerda solo, se cierra
+ * solo y se avisa solo a la familia. Existe porque un mensaje de WhatsApp de una
+ * persona rescata a un profesor de veinte años que no abre el correo, y mientras
+ * haya alguien en Madrid para mandarlo, merece la pena mandarlo.
+ *
+ * Devuelve el teléfono del profesor, que no sale en ninguna otra pantalla de
+ * administración. Es el mismo dato que ya se ve al revisar una ficha, y quien
+ * está aquí ha pasado por la contraseña del panel.
+ */
+export async function aPuntoDeCaducar(): Promise<
+  {
+    codigo: string;
+    nivel: string;
+    diasEsperando: number;
+    diasQueQuedan: number;
+    profesor: string;
+    telefono: string | null;
+    enlace: string;
+  }[]
+> {
+  const dia = 24 * 60 * 60 * 1000;
+
+  /*
+   * Una consulta por plazo, y no una sola para todas.
+   *
+   * Con una sola no salía: había que traer por el plazo más corto y filtrar
+   * después, y entonces el corte se aplicaba antes que el filtro. Cien
+   * solicitudes de treinta días llenaban el cupo y **la de cinco días que se
+   * cerraba pasado mañana no aparecía nunca**, que es exactamente la que esta
+   * pantalla existe para rescatar. Ordenar por antigüedad lo empeoraba: pone
+   * delante justo a las que menos prisa tienen.
+   *
+   * Tres consultas pequeñas, cada una con su propio «le quedan dos días», lo
+   * resuelven sin aritmética rara.
+   */
+  const porPlazo = await Promise.all(
+    (Object.keys(PLAZOS) as Urgencia[]).map((urgencia) =>
+      db.contactos.findMany({
+        where: {
+          estado: 'pendiente_profesor',
+          urgencia,
+          enviado_en: {
+            lt: new Date(Date.now() - (PLAZOS[urgencia].dias - 2) * dia),
+          },
+          // Si al profesor no le llegó ningún aviso, `caducarSolicitudes` no la
+          // va a cerrar, así que decir «se cierra mañana» sería mentira. Ésas
+          // salen en el panel por otro sitio, como profesores sin avisar.
+          OR: [{ avisado_correo: true }, { avisado_push: true }],
+        },
+        select: {
+          codigo: true,
+          enviado_en: true,
+          urgencia: true,
+          token_profesor: true,
+          niveles: { select: { nombre: true } },
+          profesores: {
+            select: { nombre: true, apellidos: true, telefono: true },
+          },
+        },
+        orderBy: { enviado_en: 'asc' },
+        take: 25,
+      }),
+    ),
+  );
+
+  return porPlazo
+    .flat()
+    .map((f) => {
+      const diasEsperando = Math.floor(
+        (Date.now() - f.enviado_en.getTime()) / dia,
+      );
+
+      return {
+        codigo: f.codigo,
+        nivel: f.niveles?.nombre ?? 'clases particulares',
+        diasEsperando,
+        diasQueQuedan: Math.max(plazoDe(f.urgencia).dias - diasEsperando, 0),
+        profesor: `${f.profesores.nombre} ${f.profesores.apellidos}`.trim(),
+        telefono: f.profesores.telefono,
+        enlace: `/aceptar/${f.token_profesor}`,
+      };
+    })
+    // Las que menos tiempo les queda, primero: es el orden en que hay que
+    // llamarles.
+    .sort((a, b) => a.diasQueQuedan - b.diasQueQuedan)
+    .slice(0, 25);
 }

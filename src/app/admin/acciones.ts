@@ -51,9 +51,121 @@ export async function salir() {
   redirect('/admin/entrar');
 }
 
+/**
+ * Convierte un colegio escrito a mano en un colegio del catálogo.
+ *
+ * Es la promesa que el formulario de alta le hace al profesor —«lo añadiremos
+ * al catálogo al revisar tu ficha»— y que hasta ahora no cumplía nadie:
+ * aprobar no creaba el colegio, así que la ficha se publicaba sin badge. Una
+ * ficha sin badge no se puede filtrar por colegio y no cuenta lo único que
+ * distingue a esta plataforma de las demás.
+ *
+ * Se da de alta **activo**, que es lo que hace que aparezca en los filtros del
+ * directorio. Darlo de alta desactivado dejaría a la ficha con badge pero fuera
+ * del filtro por colegio, o sea a medio arreglar, y sin ninguna pantalla desde
+ * la que activarlo después: haría falta un cliente SQL, que es justo el tipo de
+ * cosa que este proyecto no puede permitirse. La revisión la hace quien pulsa
+ * el botón, que ya está mirando la ficha.
+ *
+ * Si el colegio ya existe en el catálogo con ese mismo nombre, se reutiliza en
+ * vez de crear un duplicado. Dos profesores del mismo colegio escribiéndolo a
+ * mano son dos fichas, no dos colegios.
+ */
+export async function darDeAltaColegio(formulario: FormData) {
+  await exigirSesion();
+  const id = String(formulario.get('id'));
+
+  const profesor = await db.profesores.findUniqueOrThrow({
+    where: { id },
+    select: { colegio_id: true, colegio_otro: true },
+  });
+
+  // Si ya tiene colegio de catálogo no hay nada que hacer. Puede pasar con dos
+  // pestañas abiertas.
+  if (profesor.colegio_id || !profesor.colegio_otro) return;
+
+  const colegioId = await colegioDelCatalogo(profesor.colegio_otro.trim());
+
+  await db.profesores.update({
+    where: { id },
+    data: { colegio_id: colegioId, colegio_otro: null },
+  });
+
+  revalidatePath('/admin');
+  revalidatePath('/profesores');
+}
+
+/**
+ * El colegio que ya existe con ese nombre, o uno nuevo.
+ *
+ * Se compara por el slug y no letra a letra, así que «Colegio San Patricio» y
+ * «colegio san patricio» son el mismo. No pretende cazar todas las variantes
+ * —«CEIP San Patricio» seguirá siendo otro— pero evita el duplicado evidente
+ * sin inventarse parecidos.
+ */
+async function colegioDelCatalogo(nombre: string): Promise<string> {
+  const slug =
+    nombre
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'colegio';
+
+  const existente = await db.colegios.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  if (existente) return existente.id;
+
+  // El municipio no se rellena: nadie lo ha declarado. Un dato inventado en el
+  // catálogo es peor que un hueco, porque luego se filtra por él.
+  const creado = await db.colegios.create({
+    data: { slug, nombre, activo: true },
+    select: { id: true },
+  });
+
+  return creado.id;
+}
+
 export async function aprobar(formulario: FormData) {
   await exigirSesion();
   const id = String(formulario.get('id'));
+
+  const antes = await db.profesores.findUniqueOrThrow({
+    where: { id },
+    select: {
+      estado: true,
+      colegio_id: true,
+      colegio_otro: true,
+      telefono: true,
+    },
+  });
+
+  /*
+   * Sólo se publica lo que está esperando a que alguien lo lea.
+   *
+   * Sin esta comprobación se podía volver a publicar una ficha ya activa o una
+   * ya rechazada, y de paso se reiniciaba el reloj del recordatorio trimestral
+   * de alguien que llevaba meses sin confirmar nada.
+   */
+  if (antes.estado !== 'pendiente') return;
+
+  /*
+   * Y no se publica una ficha sin colegio resuelto.
+   *
+   * El badge del colegio es el producto. Una ficha con el colegio escrito a
+   * mano se publicaba sin colegio ninguno: ni el texto, ni un hueco, ni un
+   * aviso. Hay que darlo de alta en el catálogo antes, con el botón de la
+   * propia tarjeta.
+   */
+  if (!antes.colegio_id) return;
+
+  // El teléfono ya lo exige `prof_activo_exige_telefono` en la base de datos.
+  // Comprobarlo aquí convierte un error 500 en no hacer nada, que es lo que la
+  // tarjeta ya está contando con el aviso ámbar.
+  if (!antes.telefono) return;
 
   const profesor = await db.profesores.update({
     where: { id },

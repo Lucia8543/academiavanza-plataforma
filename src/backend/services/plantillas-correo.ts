@@ -1,4 +1,5 @@
 import type { Correo } from '@/backend/services/correo';
+import { CADUCADAS_PARA_PAUSAR } from '@/shared/reglas/cobro';
 
 /**
  * Los correos que manda la plataforma.
@@ -137,9 +138,13 @@ export function correoSolicitud(datos: {
   tokenProfesor: string;
   tokenPanel: string;
   importe: number;
+  diasDePlazo: number;
 }): Correo {
   const enlace = `${baseUrl()}/aceptar/${datos.tokenProfesor}`;
   const precio = euros(datos.importe);
+  // El plazo se dice desde el primer correo. Enterarse de que tenías cinco días
+  // cuando ya han pasado no es un plazo, es una excusa.
+  const plazo = `Tienes ${datos.diasDePlazo} días para contestar. Pasados, la solicitud se cierra sola y le decimos a la familia que busque a otra persona.`;
 
   const cuerpo = [
     `Hola ${datos.nombreProfesor}:`,
@@ -159,6 +164,8 @@ export function correoSolicitud(datos: {
     '',
     'Si ahora no puedes, dilo y ya está. No pasa nada y la familia no paga nada.',
     '',
+    plazo,
+    '',
     'AcademiAvanza',
     ...lineasDeSuFicha(datos.tokenPanel),
   ].join('\n');
@@ -175,9 +182,10 @@ export function correoSolicitud(datos: {
       Si aceptas, la familia paga <strong>${precio}</strong> por el contacto y os pasamos el teléfono el uno del otro.
       El precio de las clases y los horarios los acordáis vosotros.
     </p>
-    <p style="margin:0;color:${GRIS};font-size:14px;">
+    <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
       Si ahora no puedes, dilo y ya está. La familia no paga nada.
     </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">${escapar(plazo)}</p>
     ${pieDeSuFicha(datos.tokenPanel)}
   `);
 
@@ -515,14 +523,18 @@ export function correoSolicitudRecibida(datos: {
   nombreProfesor: string;
   tokenFamilia: string;
   codigo: string;
+  diasDePlazo: number;
 }): Correo {
   const seguimiento = `${baseUrl()}/solicitud/${datos.tokenFamilia}`;
+  const plazo = `Le hemos dado ${datos.diasDePlazo} días para contestar, que es el plazo que has elegido. Si no lo hace, te avisamos y cerramos la solicitud para que no sigas esperando.`;
 
   const cuerpo = [
     `Hola ${datos.nombreFamilia}:`,
     '',
     `Le hemos preguntado a ${datos.nombreProfesor} si puede darte clase. Suele`,
     'contestar en un día o dos, y te avisaremos en cuanto lo haga.',
+    '',
+    plazo,
     '',
     'Todavía no has pagado nada, y no pagarás nada si dice que no.',
     '',
@@ -544,6 +556,7 @@ export function correoSolicitudRecibida(datos: {
       Le hemos preguntado a <strong>${escapar(datos.nombreProfesor)}</strong> si puede darte clase.
       Suele contestar en un día o dos, y te avisaremos en cuanto lo haga.
     </p>
+    <p style="margin:0 0 16px;">${escapar(plazo)}</p>
     <p style="margin:0 0 16px;color:${GRIS};">
       Todavía no has pagado nada, y no pagarás nada si dice que no.
     </p>
@@ -1257,6 +1270,220 @@ export function correoFichaRecibida(datos: {
   return {
     para: datos.para,
     asunto: 'Hemos recibido tu ficha',
+    cuerpo,
+    html,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 18 · Oye, que tienes una familia esperando
+// -----------------------------------------------------------------------------
+
+/**
+ * El recordatorio al profesor que no ha contestado.
+ *
+ * Antes de esto, el profesor recibía un correo el primer día y nunca más. Quien
+ * lo abría en el metro y pensaba «luego lo miro» no volvía a acordarse, y al
+ * otro lado había una familia esperando.
+ *
+ * El tono no es de reproche. La mayoría no contesta por despiste, no por no
+ * querer, y decirle «no has contestado» a alguien que te está haciendo un favor
+ * gratis es la forma más rápida de que se dé de baja. Lo que sí lleva es la
+ * fecha límite, porque un recordatorio sin plazo se aplaza igual que el
+ * primero.
+ */
+export function correoSolicitudSinContestar(datos: {
+  para: string;
+  nombreProfesor: string;
+  nivel: string;
+  tokenProfesor: string;
+  tokenPanel: string;
+  diasQueQuedan: number;
+  /** Cuántas lleva ya sin contestar, contando ésta. Cero si es la primera. */
+  caducadas: number;
+}): Correo {
+  const enlace = `${baseUrl()}/aceptar/${datos.tokenProfesor}`;
+  /*
+   * La regla de la pausa automática se cuenta aquí, y sólo si ya le ha pasado
+   * antes. Decírselo a quien lleva cero es una amenaza gratuita a alguien que
+   * no ha hecho nada; decírselo a quien lleva tres es avisarle a tiempo.
+   */
+  const aviso =
+    datos.caducadas > 0
+      ? `Es la ${datos.caducadas + 1}.ª que se te pasa en los últimos tres meses. A las ${CADUCADAS_PARA_PAUSAR}, la ficha sale del directorio hasta que la vuelvas a activar.`
+      : null;
+  const plazo =
+    datos.diasQueQuedan <= 1
+      ? 'Mañana la cerramos y le diremos que busque a otra persona.'
+      : `Dentro de ${datos.diasQueQuedan} días la cerramos y le diremos que busque a otra persona.`;
+
+  const cuerpo = [
+    `Hola ${datos.nombreProfesor}:`,
+    '',
+    `Una familia te escribió hace unos días para clases de ${datos.nivel} y`,
+    'sigue esperando respuesta.',
+    '',
+    plazo,
+    '',
+    'Con decir que no también nos vale, y no pasa absolutamente nada: es mejor',
+    'para ella saberlo hoy que seguir esperando.',
+    ...(aviso ? ['', aviso] : []),
+    '',
+    enlace,
+    '',
+    'AcademiAvanza',
+    ...lineasDeSuFicha(datos.tokenPanel),
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
+    <p style="margin:0 0 16px;">
+      Una familia te escribió hace unos días para clases de
+      <strong>${escapar(datos.nivel)}</strong> y sigue esperando respuesta.
+    </p>
+    <p style="margin:0 0 16px;">${escapar(plazo)}</p>
+    ${boton('Contestar ahora', enlace)}
+    <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
+      Con decir que no también nos vale, y no pasa nada. Es mejor para ella saberlo
+      hoy que seguir esperando.
+    </p>
+    ${aviso ? `<p style="margin:0;color:${GRIS};font-size:14px;">${escapar(aviso)}</p>` : ''}
+    ${pieDeSuFicha(datos.tokenPanel)}
+  `);
+
+  return {
+    para: datos.para,
+    asunto: `Te queda una familia sin contestar (${datos.nivel})`,
+    cuerpo,
+    html,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 19 · No ha contestado, lo sentimos
+// -----------------------------------------------------------------------------
+
+/**
+ * Lo que se le dice a la familia cuando el profesor no ha contestado.
+ *
+ * Este correo no existía, y su ausencia era el peor agujero del recorrido: la
+ * solicitud caducaba en silencio y la familia se quedaba mirando una página que
+ * decía «esperando» hasta que un día decía otra cosa. Nadie se lo contaba.
+ *
+ * Va con dos cosas dentro, y las dos importan más que la disculpa: que no ha
+ * pagado nada, y un enlace al directorio. Una familia a la que dejas sin
+ * respuesta y sin salida no vuelve; una a la que le dices «éste no, prueba con
+ * estos» todavía puede tener una buena experiencia.
+ */
+export function correoSolicitudCaducada(datos: {
+  para: string;
+  nombreFamilia: string;
+  nombreProfesor: string;
+  nivel: string;
+}): Correo {
+  const directorio = `${baseUrl()}/profesores`;
+
+  const cuerpo = [
+    `Hola ${datos.nombreFamilia}:`,
+    '',
+    `${datos.nombreProfesor} no ha contestado a tu solicitud, así que la`,
+    'cerramos para que no sigas esperando.',
+    '',
+    'No has pagado nada y no vas a pagar nada por esto.',
+    '',
+    `Sentimos la espera. Hay más profesores dando ${datos.nivel}, y escribir a`,
+    'otro es gratis:',
+    directorio,
+    '',
+    'AcademiAvanza',
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreFamilia)}:</p>
+    <p style="margin:0 0 16px;">
+      <strong>${escapar(datos.nombreProfesor)} no ha contestado</strong> a tu solicitud,
+      así que la cerramos para que no sigas esperando.
+    </p>
+    <p style="margin:0 0 16px;">No has pagado nada y no vas a pagar nada por esto.</p>
+    ${boton(`Ver otros profesores de ${escapar(datos.nivel)}`, directorio)}
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Sentimos la espera. Escribir a otro profesor es gratis: sólo se paga si acepta.
+    </p>
+  `);
+
+  return {
+    para: datos.para,
+    asunto: 'Nadie ha contestado a tu solicitud',
+    cuerpo,
+    html,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 20 · Hemos pausado tu ficha porque no contestaste
+// -----------------------------------------------------------------------------
+
+/**
+ * La otra forma de que una ficha se pause sola, y hace falta que sea otro correo.
+ *
+ * `correoFichaPausada` cuenta un caso distinto: dos familias que **sí** hablaron
+ * con él —aceptó y luego no pudieron localizarle—. Este es el de quien nunca
+ * llegó a contestar. Reutilizar aquel le diría a alguien que aceptó dos
+ * solicitudes que no ha aceptado ninguna, y a un chaval que ha estado de
+ * exámenes se le estaría reprochando algo que no hizo.
+ *
+ * Vale lo mismo que decía el otro: la causa probable no es que pase de nadie.
+ * Se cuenta lo que ha pasado, se dice qué hacer, y volver es un botón.
+ */
+export function correoFichaPausadaSinContestar(datos: {
+  para: string;
+  nombreProfesor: string;
+  tokenPanel: string;
+  solicitudes: number;
+}): Correo {
+  const panel = `${baseUrl()}/mi-ficha/${datos.tokenPanel}`;
+
+  const cuerpo = [
+    `Hola ${datos.nombreProfesor}:`,
+    '',
+    `Se han cerrado ${datos.solicitudes} solicitudes sin que llegaras a`,
+    'contestarlas, así que hemos pausado tu ficha para que no te siga llegando',
+    'gente mientras tanto.',
+    '',
+    'No es un aviso ni un castigo: lo más normal es que estés de exámenes, que',
+    'los correos se te fueran a spam o que ahora mismo no te venga bien. Sólo',
+    'queremos que ninguna familia espere una semana para nada.',
+    '',
+    'Si sigues dando clase, vuelves al directorio desde aquí, y es un clic:',
+    panel,
+    '',
+    'Aprovecha para comprobar que el correo y el teléfono que tenemos son los',
+    'buenos.',
+    '',
+    'AcademiAvanza',
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
+    <p style="margin:0 0 16px;">
+      Se han cerrado <strong>${datos.solicitudes} solicitudes</strong> sin que llegaras a
+      contestarlas, así que hemos pausado tu ficha para que no te siga llegando gente
+      mientras tanto.
+    </p>
+    <p style="margin:0 0 16px;color:${GRIS};">
+      No es un aviso ni un castigo: lo más normal es que estés de exámenes, que los correos
+      se te fueran a spam o que ahora mismo no te venga bien. Sólo queremos que ninguna
+      familia espere una semana para nada.
+    </p>
+    ${boton('Volver al directorio', panel)}
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Aprovecha para comprobar que el correo y el teléfono que tenemos son los buenos.
+    </p>
+  `);
+
+  return {
+    para: datos.para,
+    asunto: 'Hemos pausado tu ficha',
     cuerpo,
     html,
   };

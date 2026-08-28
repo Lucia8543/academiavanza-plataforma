@@ -47,7 +47,19 @@ export const HISTORICO = {
   /** 60 familias distintas. Exacto, no hace falta redondear. */
   familias: 60,
 
-  /** 104 parejas familia-profesor. */
+  /**
+   * 104 parejas familia-profesor.
+   *
+   * **No son 104 personas, y la etiqueta tiene que decirlo.** Una misma familia
+   * aparece en varias parejas: dos hermanos, dos asignaturas, o un profesor que
+   * dejó y otro que entró a mitad de curso. Con 60 familias y 46 profesores,
+   * 104 parejas es aritmética normal.
+   *
+   * Durante un tiempo la portada lo llamaba «familias y profesores
+   * emparejados», y así leído parecía una cifra inflada: cien personas al lado
+   * de sesenta familias no cuadra. Era la más honesta de las tres y la única
+   * que daba esa impresión, sólo por cómo estaba escrita.
+   */
   emparejamientos: 100,
 } as const;
 

@@ -5,7 +5,12 @@ import { tokenDelPanel } from '@/backend/services/acceso-profesor';
 import { avisar } from '@/backend/services/avisos';
 import { enviar } from '@/backend/services/correo';
 import { puedeEscribir } from '@/backend/services/limites';
-import { seAbreSinPagar } from '@/shared/reglas/cobro';
+import {
+  plazoDe,
+  seAbreSinPagar,
+  URGENCIA_POR_DEFECTO,
+} from '@/shared/reglas/cobro';
+import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
 import {
   correoContactoAbierto,
   correoDevolucion,
@@ -123,6 +128,9 @@ export async function crearSolicitud(
         email_familia: datos.email,
         nivel_id: datos.nivelId,
         mensaje: datos.mensaje || null,
+        // Para cuándo lo necesita. Decide en cuántos días caduca si el profesor
+        // no contesta, y se le dice a los dos en el primer correo.
+        urgencia: datos.urgencia ?? URGENCIA_POR_DEFECTO,
         es_tutor_legal: datos.esTutorLegal,
         acepta_privacidad: datos.aceptaPrivacidad,
 
@@ -154,6 +162,8 @@ export async function crearSolicitud(
       });
     }
 
+    const plazo = plazoDe(datos.urgencia);
+
     await avisarAlProfesor(
       profesor,
       datos,
@@ -171,6 +181,7 @@ export async function crearSolicitud(
         nombreProfesor: nombrePublico(profesor.nombre, profesor.apellidos),
         tokenFamilia: solicitud.token_familia,
         codigo: solicitud.codigo,
+        diasDePlazo: plazo.dias,
       }),
     );
 
@@ -211,6 +222,27 @@ async function codigoLibre(): Promise<string> {
 
 export type Decision = 'aceptar' | 'rechazar';
 
+/**
+ * El motivo del rechazo, si se puede guardar; si no, nada.
+ *
+ * Es el tercer campo de texto libre de la plataforma y viaja en un correo a la
+ * familia, así que pasa por el mismo filtro que los demás. Lo que cambia es qué
+ * se hace cuando salta, y por eso esto es una función y no una validación.
+ *
+ * **El rechazo se produce igual.** Devolver un error aquí dejaría la solicitud
+ * viva esperando a un profesor que ya ha dicho que no, y la familia esperando
+ * una respuesta que no llega: el remedio sería peor. Lo que se descarta es el
+ * texto, que es lo que no puede entrar en la base de datos ni salir en un
+ * correo. Un rechazo sin motivo ya está contemplado —el motivo siempre fue
+ * opcional— y la pantalla de la familia lo trata bien.
+ */
+function motivoPublicable(motivo?: string): string | null {
+  const limpio = motivo?.trim();
+  if (!limpio) return null;
+
+  return detectarDatosSensibles(limpio) ? null : limpio;
+}
+
 export async function decidir(
   tokenProfesor: string,
   decision: Decision,
@@ -234,6 +266,11 @@ export async function decidir(
 
   if (!solicitud) return false;
 
+  // Se calcula una sola vez y se usa en los dos sitios: la base de datos y el
+  // correo. Tenerlo en dos sitios fue exactamente el fallo: se guardaba filtrado
+  // y se enviaba crudo, que es la vía por la que el dato salía de la plataforma.
+  const motivoLimpio = motivoPublicable(motivo);
+
   await db.contactos.update({
     where: { id: solicitud.id },
     data:
@@ -242,7 +279,7 @@ export async function decidir(
         : {
             estado: 'rechazada',
             rechazada_en: new Date(),
-            motivo_rechazo: motivo?.trim() || null,
+            motivo_rechazo: motivoLimpio,
           },
   });
 
@@ -288,7 +325,7 @@ export async function decidir(
             para: solicitud.email_familia,
             nombreFamilia: solicitud.nombre_familia,
             nombreProfesor: profesor,
-            motivo: motivo?.trim() || null,
+            motivo: motivoLimpio,
           }),
     );
   }
@@ -880,6 +917,7 @@ async function avisarAlProfesor(
       tokenProfesor,
       tokenPanel: await tokenDelPanel(profesor.id),
       importe: await precioVigente(),
+      diasDePlazo: plazoDe(datos.urgencia).dias,
     }),
   );
 

@@ -8,6 +8,10 @@ import { precioVigente } from '@/backend/repositories/tarifas';
 import { FormularioContacto } from '@/frontend/features/directorio/formulario-contacto';
 import { DIAS, FRANJAS, type Franja } from '@/shared/schemas/profesor';
 import {
+  LO_QUE_NO_COMPROBAMOS,
+  NO_INTERVENIMOS,
+} from '@/shared/textos/descargos';
+import {
   ANIMO_FUERA_DE_ZONA,
   AVISO_CUPO_JUSTO,
   comoDaClase,
@@ -33,6 +37,15 @@ export async function generateMetadata({
     description: f.colegio
       ? `${f.nombrePublico}, de ${f.colegio}. Da ${f.asignaturas.join(', ')}.`
       : `${f.nombrePublico} da ${f.asignaturas.join(', ')}.`,
+    /*
+     * La ficha de una persona no se indexa. Lo dice el prd-00 §3.2: «El
+     * directorio sí; las personas concretas, no».
+     *
+     * El motivo es que quien se da de alta acepta aparecer en AcademiAvanza, no
+     * que su nombre y su colegio salgan al buscar su nombre en Google durante
+     * los años siguientes. Muchos son recién salidos del instituto.
+     */
+    robots: { index: false, follow: true },
   };
 }
 
@@ -166,6 +179,23 @@ export default async function PaginaProfesor({
           </p>
         )}
 
+        {/*
+          El aviso va aquí, pegado al colegio, y no al final de la página.
+          El prd-00 §3.2 lo pide así con estas palabras: «un aviso permanente y
+          visible, no escondido en el pie». Es donde la familia está mirando
+          cuando decide, y decidir es dejar a un desconocido a solas con su hijo.
+        */}
+        <div className="mt-4 rounded-lg border border-gris-claro bg-gris-claro/40 px-4 py-3">
+          <p className="text-sm font-medium text-carbon">
+            Lo que AcademiAvanza no comprueba
+          </p>
+          {LO_QUE_NO_COMPROBAMOS.map((frase) => (
+            <p key={frase} className="mt-1 text-sm leading-relaxed text-carbon">
+              {frase}
+            </p>
+          ))}
+        </div>
+
         {estudios && (
           <p className="mt-1 text-carbon">
             {estudios}
@@ -297,11 +327,12 @@ export default async function PaginaProfesor({
         />
       </div>
 
+      {/*
+        Aquí ya sólo queda lo que hace la plataforma. Lo que NO comprueba se ha
+        dicho arriba, junto al colegio, que es donde hay que decirlo.
+      */}
       <p className="mt-6 text-xs leading-relaxed text-gris-medio">
-        AcademiAvanza pone en contacto a familias y profesores y no interviene en
-        nada más. El precio, los horarios y la forma de pago los acordáis
-        directamente entre vosotros. El colegio que aparece en esta ficha lo ha
-        declarado el propio profesor.
+        {NO_INTERVENIMOS}
       </p>
     </main>
   );

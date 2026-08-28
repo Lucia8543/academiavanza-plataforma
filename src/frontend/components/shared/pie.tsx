@@ -20,6 +20,12 @@ const enlaces = [
    * palabras que la persona ya tiene en la cabeza.
    */
   { href: '/solicitud', texto: 'He perdido mi enlace' },
+  /*
+   * Escrito como lo diría quien viene: «algo no funciona», no «incidencias» ni
+   * «sugerencias». Y en el pie de todas las páginas, porque el fallo que más
+   * interesa recoger es el de quien se atasca antes de llegar a ninguna parte.
+   */
+  { href: '/buzon', texto: 'Algo no funciona' },
 ];
 
 const legales = [

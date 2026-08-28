@@ -62,10 +62,10 @@ describe('deja pasar los mensajes normales', () => {
 
 describe('detalles del emparejado', () => {
   it('no confunde una palabra con otra que la contiene', () => {
-    // «tea» está en la lista; «teatro» no debe saltar.
+    // «TEA» salta como sigla; «teatro» no debe saltar.
     expect(detectarDatosSensibles('Le gusta el teatro')).toBeNull();
-    // «tda» está en la lista; no debe saltar dentro de otra palabra.
-    expect(detectarDatosSensibles('Vive en Ntdaville')).toBeNull();
+    // Tampoco dentro de otra palabra, aunque vaya en mayúsculas.
+    expect(detectarDatosSensibles('Vive en NTDAville')).toBeNull();
   });
 
   it('ignora tildes y mayúsculas', () => {
@@ -76,4 +76,66 @@ describe('detalles del emparejado', () => {
   it('dice qué categoría ha encontrado', () => {
     expect(detectarDatosSensibles('tiene asma')?.categoria).toBe('salud');
   });
+});
+
+describe('siglas de tres letras', () => {
+  /*
+   * En minúscula son palabras corrientes, y bloqueaban frases inocentes: «mi
+   * tel es 600 111 222» no se podía enviar, que es justo lo que hace que
+   * alguien cierre la pestaña. Escritas como siglas siguen saltando.
+   */
+  it('saltan escritas en mayúsculas', () => {
+    for (const frase of [
+      'Le han diagnosticado TEA',
+      'Tiene TEL',
+      'Diagnóstico de TDA',
+    ]) {
+      expect(detectarDatosSensibles(frase), frase).not.toBeNull();
+    }
+  });
+
+  it('no saltan cuando son palabras normales', () => {
+    for (const frase of [
+      'Mi tel es 600 111 222',
+      'Le gusta el teatro',
+      'Tomamos un te antes de clase',
+    ]) {
+      expect(detectarDatosSensibles(frase), frase).toBeNull();
+    }
+  });
+
+  it('TDAH sigue saltando en minúsculas, que tiene cuatro letras', () => {
+    expect(detectarDatosSensibles('tiene tdah')).not.toBeNull();
+  });
+
+  it('un texto entero en mayúsculas no bloquea por las siglas', () => {
+    // Quien escribe a voces no está usando siglas. Es el mismo falso positivo
+    // de antes, sólo que con la tecla de bloqueo puesta.
+    expect(detectarDatosSensibles('MI TEL ES 600 111 222')).toBeNull();
+    // Pero las palabras completas siguen saltando, griten o no.
+    expect(detectarDatosSensibles('TIENE DISLEXIA')).not.toBeNull();
+  });
+});
+
+describe('adjetivos, que es como lo escribe la gente', () => {
+  /*
+   * La lista tenía «diabetes» pero no «diabético». Una madre no escribe «mi
+   * hijo tiene diabetes», escribe «mi hijo es diabético», así que el filtro
+   * dejaba pasar exactamente la forma más común.
+   */
+  const debenSaltar = [
+    'Mi hijo es diabético',
+    'Es diabética',
+    'Es asmático',
+    'Es asmática',
+    'Es epiléptico',
+    'Es celiaca',
+    'Es alérgico a los frutos secos',
+  ];
+
+  for (const frase of debenSaltar) {
+    it(`salta con «${frase}»`, () => {
+      expect(detectarDatosSensibles(frase)).not.toBeNull();
+    });
+  }
 });

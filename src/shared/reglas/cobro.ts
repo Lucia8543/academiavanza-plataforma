@@ -73,3 +73,107 @@ export const PLAZOS_DE_CIERRE = {
    */
   desdeAvisoDePago: 30,
 } as const;
+
+/**
+ * Cuánto espera una familia a un profesor que no contesta.
+ *
+ * Antes esto era un número fijo, y el número fijo era el problema: trataba igual
+ * a quien necesita clases para el examen del jueves y a quien busca profesor
+ * para octubre. A la primera, treinta días la dejan tirada; a la segunda, siete
+ * le cierran una solicitud que no tenía ninguna prisa.
+ *
+ * **Lo elige la familia al escribir**, porque es la única que sabe para cuándo
+ * lo necesita. Y se le dice a las dos partes desde el primer correo: el profesor
+ * tiene que saber cuánto tiempo tiene, y la familia hasta cuándo esperar. Un
+ * plazo que sólo conoce el servidor no es un plazo, es una sorpresa.
+ *
+ * Los recordatorios van proporcionados al plazo, y **el último deja al menos dos
+ * días de margen**. Un aviso la víspera del cierre no sirve de nada: no le da
+ * tiempo a reaccionar y llega cuando la familia ya se ha ido a otro sitio. Esa
+ * regla la vigila una prueba, para que no se pueda acortar un plazo sin mover
+ * sus recordatorios y quedarse sin darse cuenta con un aviso inútil.
+ */
+export type Urgencia = 'ya' | 'semanas' | 'adelante';
+
+export const PLAZOS: Record<
+  Urgencia,
+  {
+    dias: number;
+    etiqueta: string;
+    explicacion: string;
+    /** Días desde el envío en los que se le insiste al profesor. */
+    recordatorios: number[];
+  }
+> = {
+  ya: {
+    dias: 5,
+    etiqueta: 'Lo necesito ya',
+    explicacion: 'Esta semana o la que viene',
+    recordatorios: [1, 3],
+  },
+  semanas: {
+    dias: 15,
+    etiqueta: 'En las próximas semanas',
+    explicacion: 'No corre prisa, pero tampoco es para dentro de mucho',
+    recordatorios: [3, 8],
+  },
+  adelante: {
+    dias: 30,
+    etiqueta: 'Para más adelante',
+    explicacion: 'El mes que viene o el trimestre que entra',
+    recordatorios: [7, 18],
+  },
+};
+
+/** Cuando no consta, se asume el más corto: es el caso más común. */
+export const URGENCIA_POR_DEFECTO: Urgencia = 'ya';
+
+/** El plazo de una solicitud, tolerando que la urgencia venga vacía o rara. */
+export function plazoDe(urgencia: string | null | undefined) {
+  return PLAZOS[urgencia as Urgencia] ?? PLAZOS[URGENCIA_POR_DEFECTO];
+}
+
+/**
+ * El plazo más largo que existe.
+ *
+ * Sirve para acotar la consulta de la tarea diaria: por debajo de estos días no
+ * hace falta ni mirar una fila. Se calcula en vez de escribirse a mano para que
+ * añadir un plazo nuevo no deje esto desfasado en silencio.
+ */
+export const PLAZO_MAXIMO = Math.max(
+  ...Object.values(PLAZOS).map((p) => p.dias),
+);
+
+/**
+ * El plazo más corto, y el primer día en que se recuerda algo.
+ *
+ * Los usa la tarea diaria para acotar lo que se trae de la base de datos: por
+ * debajo de estos días no hay ninguna solicitud a la que le toque nada, sea cual
+ * sea su plazo. Después se filtra fila a fila por el plazo de cada una.
+ *
+ * Se calculan, no se escriben: añadir un plazo nuevo más corto dejaría un número
+ * a mano desfasado, y el síntoma sería que a unas solicitudes deja de tocarles
+ * nada sin que nadie lo note.
+ */
+export const PLAZO_MINIMO = Math.min(
+  ...Object.values(PLAZOS).map((p) => p.dias),
+);
+
+export const RECORDATORIO_MAS_TEMPRANO = Math.min(
+  ...Object.values(PLAZOS).flatMap((p) => p.recordatorios),
+);
+
+/**
+ * Solicitudes caducadas sin contestar que le cuestan la ficha a un profesor.
+ *
+ * Cinco, y no dos como estuvo un tiempo. Dos era demasiado severo para lo que
+ * cuesta el despiste: un profesor de veinte años en época de exámenes puede
+ * dejar pasar dos correos y seguir siendo perfectamente bueno. Cinco ya no es
+ * un despiste, es que no está.
+ *
+ * Lo importante no es el número sino que **él lo sepa antes de llegar**. Lleva
+ * el contador a la vista en su panel y la regla escrita en cada recordatorio, y
+ * volver al directorio después es un clic. Una regla que sólo se descubre
+ * cuando ya te ha caído encima no es una regla, es una trampa.
+ */
+export const CADUCADAS_PARA_PAUSAR = 5;

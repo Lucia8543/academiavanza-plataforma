@@ -1,19 +1,30 @@
 import { db } from '@/backend/repositories/cliente';
 import { nombrePublico } from '@/backend/repositories/directorio';
 import { tokenDelPanel } from '@/backend/services/acceso-profesor';
+import { avisar } from '@/backend/services/avisos';
 import { enviar } from '@/backend/services/correo';
 import {
   correoConfirmarDisponibilidad,
   correoFamiliaNoSigue,
+  correoFichaPausadaSinContestar,
   correoRecordatorioPago,
   correoResumenDiario,
+  correoSolicitudCaducada,
+  correoSolicitudSinContestar,
   correoValeCaduca,
 } from '@/backend/services/plantillas-correo';
+import { caducadasSinContestar } from '@/backend/repositories/mi-ficha';
 import {
   loQueEsperaAUnaPersona,
   ultimoMantenimiento,
 } from '@/backend/repositories/solicitudes';
-import { PLAZOS_DE_CIERRE } from '@/shared/reglas/cobro';
+import {
+  CADUCADAS_PARA_PAUSAR,
+  PLAZO_MINIMO,
+  PLAZOS_DE_CIERRE,
+  plazoDe,
+  RECORDATORIO_MAS_TEMPRANO,
+} from '@/shared/reglas/cobro';
 
 /**
  * Lo que la plataforma hace sola, sin que nadie entre.
@@ -26,8 +37,13 @@ import { PLAZOS_DE_CIERRE } from '@/shared/reglas/cobro';
  * que falle el recordatorio no debe impedir que se borren los contactos viejos.
  */
 
-/** Días que una solicitud puede estar esperando antes de darla por muerta. */
-const DIAS_PARA_CADUCAR = 30;
+/*
+ * El plazo ya no es una constante de aquí: lo elige la familia al escribir y
+ * cada solicitud lleva el suyo. Lo que se importa son los dos suelos —el plazo
+ * más corto y el primer día en que se recuerda algo— y sirven sólo para no
+ * traerse de la base de datos filas a las que seguro que no les toca nada. El
+ * razonamiento de los plazos está en `shared/reglas/cobro.ts`.
+ */
 
 /** Días que se guarda el mensaje de una familia. Está prometido en el esquema. */
 const DIAS_DE_CONSERVACION = 90;
@@ -83,6 +99,8 @@ const DIAS_LIMITE_PAGO_AVISADO = PLAZOS_DE_CIERRE.desdeAvisoDePago;
 
 export type ResumenMantenimiento = {
   caducadas: number;
+  /** Recordatorios a profesores que tienen una familia esperando. */
+  profesoresRecordados: number;
   borradas: number;
   recordatorios: number;
   pausadas: number;
@@ -106,6 +124,17 @@ export async function pasarMantenimiento(): Promise<ResumenMantenimiento> {
   };
 
   const resumen: ResumenMantenimiento = {
+    /*
+     * El orden importa: primero se recuerda y después se caduca.
+     *
+     * Al revés, una solicitud que cumple hoy su plazo se cerraría en la misma
+     * pasada en la que le tocaba el segundo recordatorio, y el profesor
+     * recibiría un «te queda una familia sin contestar» de algo ya cerrado.
+     */
+    profesoresRecordados: await contar(
+      'recordar-profesor',
+      recordarSolicitudesSinContestar,
+    ),
     caducadas: await contar('caducar', caducarSolicitudes),
     borradas: await contar('borrar', borrarContactosViejos),
     recordatorios: await contar('recordar', mandarRecordatorios),
@@ -133,6 +162,7 @@ export async function pasarMantenimiento(): Promise<ResumenMantenimiento> {
         // Los errores van en su propia columna, no repetidos dentro del JSON.
         resumen: {
           caducadas: resumen.caducadas,
+          profesoresRecordados: resumen.profesoresRecordados,
           borradas: resumen.borradas,
           recordatorios: resumen.recordatorios,
           pausadas: resumen.pausadas,
@@ -447,15 +477,286 @@ export async function caducarPagosSinRespuesta(): Promise<number> {
  * como está: ahí la pelota la tiene la familia y puede pagar cuando quiera.
  */
 export async function caducarSolicitudes(): Promise<number> {
-  const { count } = await db.contactos.updateMany({
+  /*
+   * Se traen las candidatas por el plazo más corto que existe y se filtra
+   * después por el de cada una. Filtrar en SQL exigiría meter los días en la
+   * consulta, y entonces los plazos vivirían en dos sitios: aquí y en
+   * `cobro.ts`. Son pocas filas y se miran una vez al día.
+   */
+  const candidatas = await db.contactos.findMany({
     where: {
       estado: 'pendiente_profesor',
-      enviado_en: { lt: haceDias(DIAS_PARA_CADUCAR) },
+      enviado_en: { lt: haceDias(PLAZO_MINIMO) },
+      /*
+       * No se cierra lo que el profesor nunca llegó a saber.
+       *
+       * Si no le salió ni el correo ni el aviso al móvil, su silencio no es
+       * suyo: es nuestro. Cerrarlo y decirle a la familia «no ha contestado»
+       * sería contarle una mentira y, de paso, castigar al profesor por un
+       * fallo de Resend.
+       *
+       * Estas solicitudes no se pierden: salen en el panel y en el correo
+       * diario como «profesores sin avisar», que es donde tiene que verlas una
+       * persona.
+       */
+      OR: [{ avisado_correo: true }, { avisado_push: true }],
     },
-    data: { estado: 'caducada' },
+    select: {
+      id: true,
+      enviado_en: true,
+      urgencia: true,
+      email_familia: true,
+      nombre_familia: true,
+      profesor_id: true,
+      niveles: { select: { nombre: true } },
+      profesores: { select: { nombre: true, apellidos: true } },
+    },
+    /*
+     * El orden importa tanto como el filtro, y por un motivo que no se ve.
+     *
+     * El corte se aplica **antes** que el filtro por plazo, así que sin orden
+     * las 200 filas que se trae la consulta podían ser todas de plazo largo, el
+     * filtro descartarlas todas, y la de treinta y un días no cerrarse nunca.
+     * Y como el orden sin `ORDER BY` es estable mientras la tabla no cambie,
+     * mañana pasaría lo mismo: una familia esperando indefinidamente por un
+     * detalle del plan de ejecución.
+     */
+    orderBy: { enviado_en: 'asc' },
+    take: 200,
   });
 
-  return count;
+  const muertas = candidatas.filter(
+    (c) => c.enviado_en < haceDias(plazoDe(c.urgencia).dias),
+  );
+
+  let caducadas = 0;
+
+  for (const s of muertas) {
+    await db.contactos.update({
+      where: { id: s.id },
+      data: { estado: 'caducada' },
+    });
+    caducadas += 1;
+
+    /*
+     * Y se le dice a la familia, que es lo que no se hacía.
+     *
+     * Antes esto era un `updateMany` mudo: la solicitud cambiaba de estado y
+     * la familia se quedaba mirando una página que ponía «esperando» hasta que
+     * un día ponía otra cosa. Nadie se lo contaba.
+     *
+     * El correo va después del cambio de estado y no antes: si falla el envío,
+     * la solicitud queda cerrada igual. Es preferible una familia sin correo
+     * que una familia esperando indefinidamente a alguien que no va a venir.
+     */
+    if (s.email_familia) {
+      await enviar(
+        correoSolicitudCaducada({
+          para: s.email_familia,
+          nombreFamilia: s.nombre_familia,
+          nombreProfesor: nombrePublico(
+            s.profesores.nombre,
+            s.profesores.apellidos,
+          ),
+          nivel: s.niveles?.nombre ?? 'clases particulares',
+        }),
+      );
+    }
+
+    await pausarSiAcumulaCaducadas(s.profesor_id);
+  }
+
+  return caducadas;
+}
+
+/**
+ * Al profesor que deja cinco solicitudes sin contestar se le retira la ficha.
+ *
+ * No es un castigo, es aritmética: si cinco familias distintas le han escrito y
+ * ninguna ha tenido respuesta, la sexta tampoco la va a tener, y la plataforma
+ * lo sabe antes que ella. Dejarle en el directorio es mandar gente a esperar
+ * para nada.
+ *
+ * Es el mismo mecanismo que ya se aplica cuando dos familias dicen que no
+ * consiguieron hablar con él: `pausada_auto_en` marca que ha salido del
+ * directorio sin pedirlo, y el correo que se le manda lleva un botón para
+ * volver. Quien estaba de exámenes no pierde nada y vuelve con un clic.
+ */
+async function pausarSiAcumulaCaducadas(profesorId: string): Promise<void> {
+  const ficha = await db.profesores.findUnique({
+    where: { id: profesorId },
+    select: { id: true, nombre: true, email: true, disponible: true },
+  });
+
+  // Si ya está fuera del directorio no hay nada que pausar, y sobre todo no hay
+  // que volver a mandarle el mismo correo cada día.
+  if (!ficha || !ficha.disponible) return;
+
+  /*
+   * Sólo cuentan las que caducaron por su silencio, y sólo las recientes.
+   *
+   * Las dos condiciones son necesarias y por motivos distintos:
+   *
+   * `aceptada_en: null` distingue esto de la otra vía por la que una solicitud
+   * llega a «caducada»: que él aceptara y la familia no pagara. Sin este
+   * filtro, un profesor impecable que acepta dos veces y cuyas dos familias no
+   * hacen el Bizum sale del directorio por algo que no ha hecho.
+   *
+   * La ventana de noventa días es la misma que usa `revisarProfesor` y por la
+   * misma razón: sin ella, pasados dos despistes el profesor se queda con el
+   * gatillo puesto para siempre, y cualquier caducada dos años después le
+   * vuelve a pausar la ficha al instante. La pregunta no es «¿ha fallado
+   * alguna vez?», es «¿está fallando ahora?».
+   */
+  const caducadas = await db.contactos.count({
+    where: {
+      profesor_id: profesorId,
+      estado: 'caducada',
+      aceptada_en: null,
+      enviado_en: { gt: haceDias(DIAS_DE_CONSERVACION) },
+    },
+  });
+
+  if (caducadas < CADUCADAS_PARA_PAUSAR) return;
+
+  await db.profesores.update({
+    where: { id: profesorId },
+    data: { disponible: false, pausada_auto_en: new Date() },
+  });
+
+  // Por los dos canales, no sólo por correo. Desaparecer del directorio sin
+  // enterarse es exactamente lo que esta ficha lleva un mes sin poder evitar.
+  await avisar(
+    ficha.id,
+    {
+      titulo: 'Hemos pausado tu ficha',
+      cuerpo: `Han caducado ${caducadas} solicitudes sin contestar. Puedes volver cuando quieras.`,
+      url: '/mi-ficha',
+    },
+    correoFichaPausadaSinContestar({
+      para: ficha.email,
+      nombreProfesor: ficha.nombre,
+      tokenPanel: await tokenDelPanel(ficha.id),
+      solicitudes: caducadas,
+    }),
+  );
+}
+
+/**
+ * «Oye, que tienes una familia esperando.»
+ *
+ * Esto no existía, y era el agujero por el que se caía el recorrido entero: al
+ * profesor se le mandaba un correo el primer día y **nunca más**. Quien lo abría
+ * en el metro y pensaba «luego lo miro» no volvía a acordarse.
+ *
+ * Se le insiste dos veces, los días que diga el plazo de esa solicitud, y ahí
+ * se para. Quien no contesta a dos no va a contestar a cinco, y a partir de ahí
+ * insistir deja de ser un recordatorio.
+ *
+ * El contador se guarda en la fila y no se deduce de las fechas: deducirlo
+ * significaba volver a mandar el mismo recordatorio cada día que la tarea
+ * corriera, que es como se convierte un aviso en una plaga.
+ */
+export async function recordarSolicitudesSinContestar(): Promise<number> {
+  let mandados = 0;
+
+  for (const vuelta of [0, 1]) {
+    const pendientes = await db.contactos.findMany({
+      where: {
+        estado: 'pendiente_profesor',
+        // El día concreto depende del plazo de cada una, así que aquí se acota
+        // por el recordatorio más temprano que existe y se filtra abajo.
+        enviado_en: { lt: haceDias(RECORDATORIO_MAS_TEMPRANO) },
+        // La vuelta 0 busca los que no han recibido ninguno; la 1, los que han
+        // recibido exactamente uno.
+        recordatorios_profesor: vuelta,
+        /*
+         * Y el segundo no puede salir el mismo día que el primero.
+         *
+         * Sin esta condición pasaba algo que no se ve leyendo el bucle: la
+         * vuelta 1 hace su propia consulta *después* de que la vuelta 0 haya
+         * escrito, así que leía el contador recién puesto a 1 y mandaba el
+         * segundo aviso a los pocos segundos del primero. Le ocurría a toda
+         * solicitud que llegara con el contador a cero y más de cinco días
+         * encima: las de después de un fin de semana sin cron, por ejemplo.
+         */
+        ...(vuelta === 0
+          ? {}
+          : { recordatorio_profesor_en: { lt: haceDias(1) } }),
+      },
+      select: {
+        id: true,
+        enviado_en: true,
+        urgencia: true,
+        token_profesor: true,
+        niveles: { select: { nombre: true } },
+        profesores: { select: { id: true, nombre: true, email: true } },
+      },
+      // Las más antiguas primero, por lo mismo que en `caducarSolicitudes`: el
+      // corte va antes que el filtro, y sin orden las de plazo largo podían
+      // comerse las cien plazas y dejar sin aviso a las que tienen prisa.
+      orderBy: { enviado_en: 'asc' },
+      take: 100,
+    });
+
+    for (const s of pendientes) {
+      const plazo = plazoDe(s.urgencia);
+      const diasEsperando = Math.floor(
+        (Date.now() - s.enviado_en.getTime()) / (24 * 60 * 60 * 1000),
+      );
+
+      // A esta solicitud, con su plazo, ¿le toca ya este recordatorio?
+      if (diasEsperando < plazo.recordatorios[vuelta]) continue;
+
+      const quedan = Math.max(plazo.dias - diasEsperando, 1);
+      const nivel = s.niveles?.nombre ?? 'clases particulares';
+
+      const { push, correo } = await avisar(
+        s.profesores.id,
+        {
+          titulo: 'Tienes una familia esperando',
+          cuerpo: `Te escribieron para ${nivel} y sigues sin contestar.`,
+          url: `/aceptar/${s.token_profesor}`,
+        },
+        correoSolicitudSinContestar({
+          para: s.profesores.email,
+          nombreProfesor: s.profesores.nombre,
+          nivel,
+          tokenProfesor: s.token_profesor,
+          tokenPanel: await tokenDelPanel(s.profesores.id),
+          diasQueQuedan: quedan,
+          caducadas: await caducadasSinContestar(s.profesores.id),
+        }),
+      );
+
+      /*
+       * Se apunta si llegó por cualquiera de los dos canales.
+       *
+       * Antes esto miraba sólo el correo, y tenía una consecuencia fea: con el
+       * correo apagado el contador no subía nunca, así que al profesor le
+       * entraba el mismo aviso al móvil **todos los días** del segundo al
+       * séptimo. Un recordatorio que se repite a diario deja de serlo en
+       * cuarenta y ocho horas.
+       *
+       * Si no llegó por ninguno, no se apunta y se reintenta mañana. No hay
+       * riesgo de cerrarle la solicitud por un silencio que no es suyo: de eso
+       * se encarga `caducarSolicitudes`, que no cierra lo que el profesor nunca
+       * supo.
+       */
+      if (push || correo) {
+        await db.contactos.update({
+          where: { id: s.id },
+          data: {
+            recordatorios_profesor: vuelta + 1,
+            recordatorio_profesor_en: new Date(),
+          },
+        });
+        mandados += 1;
+      }
+    }
+  }
+
+  return mandados;
 }
 
 /**

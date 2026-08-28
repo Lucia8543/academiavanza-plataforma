@@ -163,8 +163,15 @@ profesor se le ofrece activar los avisos al móvil si no lo había hecho.
 **Si rechaza,** con un motivo opcional: la familia lo ve, **no paga nada**, y se
 le ofrece buscar otro profesor.
 
-**Si no hace nada:** a los **30 días** la solicitud caduca sola. Deja de
-aparecer como pendiente y la familia deja de tener falsas esperanzas.
+**Si no hace nada:** se le recuerda dos veces, por correo y al móvil, y al
+cumplirse el plazo la solicitud caduca sola. **El plazo lo elige la familia al
+escribir**: cinco días si lo necesita ya, quince si es para las próximas
+semanas, treinta si es para más adelante. A ella se le avisa por correo de que
+nadie ha contestado y se le ofrece el directorio, en vez de dejarla mirando una
+página que dice «esperando».
+
+No se cierra ninguna solicitud si al profesor no le llegó ni el correo ni el
+aviso al móvil: ese silencio no es suyo.
 
 **Si pulsa el enlace dos veces** o lo reenvía, la segunda decisión no hace nada:
 solo se puede decidir sobre lo que sigue esperando.
@@ -276,7 +283,7 @@ Vercel llama a `/api/mantenimiento` cada mañana:
 
 | Tarea | Cuándo |
 |---|---|
-| Caducar solicitudes que nadie ha contestado | A los 30 días |
+| Caducar solicitudes que nadie ha contestado | Al plazo que eligió la familia: 5, 15 o 30 días |
 | Borrar los mensajes de familias | A los 90 días, la fila entera |
 | Mandar «¿sigues dando clase?» | A los 3 meses sin confirmar |
 | Pausar a quien no conteste al recordatorio | 14 días después |
@@ -299,7 +306,7 @@ esperando ──────────┼── aceptada ── pagada ──�
 al profesor         │                        │
                     │                        └── vale ──► nueva solicitud a 0 €
                     │
-                    └── caducada (30 días sin respuesta)
+                    └── caducada (sin respuesta en el plazo elegido)
 ```
 
 Una vez pagada no vuelve atrás. El vale no cancela la solicitud pagada: crea

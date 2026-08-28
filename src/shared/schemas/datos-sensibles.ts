@@ -55,8 +55,10 @@ const TERMINOS: { categoria: Categoria; palabras: string[] }[] = [
   {
     categoria: 'salud',
     palabras: [
-      // Diagnósticos y siglas de uso corriente
-      'tdah', 'tda', 'tea', 'tel', 'dea',
+      // Diagnósticos y siglas de uso corriente.
+      // Las siglas de tres letras están abajo, en SIGLAS: en minúscula chocan
+      // con palabras normales y bloqueaban «mi tel es 600...».
+      'tdah',
       'dislexia', 'dislexico', 'dislexica',
       'discalculia', 'disgrafia', 'disortografia', 'dislalia',
       'autismo', 'autista', 'asperger',
@@ -73,7 +75,10 @@ const TERMINOS: { categoria: Categoria; palabras: string[] }[] = [
       'medicacion', 'medicamento', 'medicado', 'medicada',
       'tratamiento medico', 'pastillas',
       'concerta', 'rubifen', 'medikinet', 'strattera', 'elvanse',
-      'epilepsia', 'diabetes', 'asma', 'alergia', 'alergico', 'alergica',
+      'epilepsia', 'epileptico', 'epileptica',
+      'diabetes', 'diabetico', 'diabetica',
+      'asma', 'asmatico', 'asmatica',
+      'alergia', 'alergico', 'alergica',
       'celiaco', 'celiaca', 'intolerancia',
       'operacion', 'hospital', 'enfermedad', 'enfermo', 'enferma',
       'informe medico', 'informe psicopedagogico',
@@ -110,6 +115,20 @@ function expresion(termino: string): string {
     .join('\\s+');
 }
 
+/**
+ * Siglas de tres letras, que sólo cuentan escritas en mayúsculas.
+ *
+ * En minúscula son palabras corrientes y bloqueaban frases inocentes: «mi tel
+ * es 600 111 222» no se podía enviar. El diagnóstico se escribe «TEA» o «TEL»,
+ * en mayúsculas y como sigla, así que exigirlo no pierde casi nada y deja de
+ * estorbar a quien no está hablando de eso.
+ *
+ * Se comparan contra el texto original, no contra el normalizado, porque
+ * normalizar pasa todo a minúsculas y se perdería justo la señal que importa.
+ * `TDAH` no está aquí: tiene cuatro letras y no choca con nada.
+ */
+const SIGLAS = ['TDA', 'TEA', 'TEL', 'DEA'];
+
 export type Deteccion = {
   categoria: Categoria;
   /** El término encontrado, para poder decir cuál es sin adivinanzas. */
@@ -127,6 +146,26 @@ export function detectarDatosSensibles(texto: string): Deteccion | null {
   if (!texto.trim()) return null;
 
   const limpio = normalizar(texto);
+
+  /*
+   * Quien escribe entero en mayúsculas no está usando siglas, está gritando, y
+   * ahí «MI TEL ES 600 111 222» volvería a bloquearse. En ese caso se saltan
+   * las siglas de tres letras.
+   *
+   * Se pierde detectar «TIENE TEA» escrito a voces. Es un intercambio
+   * consciente: un falso positivo hace que una madre cierre la pestaña y se
+   * vaya, y esa madre no vuelve.
+   */
+  const hayMinusculas = /[a-záéíóúüñ]/.test(texto);
+
+  if (hayMinusculas) {
+    for (const sigla of SIGLAS) {
+      // Sobre el texto tal cual llegó, y sin la marca `i`: «TEA» salta, «tea» no.
+      if (new RegExp(`(^|[^A-Za-z0-9])${sigla}([^A-Za-z0-9]|$)`).test(texto)) {
+        return { categoria: 'salud', termino: sigla };
+      }
+    }
+  }
 
   for (const grupo of TERMINOS) {
     for (const palabra of grupo.palabras) {
@@ -154,4 +193,29 @@ export function mensajeDeAviso(deteccion: Deteccion): string {
   };
 
   return `${porQue[deteccion.categoria]} Cuéntaselo al profesor por teléfono si crees que le ayuda: eso es una conversación entre vosotros y nosotros no pintamos nada.`;
+}
+
+/**
+ * El mismo aviso, para quien escribe sobre alumnos y no sobre un hijo.
+ *
+ * Vale para los puntos fuertes del profesor, para el colegio escrito a mano y
+ * para el motivo con el que rechaza una solicitud. El caso del profesor no es
+ * más leve que el de la familia, es peor: lo que escribe la familia acaba en un
+ * correo, y lo que escribe el profesor se publica en una página web.
+ *
+ * El tono importa. Quien escribe «trabajo bien con chavales con dislexia» lo
+ * hace por presentarse como alguien que sabe acompañar, no por descuido, y el
+ * aviso tiene que reconocer eso antes de pedirle que lo quite.
+ */
+export function mensajeDeAvisoProfesor(deteccion: Deteccion): string {
+  const porQue: Record<Categoria, string> = {
+    salud:
+      'Has mencionado un diagnóstico o una condición de salud. Se entiende por qué —dice algo bueno de cómo das clase—, pero este texto se publica en tu ficha, y ahí no podemos hablar de la salud de nadie.',
+    creencias:
+      'Has mencionado creencias religiosas, y este texto se publica en tu ficha.',
+    origen:
+      'Has mencionado el origen de una familia o de un alumno, y este texto se publica en tu ficha.',
+  };
+
+  return `${porQue[deteccion.categoria]} Puedes contarlo de otra forma: «tengo paciencia», «voy despacio con quien lo necesita», «he dado clase a chavales muy distintos».`;
 }

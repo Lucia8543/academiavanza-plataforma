@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import {
   actualizarOferta,
   cambiarCupo,
@@ -8,6 +9,11 @@ import {
   confirmarDisponibilidad,
 } from '@/backend/repositories/mi-ficha';
 import { profesorDelPanel } from '@/backend/services/acceso-profesor';
+import { darDeBaja } from '@/backend/services/baja-profesor';
+import {
+  detectarDatosSensibles,
+  mensajeDeAvisoProfesor,
+} from '@/shared/schemas/datos-sensibles';
 import { interpretarFranja } from '@/shared/schemas/profesor';
 import { normalizarTelefono, telefonoEspanol } from '@/shared/schemas/telefono';
 
@@ -64,6 +70,42 @@ export async function apuntarCupo(formulario: FormData) {
   revalidatePath('/profesores');
 }
 
+export type EstadoBaja = { error?: string };
+
+/**
+ * Darse de baja. No se puede deshacer, y por eso pide escribir una palabra.
+ *
+ * La confirmación no es por desconfianza: es el único freno que hay entre un
+ * botón y un borrado sin vuelta atrás, en una página que se abre desde un
+ * enlace de correo y que alguien puede pulsar sin querer desde el móvil.
+ *
+ * Al terminar se va a `/baja`, y no de vuelta al panel, porque el enlace del
+ * panel ya no vale: recargarlo daría un 404 y parecería un error.
+ */
+export async function darseDeBaja(
+  _previo: EstadoBaja,
+  formulario: FormData,
+): Promise<EstadoBaja> {
+  const id = await profesor(formulario);
+  if (!id) return { error: 'Este enlace ya no vale.' };
+
+  const confirmacion = String(formulario.get('confirmacion') ?? '')
+    .trim()
+    .toUpperCase();
+
+  if (confirmacion !== 'BAJA') {
+    return { error: 'Escribe BAJA en el recuadro para confirmar.' };
+  }
+
+  const resultado = await darDeBaja(id);
+
+  revalidatePath('/mi-ficha', 'layout');
+  revalidatePath('/profesores');
+  revalidatePath('/profesor', 'layout');
+
+  redirect(`/baja?cerradas=${resultado.solicitudesCerradas}`);
+}
+
 export type EstadoEdicion = { ok?: boolean; error?: string };
 
 export async function guardarCambios(
@@ -87,6 +129,16 @@ export async function guardarCambios(
   }
   if (puntosFuertes.length < 10) {
     return { error: 'Escribe algo que te distinga, aunque sea una frase.' };
+  }
+
+  /*
+   * El mismo filtro que en el alta, porque ésta es la otra puerta al mismo
+   * campo. Aquí no pasa por `esquemaRegistroProfesor`: el panel valida a mano,
+   * así que sin esta línea bastaba con darse de alta limpio y editar después.
+   */
+  const sensible = detectarDatosSensibles(puntosFuertes);
+  if (sensible) {
+    return { error: mensajeDeAvisoProfesor(sensible) };
   }
   if (modalidad !== 'online' && !zona) {
     return { error: 'Si das clase presencial, dinos en qué zona.' };

@@ -6,8 +6,14 @@ import {
   reactivar,
 } from '@/app/mi-ficha/[token]/acciones';
 import { cargarCatalogos } from '@/backend/repositories/catalogos';
-import { cargarMiFicha, seleccionActual } from '@/backend/repositories/mi-ficha';
+import {
+  caducadasSinContestar,
+  cargarMiFicha,
+  seleccionActual,
+} from '@/backend/repositories/mi-ficha';
 import { profesorDelPanel } from '@/backend/services/acceso-profesor';
+import { DarseDeBaja } from '@/frontend/features/portal-profesor/darse-de-baja';
+import { SinContestar } from '@/frontend/features/portal-profesor/sin-contestar';
 import { FormularioMiFicha } from '@/frontend/features/portal-profesor/formulario-mi-ficha';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
 import { CUPO_SE_CAMBIA } from '@/shared/textos/modalidad';
@@ -35,10 +41,11 @@ export default async function PaginaMiFicha({
 
   if (!profesorId) notFound();
 
-  const [ficha, seleccion, catalogos] = await Promise.all([
+  const [ficha, seleccion, catalogos, caducadas] = await Promise.all([
     cargarMiFicha(profesorId),
     seleccionActual(profesorId),
     cargarCatalogos(),
+    caducadasSinContestar(profesorId),
   ]);
 
   if (!ficha || !seleccion) notFound();
@@ -170,6 +177,11 @@ export default async function PaginaMiFicha({
           </>
         )}
       </section>
+
+      {/* Las solicitudes que se le han pasado. Va aquí arriba, no escondido al
+          final, porque a las cinco le sale la ficha del directorio y tiene que
+          poder verlo venir. */}
+      <SinContestar caducadas={caducadas} />
 
       {/* --- ¿Sigues disponible? ------------------------------------------ */}
       {tocaConfirmar && (
@@ -317,6 +329,10 @@ export default async function PaginaMiFicha({
           desplazamientoFlexible={ficha.desplazamientoFlexible}
         />
       </section>
+
+      {/* La baja va al final, sin llamar la atención, pero existe. La política
+          de privacidad la promete «desde el enlace de tu ficha». */}
+      <DarseDeBaja token={token} />
     </main>
   );
 }

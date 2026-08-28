@@ -5,9 +5,14 @@ import {
   listarPendientes,
   listarRevisadas,
 } from '@/backend/repositories/profesores';
-import { contarPorEstado } from '@/backend/repositories/solicitudes';
+import {
+  aPuntoDeCaducar,
+  contarPorEstado,
+} from '@/backend/repositories/solicitudes';
 import { correoConfigurado } from '@/backend/services/correo';
+import { incidenciasSinResolver } from '@/backend/services/incidencias';
 import { haySesion } from '@/backend/services/sesion-admin';
+import { RescatePorWhatsApp } from '@/frontend/features/administracion/rescate-por-whatsapp';
 import { SaludDelProceso } from '@/frontend/features/administracion/salud-del-proceso';
 import { TarjetaFicha } from '@/frontend/features/administracion/tarjeta-ficha';
 
@@ -19,12 +24,22 @@ export const dynamic = 'force-dynamic';
 export default async function PaginaAdmin() {
   if (!(await haySesion())) redirect('/admin/entrar');
 
-  const [pendientes, revisadas, porEstado, pausadasSolas] = await Promise.all([
-    listarPendientes(),
-    listarRevisadas(),
-    contarPorEstado(),
-    listarPausadasSolas(),
-  ]);
+  const [
+    pendientes,
+    revisadas,
+    porEstado,
+    pausadasSolas,
+    porPerderse,
+    sinResolver,
+  ] =
+    await Promise.all([
+      listarPendientes(),
+      listarRevisadas(),
+      contarPorEstado(),
+      listarPausadasSolas(),
+      aPuntoDeCaducar(),
+      incidenciasSinResolver(),
+    ]);
 
   const publicadas = revisadas.filter((f) => f.estado === 'activo');
   const esperandoBizum = porEstado.aceptada ?? 0;
@@ -100,6 +115,23 @@ export default async function PaginaAdmin() {
         <span className="text-2xl text-azul-confianza">→</span>
       </a>
 
+      <a
+        href="/admin/buzon"
+        className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-gris-borde bg-white p-5 transition hover:bg-gris-claro"
+      >
+        <div>
+          <h2 className="font-bold text-azul-confianza">Buzón</h2>
+          <p className="mt-1 text-sm text-gris-medio">
+            {sinResolver === 0
+              ? 'Nadie ha contado ningún fallo'
+              : sinResolver === 1
+                ? '1 fallo contado sin resolver'
+                : `${sinResolver} fallos contados sin resolver`}
+          </p>
+        </div>
+        <span className="text-2xl text-azul-confianza">→</span>
+      </a>
+
       {!correoConfigurado() && (
         <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-medium">El envío de correo está apagado.</p>
@@ -110,6 +142,15 @@ export default async function PaginaAdmin() {
           </p>
         </div>
       )}
+
+      {/* ----------------------------------------------------------------
+          El rescate va antes de «por revisar» porque tiene fecha límite y
+          revisar fichas no. Si sólo da tiempo a mirar una cosa, que sea ésta.
+      */}
+      <RescatePorWhatsApp
+        filas={porPerderse}
+        base={process.env.NEXT_PUBLIC_APP_URL ?? 'https://academiavanza.es'}
+      />
 
       {/* ---------------------------------------------------------------- */}
       <section className="mt-12">

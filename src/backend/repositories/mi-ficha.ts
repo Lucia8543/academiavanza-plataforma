@@ -429,3 +429,27 @@ export async function seleccionActual(profesorId: string) {
     }),
   };
 }
+
+/**
+ * Cuántas solicitudes ha dejado caducar sin contestar, de las recientes.
+ *
+ * Es un número que el profesor tiene que poder ver **antes** de que le cueste la
+ * ficha, no después. Una regla que sólo se descubre cuando ya te ha caído
+ * encima no es una regla, es una trampa, y ésta le saca del directorio.
+ *
+ * Cuenta lo mismo que cuenta la tarea que pausa: sólo las que caducaron por su
+ * silencio —`aceptada_en` a nulo distingue de las que aceptó y la familia no
+ * pagó— y sólo las de los últimos noventa días.
+ */
+export async function caducadasSinContestar(
+  profesorId: string,
+): Promise<number> {
+  return db.contactos.count({
+    where: {
+      profesor_id: profesorId,
+      estado: 'caducada',
+      aceptada_en: null,
+      enviado_en: { gt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
+    },
+  });
+}

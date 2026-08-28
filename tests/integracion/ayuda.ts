@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { db } from '@/backend/repositories/cliente';
+import { URGENCIA_POR_DEFECTO } from '@/shared/reglas/cobro';
 import type { DatosContacto } from '@/shared/schemas/contacto';
 
 /**
@@ -109,6 +110,9 @@ export function datosDeFamilia(
     telefono: '600000099',
     email: `familia-${unico()}@ejemplo.invalid`,
     nivelId: '',
+    // Obligatorio en el tipo aunque el esquema le ponga valor por defecto: en
+    // Zod, `.default()` sale del parseo siempre relleno.
+    urgencia: URGENCIA_POR_DEFECTO,
     mensaje: '',
     esTutorLegal: true,
     aceptaPrivacidad: true,

@@ -156,9 +156,15 @@ export default async function Portada() {
             texto="clases dadas"
           />
           <Cifra numero={String(HISTORICO.familias)} texto="familias" />
+          {/* «Emparejamientos», no «familias y profesores». Son 104 parejas
+              familia-profesor, no 104 personas: una misma familia se emparejó
+              con varios profesores —dos hermanos, dos asignaturas, un relevo a
+              mitad de curso—. Con la etiqueta anterior, 100 al lado de 60
+              familias parecía un número inflado, y era el más honesto de los
+              tres. */}
           <Cifra
             numero={`+${HISTORICO.emparejamientos}`}
-            texto="familias y profesores emparejados"
+            texto="veces que juntamos a una familia con un profesor"
           />
         </dl>
 

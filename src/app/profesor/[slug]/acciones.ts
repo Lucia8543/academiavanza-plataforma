@@ -41,6 +41,14 @@ export async function enviarContacto(
     telefono: cadena('telefono'),
     email: cadena('email'),
     nivelId: cadena('nivelId'),
+    // Para cuándo lo necesita. Sin esta línea el formulario pintaba las tres
+    // opciones, el navegador las enviaba y aquí se tiraban: como el esquema
+    // tiene valor por defecto, todo el mundo acababa con cinco días y nadie se
+    // enteraba. Un fallo sin excepción y sin rastro en el registro.
+    // `|| undefined` y no la cadena vacía: el esquema es un enum con valor por
+    // defecto, y '' no es uno de los tres valores válidos. Sin esto, un envío
+    // sin JavaScript fallaría la validación en vez de coger el plazo corto.
+    urgencia: cadena('urgencia') || undefined,
     mensaje: cadena('mensaje'),
     esTutorLegal: formulario.get('esTutorLegal') === 'on',
     aceptaPrivacidad: formulario.get('aceptaPrivacidad') === 'on',

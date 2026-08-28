@@ -76,9 +76,13 @@ export default function PaginaPrivacidad() {
           darle clase y ella ha pagado el contacto.
         </p>
         <p>
-          <strong>Cuánto tiempo:</strong> mientras tu ficha exista. Puedes
-          pausarla o pedirnos que la borremos cuando quieras, desde el enlace de
-          tu ficha o escribiéndonos.
+          <strong>Cuánto tiempo:</strong> mientras tu ficha exista. Desde el
+          enlace de tu ficha puedes pausarla, y también borrarla tú mismo: al
+          final de esa página hay un apartado para darte de baja. Se borran tu
+          nombre, tu correo, tu teléfono y lo que hayas escrito, y no hace falta
+          que nos lo pidas ni que esperes a que contestemos. Si alguna familia
+          pagó por tu contacto, de esa solicitud se conservan solo la fecha y el
+          importe, sin tu nombre, porque acreditan que ese dinero entró.
         </p>
       </Apartado>
 

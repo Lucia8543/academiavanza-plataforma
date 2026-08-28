@@ -65,6 +65,9 @@ model contactos {
   motivo_cierre_en     DateTime?        @db.Timestamptz(6)
   pago_avisado_en      DateTime?        @db.Timestamptz(6)
   vale_caduca_en       DateTime?        @db.Timestamptz(6)
+  recordatorios_profesor   Int          @default(0) @db.SmallInt
+  recordatorio_profesor_en DateTime?    @db.Timestamptz(6)
+  urgencia                 String       @default("ya")
   niveles              niveles?         @relation(fields: [nivel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   profesores           profesores       @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   contactos            contactos?       @relation("contactosTocontactos", fields: [vale_de], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -79,6 +82,7 @@ model contactos {
   @@index([profesor_id, motivo_cierre_en(sort: Desc)], map: "idx_contactos_motivo_cierre", where: raw("(motivo_cierre IS NOT NULL)"))
   @@index([pago_avisado_en], map: "idx_contactos_pago_avisado", where: raw("((pago_avisado_en IS NOT NULL) AND (estado = 'aceptada'::app.estado_solicitud))"))
   @@index([vale_caduca_en], map: "idx_contactos_vale_caduca", where: raw("(vale_concedido AND (vale_caduca_en IS NOT NULL))"))
+  @@index([enviado_en], map: "idx_contactos_esperando_profesor", where: raw("(estado = 'pendiente_profesor'::app.estado_solicitud)"))
   @@schema("app")
 }
 
@@ -191,6 +195,20 @@ model mantenimiento_ejecuciones {
   duracion_ms  Int?
 
   @@index([ejecutado_en(sort: Desc)], map: "idx_mantenimiento_ultima")
+  @@schema("app")
+}
+
+model incidencias {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quien       String    @default("visita")
+  texto       String
+  pagina      String?
+  email       String?
+  estado      String    @default("nueva")
+  creado_en   DateTime  @default(now()) @db.Timestamptz(6)
+  resuelto_en DateTime? @db.Timestamptz(6)
+
+  @@index([creado_en(sort: Desc)], map: "idx_incidencias_pendientes", where: raw("(estado <> 'resuelta'::text)"))
   @@schema("app")
 }
 

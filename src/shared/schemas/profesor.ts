@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  detectarDatosSensibles,
+  mensajeDeAvisoProfesor,
+} from '@/shared/schemas/datos-sensibles';
 import { telefonoEspanol } from '@/shared/schemas/telefono';
 
 /**
@@ -112,6 +116,36 @@ export const esquemaRegistroProfesor = z
   .refine((d) => d.modalidad === 'online' || Boolean(d.zona), {
     message: 'Si das clase presencial, dinos en qué zona',
     path: ['zona'],
+  })
+  /*
+   * Los dos campos de texto libre del alta pasan por el mismo filtro que el
+   * mensaje de la familia.
+   *
+   * Durante un tiempo sólo lo pasaba el mensaje, y era el hueco más grande de
+   * los dos: lo que escribe una familia acaba en un correo, y lo que escribe un
+   * profesor **se publica en una página web**. Un profesor que quiere decir que
+   * se le dan bien los chavales con dislexia está publicando un dato de
+   * categoría especial sobre terceros en un sitio que promete no tratarlos.
+   *
+   * Va en el servidor, como el de contacto, porque el aviso del navegador es
+   * una cortesía y esto es la regla.
+   */
+  .superRefine((datos, ctx) => {
+    const campos = [
+      ['puntosFuertes', datos.puntosFuertes],
+      ['colegioOtro', datos.colegioOtro],
+    ] as const;
+
+    for (const [campo, valor] of campos) {
+      const deteccion = detectarDatosSensibles(valor ?? '');
+      if (!deteccion) continue;
+
+      ctx.addIssue({
+        code: 'custom',
+        path: [campo],
+        message: mensajeDeAvisoProfesor(deteccion),
+      });
+    }
   });
 
 export type RegistroProfesor = z.infer<typeof esquemaRegistroProfesor>;

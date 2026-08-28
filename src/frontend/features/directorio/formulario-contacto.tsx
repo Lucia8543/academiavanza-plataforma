@@ -3,6 +3,11 @@
 import { useActionState, useState } from 'react';
 import { enviarContacto, type EstadoContacto } from '@/app/profesor/[slug]/acciones';
 import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
+import {
+  PLAZOS,
+  URGENCIA_POR_DEFECTO,
+  type Urgencia,
+} from '@/shared/reglas/cobro';
 import { EXPLICACION_PRESENCIAL } from '@/shared/textos/modalidad';
 import { porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 import { sugerirCorreo } from '@/shared/schemas/correo-erratas';
@@ -42,6 +47,7 @@ type Valores = {
   telefono: string;
   email: string;
   nivelId: string;
+  urgencia: Urgencia;
   mensaje: string;
   vale: string;
 };
@@ -51,6 +57,7 @@ const VACIO: Valores = {
   telefono: '',
   email: '',
   nivelId: '',
+  urgencia: URGENCIA_POR_DEFECTO,
   mensaje: '',
   vale: '',
 };
@@ -90,7 +97,15 @@ export function FormularioContacto({
   }
 
   const errores = estado.errores ?? {};
-  const cambiar = (campo: keyof Valores, valor: string) =>
+  /*
+   * Genérica y no `(campo: keyof Valores, valor: string)`.
+   *
+   * Con la firma anterior, `urgencia` —que es una unión de tres valores y no
+   * una cadena cualquiera— se dejaba asignar cualquier texto sin que
+   * TypeScript dijera nada, porque la clave computada del spread desactiva la
+   * comprobación. Así, cada campo sólo acepta lo suyo.
+   */
+  const cambiar = <C extends keyof Valores>(campo: C, valor: Valores[C]) =>
     setV((actual) => ({ ...actual, [campo]: valor }));
 
   // Se calcula al pintar, no se guarda en un estado aparte: es una función del
@@ -260,6 +275,58 @@ export function FormularioContacto({
             <Aviso mensaje={errores.nivelId} />
           </div>
         )}
+
+        {/*
+          Para cuándo lo necesita.
+
+          Decide cuánto tiempo tiene el profesor antes de que la solicitud se
+          cierre sola, y por eso se le enseña el número de días debajo de cada
+          opción: es un compromiso que adquiere la plataforma con ella, no una
+          preferencia que apuntamos en una libreta.
+        */}
+        <fieldset>
+          <legend className={claseEtiqueta}>¿Para cuándo lo necesitas?</legend>
+          <p className="mt-1 text-sm text-gris-medio">
+            Nos dice cuánta prisa hay y cuánto tiempo le damos al profesor para
+            contestar.
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {(Object.keys(PLAZOS) as Urgencia[]).map((clave) => {
+              const opcion = PLAZOS[clave];
+              const elegida = v.urgencia === clave;
+
+              return (
+                <label
+                  key={clave}
+                  className={`flex cursor-pointer gap-3 rounded-lg border p-3 ${
+                    elegida
+                      ? 'border-verde-avanza bg-verde-avanza-claro'
+                      : 'border-gris-borde hover:bg-gris-claro'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="urgencia"
+                    value={clave}
+                    checked={elegida}
+                    onChange={() => cambiar('urgencia', clave)}
+                    className="mt-1 h-4 w-4 accent-[#2E7D5E]"
+                  />
+                  <span>
+                    <span className="block font-medium text-carbon">
+                      {opcion.etiqueta}
+                    </span>
+                    <span className="block text-sm text-gris-medio">
+                      {opcion.explicacion} · le damos {opcion.dias} días para
+                      contestar
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <div>
           <label className={claseEtiqueta} htmlFor="mensaje">

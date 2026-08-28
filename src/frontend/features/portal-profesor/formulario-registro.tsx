@@ -191,6 +191,7 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
     email: 'Correo electrónico',
     telefono: 'Teléfono',
     colegioId: 'Colegio',
+    colegioOtro: 'Colegio',
     titulacion: 'Carrera',
     universidad: 'Universidad',
     anosExperiencia: 'Años dando clase',
@@ -434,6 +435,10 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
         <input type="hidden" name="colegioId" value={v.colegioId} />
         <input type="hidden" name="colegioOtro" value={v.colegioOtro} />
         <Aviso mensaje={errores.colegioId} />
+        {/* El colegio escrito a mano también pasa por el filtro de datos
+            sensibles, y su aviso tiene que salir junto al campo y no sólo en el
+            resumen de arriba. */}
+        <Aviso mensaje={errores.colegioOtro} />
 
       </Seccion>
 
