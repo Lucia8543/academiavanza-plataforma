@@ -4,6 +4,7 @@ import {
   cuantosColegios,
 } from '@/backend/repositories/directorio';
 import { precioVigente } from '@/backend/repositories/tarifas';
+import { GUIAS_DE_CLASE } from '@/shared/datos/guias-de-clase';
 import { HISTORICO, NOTA_HISTORICO } from '@/shared/datos/historico';
 
 export const dynamic = 'force-dynamic';
@@ -140,9 +141,117 @@ export default async function Portada() {
           {/* Antes decía «y a ti no te cobramos nada nunca», y eso invitaba a
               la familia a preguntarse por qué a ella sí. Dice lo mismo sin
               señalar a nadie. */}
-          . Cinco minutos, sin registro y sin coste.
+          . Cinco minutos, sin registro y sin coste, y{' '}
+          <a
+            href="/guia/profesor"
+            className="underline underline-offset-4"
+          >
+            aquí está explicado paso a paso
+          </a>
+          .
         </p>
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/*
+        Qué es esto, antes de las cifras.
+
+        Va aquí arriba porque es lo único que contesta a «¿y por qué tú y no
+        cualquier tablón de anuncios?», y esa pregunta se la hace una familia en
+        los primeros diez segundos, no en el minuto tres.
+
+        Son dos ideas y ninguna es un adorno. La primera es de dónde salen los
+        profesores: no de una bolsa de gente suelta, sino de un colegio por el
+        que ellos ya pasaron. La segunda es lo que se hace después de
+        presentarlos, que es lo que de verdad distingue esto de un tablón.
+
+        **Cuidado con cómo se dice la segunda.** Lo que se promete es lo que
+        hacemos nosotros —escribir las guías y mandárselas a todos—, no lo que
+        hace el profesor en su clase. AcademiAvanza no le emplea, no le
+        supervisa y no puede responder de cómo da la clase; el aviso legal lo
+        dice con todas las letras y ya hubo que quitar una cita de esta misma
+        portada por prometer justo eso.
+
+        Y no se menciona aquí ninguna dificultad concreta del alumno, aunque una
+        de las guías vaya de eso. El formulario de las familias rechaza a
+        propósito los mensajes que mencionan un diagnóstico, así que anunciarlo
+        en portada sería invitar a escribir exactamente lo que luego se bloquea.
+        Es el mismo motivo por el que se quitaron de aquí las «necesidades
+        especiales del alumno».
+      */}
+      <section className="mt-16 border-t border-gris-borde pt-10">
+        <h2 className="text-xl font-bold text-azul-confianza">
+          Qué es AcademiAvanza
+        </h2>
+
+        <p className="mt-4 leading-relaxed text-carbon">
+          Una red que conecta a antiguos alumnos de un colegio con los que
+          todavía están en él. Los profesores que ves aquí se sentaron en las
+          mismas aulas, con los mismos profesores y los mismos exámenes, hace
+          tres o cuatro años. Saben lo que se le pide a tu hijo porque se lo
+          pidieron a ellos.
+        </p>
+
+        <p className="mt-3 leading-relaxed text-carbon">
+          Nació de una idea sencilla: en los colegios ya se recomiendan
+          exalumnos brillantes para dar clases, pero se hace de boca en boca, y
+          eso significa que sólo funciona si conoces a la persona adecuada.
+          Aquí están todos a la vista, con su colegio y sus estudios, y eliges
+          tú.
+        </p>
+
+        <div className="mt-6 rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-6">
+          <h3 className="font-bold text-verde-avanza-oscuro">
+            No nos quedamos en presentaros
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-carbon">
+            Dar bien una clase particular no es lo mismo que saberse la
+            asignatura, y casi nadie lo aprende solo.{' '}
+            <strong>
+              A todos los profesores que publican ficha les damos nuestras guías
+            </strong>
+            , sacadas de más de {miles(HISTORICO.clases)} clases. Son éstas, y
+            son públicas: puedes leer exactamente lo mismo que lee él.
+          </p>
+
+          {/* Las cuatro con nombre y apellidos, no resumidas en una frase.
+              Una madre no elige entre plataformas por un «formamos a nuestros
+              profesores»: elige cuando lee un título y reconoce a su hijo en
+              él. El texto que sale aquí es el de `paraLaFamilia`, escrito para
+              eso; el profesor ve otro más operativo en la misma lista. */}
+          <ul className="mt-4 space-y-3">
+            {GUIAS_DE_CLASE.map((g) => (
+              <li key={g.href} className="border-l-2 border-verde-avanza pl-3">
+                <a
+                  href={g.href}
+                  className="text-sm font-semibold text-verde-avanza-oscuro underline underline-offset-4"
+                >
+                  {g.titulo}
+                </a>
+                <p className="mt-0.5 text-sm leading-relaxed text-carbon">
+                  {g.paraLaFamilia}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href="/como-dar-clase"
+            className="mt-5 inline-block rounded-lg border border-verde-avanza bg-white px-5 py-2.5 text-sm font-semibold text-verde-avanza-oscuro transition hover:bg-verde-avanza-claro"
+          >
+            Leerlas enteras
+          </a>
+          {/* La frase que impide que esto se lea como una garantía. Sin ella,
+              «les damos guías» se convierte en la cabeza de quien lee en
+              «responden de cómo dan la clase», y eso no es verdad ni podría
+              serlo: no los empleamos. */}
+          <p className="mt-4 text-xs leading-relaxed text-gris-medio">
+            Cada profesor da su clase como considera: no trabajan para nosotros
+            y no intervenimos en cómo enseñan. Lo que sí hacemos es que ninguno
+            empiece de cero.
+          </p>
+        </div>
+      </section>
 
       {/* ------------------------------------------------------------------ */}
       {/* Las cifras del curso anterior.
@@ -238,7 +347,74 @@ export default async function Portada() {
           Cuando son presenciales, es el profesor quien se desplaza a casa del
           alumno, no al revés.
         </p>
+        <p className="mt-3 text-sm text-gris-medio">
+          <a
+            href="/guia/familia"
+            className="underline underline-offset-4"
+          >
+            Verlo explicado paso a paso, con las pantallas
+          </a>
+          .
+        </p>
       </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* El colegio de casi la mitad del directorio.
+          El apartado existe porque esas familias ya conocen a Lucía y son las
+          que más fácil vuelven, así que merecen que la web les hable a ellas.
+          Y termina abriendo la puerta al resto en la misma frase: un apartado
+          que hiciera sentir a los demás que se han equivocado de sitio costaría
+          más de lo que gana. */}
+      {destacado && (
+        <section className="mt-16 rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-6">
+          <h2 className="text-xl font-bold text-verde-avanza-oscuro">
+            ¿Sois del {destacado.nombre}?
+          </h2>
+          <p className="mt-3 text-carbon">
+            Entonces esto empezó por vosotros. AcademiAvanza nació dando clases
+            a familias del {destacado.nombre}, con antiguos alumnos del propio
+            colegio: gente que se sentó en las mismas aulas, con los mismos
+            profesores y los mismos exámenes.
+          </p>
+          <p className="mt-3 text-carbon">
+            Ahora mismo hay{' '}
+            <strong>
+              {destacado.profesores}{' '}
+              {destacado.profesores === 1 ? 'profesor' : 'profesores'} del{' '}
+              {destacado.nombre}
+            </strong>{' '}
+            en el directorio.
+          </p>
+
+          <a
+            href={`/profesores?colegio=${destacado.id}`}
+            className="mt-5 inline-block rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro"
+          >
+            Ver los del {destacado.nombre}
+          </a>
+
+          {/*
+            Sólo si hay más de un colegio, y no es una cuestión de plurales.
+
+            Con uno solo, la frase se contradice a sí misma: dice «¿de otro
+            colegio? también» y a continuación reconoce que todos los profesores
+            vienen del mismo. A una familia de otro colegio le está diciendo,
+            sin querer, que ahí no hay nadie para ella.
+
+            El caso se dio de verdad el día del lanzamiento, con el directorio
+            recién vaciado de fichas de prueba, y salió publicado como «hay
+            profesores de 1 colegios de Madrid».
+          */}
+          {colegios > 1 && (
+            <p className="mt-5 border-t border-verde-avanza pt-4 text-sm text-carbon">
+              <span className="font-medium">¿De otro colegio? También.</span> En
+              el directorio hay profesores de {colegios} colegios de Madrid, y
+              el buscador te deja filtrar por el tuyo o dejarlo en «me es
+              indiferente».
+            </p>
+          )}
+        </section>
+      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Lo que AcademiAvanza dice de sí misma.
@@ -319,96 +495,7 @@ export default async function Portada() {
             </p>
           </div>
         </div>
-
-        {/*
-          Esta cita decía antes que AcademiAvanza ofrece «un servicio educativo
-          de alta calidad» y que su fin es «formar mentes críticas». Venía de la
-          web anterior y contradecía al aviso legal, que tres clics más allá
-          dice lo contrario con todas las letras: «No damos clases» y «No somos
-          un centro educativo ni una academia, y no estamos autorizados como
-          tal».
-
-          Las dos cosas no pueden ser verdad, y la que lee una familia antes de
-          pagar es ésta. Es el mismo motivo por el que ya se quitaron de este
-          bloque la «asignación personalizada» y las «necesidades especiales
-          del alumno»: prometer lo que el aviso legal niega no es una cuestión
-          de redacción.
-
-          Y va firmada con un nombre, no con «el equipo». AcademiAvanza es una
-          persona, su nombre ya consta en el aviso legal porque la ley lo exige,
-          y en una web cuyo argumento es que sabes con quién estás hablando, un
-          plural inventado desentona.
-        */}
-        <blockquote className="mt-8 border-l-4 border-verde-avanza bg-gris-claro px-5 py-4">
-          <p className="leading-relaxed text-carbon">
-            Esto empezó porque encontrar profesor para un hijo se hacía
-            preguntando en la puerta del colegio, y no siempre había a quién
-            preguntar. Nosotros no damos las clases: te enseñamos quién es cada
-            profesor y de dónde viene, y eliges tú.
-          </p>
-          <footer className="mt-3 text-sm font-medium text-verde-avanza-oscuro">
-            Lucía, AcademiAvanza
-          </footer>
-        </blockquote>
       </section>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* El colegio de casi la mitad del directorio.
-          El apartado existe porque esas familias ya conocen a Lucía y son las
-          que más fácil vuelven, así que merecen que la web les hable a ellas.
-          Y termina abriendo la puerta al resto en la misma frase: un apartado
-          que hiciera sentir a los demás que se han equivocado de sitio costaría
-          más de lo que gana. */}
-      {destacado && (
-        <section className="mt-16 rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-6">
-          <h2 className="text-xl font-bold text-verde-avanza-oscuro">
-            ¿Sois del {destacado.nombre}?
-          </h2>
-          <p className="mt-3 text-carbon">
-            Entonces esto empezó por vosotros. AcademiAvanza nació dando clases
-            a familias del {destacado.nombre}, con antiguos alumnos del propio
-            colegio: gente que se sentó en las mismas aulas, con los mismos
-            profesores y los mismos exámenes.
-          </p>
-          <p className="mt-3 text-carbon">
-            Ahora mismo hay{' '}
-            <strong>
-              {destacado.profesores}{' '}
-              {destacado.profesores === 1 ? 'profesor' : 'profesores'} del{' '}
-              {destacado.nombre}
-            </strong>{' '}
-            en el directorio.
-          </p>
-
-          <a
-            href={`/profesores?colegio=${destacado.id}`}
-            className="mt-5 inline-block rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro"
-          >
-            Ver los del {destacado.nombre}
-          </a>
-
-          {/*
-            Sólo si hay más de un colegio, y no es una cuestión de plurales.
-
-            Con uno solo, la frase se contradice a sí misma: dice «¿de otro
-            colegio? también» y a continuación reconoce que todos los profesores
-            vienen del mismo. A una familia de otro colegio le está diciendo,
-            sin querer, que ahí no hay nadie para ella.
-
-            El caso se dio de verdad el día del lanzamiento, con el directorio
-            recién vaciado de fichas de prueba, y salió publicado como «hay
-            profesores de 1 colegios de Madrid».
-          */}
-          {colegios > 1 && (
-            <p className="mt-5 border-t border-verde-avanza pt-4 text-sm text-carbon">
-              <span className="font-medium">¿De otro colegio? También.</span> En
-              el directorio hay profesores de {colegios} colegios de Madrid, y
-              el buscador te deja filtrar por el tuyo o dejarlo en «me es
-              indiferente».
-            </p>
-          )}
-        </section>
-      )}
 
       {/* ------------------------------------------------------------------ */}
       <section className="mt-16 border-t border-gris-borde pt-10">

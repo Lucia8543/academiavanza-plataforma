@@ -298,7 +298,15 @@ export function correoFichaPublicada(datos: {
     'tardar más. Y cuando te quede hueco otra vez, lo cambias con un botón.',
     '',
     'Guarda este correo: ese segundo enlace es tu forma de entrar, y no hay',
-    'contraseña que recordar.',
+    'contraseña que recordar. Y si lo pierdes, te lo volvemos a mandar aquí:',
+    `${baseUrl()}/mi-ficha`,
+    '',
+    'Antes de tu primera clase, léete esto. Son nuestras guías: autonomía y',
+    'hábito de estudio, metodología para clases online, distracciones en clases',
+    'a domicilio y adaptaciones para dificultades de atención. Breves, y salen',
+    'de más de mil novecientas clases.',
+    '',
+    `${baseUrl()}/como-dar-clase`,
     '',
     'AcademiAvanza',
   ].join('\n');
@@ -329,8 +337,18 @@ export function correoFichaPublicada(datos: {
       de que ya tienes alumnos y de que puedes tardar más en contestar. Y cuando te quede hueco otra vez,
       lo cambias con un botón.
     </p>
-    <p style="margin:0;color:${GRIS};font-size:14px;">
-      Guarda este correo: ese enlace es tu forma de entrar y no hay ninguna contraseña que recordar.
+    <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
+      Guarda este correo: ese enlace es tu forma de entrar y no hay ninguna contraseña
+      que recordar. Si lo pierdes,
+      <a href="${baseUrl()}/mi-ficha" style="color:${VERDE};">te lo mandamos otra vez</a>.
+    </p>
+    <p style="margin:0;padding-top:16px;border-top:1px solid ${BORDE};">
+      <strong>Antes de tu primera clase, léete esto.</strong> Son nuestras guías:
+      autonomía y hábito de estudio, metodología para clases online, distracciones en
+      clases a domicilio y adaptaciones para dificultades de atención. Breves, y sacadas
+      de más de mil novecientas clases.
+      <br>
+      <a href="${baseUrl()}/como-dar-clase" style="color:${VERDE};">Ver las guías</a>
     </p>
   `);
 
@@ -1240,6 +1258,13 @@ export function correoFichaRecibida(datos: {
     '',
     panel,
     '',
+    'Y mientras esperas, algo que merece la pena leer: nuestras guías para dar',
+    'clase. Son breves y salen de más de mil novecientas clases. La primera,',
+    'sobre autonomía y hábito de estudio, es la que más falta hace: es el caso',
+    'más frecuente con diferencia.',
+    '',
+    `${baseUrl()}/como-dar-clase`,
+    '',
     'Publicar tu ficha es gratis y siempre lo será. A ti no te cobramos nada,',
     'ni por aparecer ni por dar clases.',
     '',
@@ -1261,6 +1286,14 @@ export function correoFichaRecibida(datos: {
       No hay contraseña. Si pierdes el enlace, pierdes la entrada.
     </p>
     ${boton('Ver mi ficha', panel)}
+    <p style="margin:0 0 16px;">
+      <strong>Y mientras esperas, algo que merece la pena leer.</strong> Son nuestras
+      guías para dar clase: breves, y sacadas de más de mil novecientas clases. La
+      primera, sobre autonomía y hábito de estudio, es la que más falta hace: es el
+      caso más frecuente con diferencia.
+      <br>
+      <a href="${baseUrl()}/como-dar-clase" style="color:${VERDE};">Ver las guías</a>
+    </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
       Publicar es gratis y siempre lo será. A ti no te cobramos nada, ni por aparecer
       ni por dar clases.
@@ -1484,6 +1517,84 @@ export function correoFichaPausadaSinContestar(datos: {
   return {
     para: datos.para,
     asunto: 'Hemos pausado tu ficha',
+    cuerpo,
+    html,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 21 · Aquí tienes tu enlace otra vez
+// -----------------------------------------------------------------------------
+
+/**
+ * El enlace del panel, reenviado a quien lo ha perdido.
+ *
+ * Sin contraseñas, el enlace es la única llave, y la gente pierde enlaces:
+ * borra el correo, cambia de móvil, o simplemente no lo encuentra entre otros
+ * mil. Hasta que existió este correo, la salida era escribir a Lucía para que
+ * lo buscara a mano, una por una y para siempre.
+ *
+ * **Es el mismo enlace de antes, no uno nuevo.** Si se generara otro, el que ya
+ * tenía dejaría de valer, y quien lo encontrara luego en un correo viejo se
+ * daría de bruces con una página que no existe. `tokenDelPanel` es idempotente
+ * justo por esto.
+ *
+ * Lleva un aviso de que alguien lo ha pedido. No es una alarma —quien lo pide
+ * sólo consigue que le llegue un correo a su propio buzón— pero si el profesor
+ * no ha sido él, merece saberlo.
+ */
+export function correoEnlacePerdido(datos: {
+  para: string;
+  nombreProfesor: string;
+  tokenPanel: string;
+}): Correo {
+  const panel = `${baseUrl()}/mi-ficha/${datos.tokenPanel}`;
+
+  const cuerpo = [
+    `Hola ${datos.nombreProfesor}:`,
+    '',
+    'Aquí tienes el enlace de tu ficha. Es el mismo de siempre, no uno nuevo:',
+    'el anterior sigue funcionando si aparece.',
+    '',
+    panel,
+    '',
+    'Desde ahí puedes cambiar lo que quieras, pausar la ficha si no te viene',
+    'bien que te escriban, o darte de baja.',
+    '',
+    'Guárdalo donde no se te pierda: en favoritos, o mándatelo a ti mismo por',
+    'WhatsApp. No hay contraseña, así que este enlace es tu entrada.',
+    '',
+    'Si no has pedido tú este correo, no tienes que hacer nada. Alguien ha',
+    'escrito tu dirección en la página de recuperación, y lo único que consigue',
+    'con eso es que te llegue este correo a ti.',
+    '',
+    'AcademiAvanza',
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
+    <p style="margin:0 0 4px;">
+      <strong>Aquí tienes el enlace de tu ficha.</strong> Es el mismo de siempre, no uno
+      nuevo: si te aparece el anterior, sigue funcionando igual.
+    </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Desde ahí cambias lo que quieras, pausas la ficha o te das de baja.
+    </p>
+    ${boton('Ver mi ficha', panel)}
+    <p style="margin:0 0 16px;">
+      Guárdalo donde no se te pierda: en favoritos, o mándatelo a ti mismo por WhatsApp.
+      No hay contraseña, así que este enlace es tu entrada.
+    </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Si no has pedido tú este correo no tienes que hacer nada. Alguien ha escrito tu
+      dirección en la página de recuperación, y lo único que consigue con eso es que te
+      llegue este correo a ti.
+    </p>
+  `);
+
+  return {
+    para: datos.para,
+    asunto: 'El enlace de tu ficha',
     cuerpo,
     html,
   };

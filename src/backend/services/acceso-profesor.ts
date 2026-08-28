@@ -1,5 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { db } from '@/backend/repositories/cliente';
+import { enviar } from '@/backend/services/correo';
+import { correoEnlacePerdido } from '@/backend/services/plantillas-correo';
 
 /**
  * La llave del profesor.
@@ -67,4 +69,90 @@ export async function profesorDelPanel(
   });
 
   return acceso?.profesor_id ?? null;
+}
+
+/**
+ * Minutos que tienen que pasar para volver a reenviarle el enlace a alguien.
+ *
+ * No protege al profesor de gran cosa —lo peor que puede pasarle es recibir su
+ * propio enlace dos veces— pero sí evita las dos molestias reales: que alguien
+ * con su dirección le llene el buzón, y que un guion se coma el cupo de correos
+ * dándole al botón mil veces.
+ *
+ * Diez minutos, y no una hora, porque el caso normal es una persona que da al
+ * botón, no ve nada, mira el spam, y lo vuelve a intentar. A ésa hay que
+ * dejarla probar otra vez.
+ */
+const MINUTOS_ENTRE_REENVIOS = 10;
+
+/**
+ * Le reenvía al profesor el enlace de su ficha, si esa dirección tiene una.
+ *
+ * **No dice nunca si el correo existe.** La página enseña el mismo mensaje pase
+ * lo que pase, y esta función no devuelve nada que permita distinguirlo. El
+ * motivo no es teórico: un formulario que contesta «esa dirección no está
+ * registrada» es una forma cómoda de ir comprobando quién da clase aquí, y quien
+ * da clase aquí es casi siempre menor de veinticinco años y estudiante de un
+ * colegio que consta en su ficha pública.
+ *
+ * Tampoco hace falta contraseña, y no es una relajación de la seguridad: el
+ * enlace ya vivía en ese buzón, porque es donde se mandó. Quien controla el
+ * correo podía leerlo desde el principio. Esto no abre ninguna puerta nueva,
+ * sólo evita que la abra Lucía a mano.
+ */
+export async function reenviarEnlaceDelPanel(email: string): Promise<void> {
+  const direccion = email.trim().toLowerCase();
+  if (!direccion) return;
+
+  const profesor = await db.profesores.findFirst({
+    // La columna es `citext`, así que la comparación ya ignora mayúsculas.
+    where: { email: direccion },
+    select: {
+      id: true,
+      nombre: true,
+      email: true,
+      estado: true,
+      enlace_reenviado_en: true,
+    },
+  });
+
+  if (!profesor) return;
+
+  /*
+   * Una ficha rechazada o inactiva no tiene panel al que volver, así que no se
+   * manda nada. Callarse aquí es lo mismo que callarse con un correo que no
+   * existe: por fuera no se distingue, que es justo lo que se busca.
+   *
+   * `pausado` sí entra, y es importante que entre: el profesor pausado es
+   * exactamente el que más necesita el enlace, porque es el botón para volver
+   * al directorio.
+   */
+  if (profesor.estado === 'rechazado' || profesor.estado === 'inactivo') return;
+
+  const reciente =
+    profesor.enlace_reenviado_en &&
+    profesor.enlace_reenviado_en >
+      new Date(Date.now() - MINUTOS_ENTRE_REENVIOS * 60 * 1000);
+
+  if (reciente) return;
+
+  const token = await tokenDelPanel(profesor.id);
+
+  const salio = await enviar(
+    correoEnlacePerdido({
+      para: profesor.email,
+      nombreProfesor: profesor.nombre,
+      tokenPanel: token,
+    }),
+  );
+
+  // La fecha se apunta sólo si el correo salió de verdad. Si Resend falla y se
+  // apuntara igual, el profesor se quedaría diez minutos sin poder reintentar
+  // por un fallo que no es suyo.
+  if (salio) {
+    await db.profesores.update({
+      where: { id: profesor.id },
+      data: { enlace_reenviado_en: new Date() },
+    });
+  }
 }

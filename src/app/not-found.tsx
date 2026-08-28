@@ -44,15 +44,15 @@ export default function NoEncontrado() {
         </Link>
       </div>
 
+      {/* Antes esta frase mandaba a escribir un correo, y eso era Lucía
+          buscando el enlace en la base de datos cada vez. Ahora se recupera
+          solo con la dirección de correo del propio profesor. */}
       <p className="mt-10 text-sm text-gris-medio">
-        Si eres profesor y has perdido el enlace de tu ficha, escríbenos a{' '}
-        <a
-          href="mailto:info@academiavanza.es"
-          className="underline underline-offset-4"
-        >
-          info@academiavanza.es
-        </a>{' '}
-        y te mandamos otro.
+        Si eres profesor y has perdido el enlace de tu ficha,{' '}
+        <Link href="/mi-ficha" className="text-carbon underline underline-offset-4">
+          te lo mandamos otra vez
+        </Link>
+        .
       </p>
     </main>
   );

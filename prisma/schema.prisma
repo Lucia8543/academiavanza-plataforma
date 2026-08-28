@@ -156,6 +156,7 @@ model profesores {
   disponible                   Boolean                    @default(true)
   disponibilidad_confirmada_en DateTime                   @default(now()) @db.Timestamptz(6)
   ultimo_recordatorio_en       DateTime?                  @db.Timestamptz(6)
+  enlace_reenviado_en          DateTime?                  @db.Timestamptz(6)
   pausada_auto_en              DateTime?                  @db.Timestamptz(6)
   aprobado_en                  DateTime?                  @db.Timestamptz(6)
   motivo_rechazo               String?

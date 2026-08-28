@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { recuperarToken } from '@/backend/repositories/solicitudes';
 import { normalizarTelefono } from '@/shared/schemas/telefono';
@@ -135,6 +136,21 @@ export default async function PaginaRecuperar({
         </a>{' '}
         con el nombre del profesor al que escribiste y tu teléfono, y te lo
         buscamos nosotros.
+      </p>
+
+      {/* Esta página es de familias, pero se llama «he perdido mi enlace» y es
+          la que sale en el pie de todas las pantallas. Un profesor que pierda
+          el suyo va a acabar aquí, y sin esta línea se quedaría intentando
+          entrar con un código que nunca ha tenido. */}
+      <p className="mt-4 text-sm text-gris-medio">
+        ¿Eres profesor y lo que has perdido es el enlace de tu ficha?{' '}
+        <Link
+          href="/mi-ficha"
+          className="text-carbon underline underline-offset-4"
+        >
+          Se recupera aquí
+        </Link>
+        , con tu correo.
       </p>
     </main>
   );

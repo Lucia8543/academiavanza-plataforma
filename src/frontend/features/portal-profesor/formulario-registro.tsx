@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useActionState, useState } from 'react';
 import { enviarRegistro, type EstadoFormulario } from '@/app/registro/acciones';
 import type { Catalogos } from '@/backend/repositories/catalogos';
@@ -137,7 +138,14 @@ const claseCampo =
 const claseEtiqueta = 'block text-sm font-medium text-carbon';
 const claseCasilla = 'h-4 w-4 accent-[#2E7D5E]';
 
-export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
+export function FormularioRegistro({
+  catalogos,
+  precioTexto,
+}: {
+  catalogos: Catalogos;
+  /** Ya formateado por el servidor: aquí no se decide cuánto cuesta nada. */
+  precioTexto: string;
+}) {
   const [estado, accion, enviando] = useActionState(
     enviarRegistro,
     ESTADO_INICIAL,
@@ -305,14 +313,48 @@ export function FormularioRegistro({ catalogos }: { catalogos: Catalogos }) {
         </p>
         {/* Quién paga y quién no, dicho en la primera pantalla y sin rodeos.
             Que un profesor descubra a mitad del recorrido que hay dinero de por
-            medio es la forma más rápida de que se vaya. */}
+            medio es la forma más rápida de que se vaya.
+
+            El importe llega como prop y no escrito aquí: el precio se cambia
+            desde el panel, y una pantalla que promete diez euros cuando el
+            panel cobra doce es una promesa incumplida en la primera frase que
+            lee un profesor. */}
         <p className="mt-2 text-sm text-gris-medio">
           <span className="font-medium text-carbon">
             A ti no te cobramos nada
           </span>{' '}
-          por aparecer ni por dar clase. Es la familia quien paga 10 € por el
-          contacto, y solo después de que tú hayas dicho que sí. Lo que cobres
-          por las clases lo acuerdas con ella y no lo tocamos.
+          por aparecer ni por dar clase. Es la familia quien paga {precioTexto}{' '}
+          por el contacto, y solo después de que tú hayas dicho que sí. Lo que
+          cobres por las clases lo acuerdas con ella y no lo tocamos.
+        </p>
+        <p className="mt-3 text-sm text-gris-medio">
+          Si prefieres verlo entero antes de empezar,{' '}
+          <a
+            className="font-medium text-verde-avanza-oscuro underline underline-offset-4"
+            href="/guia/profesor"
+          >
+            aquí está explicado paso a paso
+          </a>
+          .
+        </p>
+
+        {/*
+          La salida para quien ya se dio de alta.
+
+          El botón de arriba dice «Soy profesor» y trae aquí, que está bien para
+          quien viene a ver si esto va con él. Pero el que ya publicó su ficha
+          pulsa el mismo botón, se encuentra este formulario en blanco, y desde
+          ahí no hay ningún camino de vuelta a lo suyo. Esta línea es ese camino.
+        */}
+        <p className="mt-3 border-t border-gris-borde pt-3 text-sm text-gris-medio">
+          ¿Ya tienes ficha publicada?{' '}
+          <Link
+            className="font-medium text-verde-avanza-oscuro underline underline-offset-4"
+            href="/mi-ficha"
+          >
+            Entra aquí
+          </Link>{' '}
+          — te mandamos tu enlace al correo.
         </p>
       </header>
       {estado.mensaje && (

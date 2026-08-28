@@ -13,6 +13,22 @@ const enlaces = [
   { href: '/profesores', texto: 'Buscar profesor' },
   { href: '/registro', texto: 'Publicar mi ficha' },
   /*
+   * Las dos guías, y en el pie de todas las páginas.
+   *
+   * Están aquí por el mismo motivo por el que existen: nadie va a estar
+   * mandándoselas a quien llegue en noviembre. Si sólo viven en un mensaje de
+   * WhatsApp, el que no recibió ese mensaje no las tiene.
+   */
+  { href: '/guia/profesor', texto: 'Cómo funciona, si das clase' },
+  { href: '/guia/familia', texto: 'Cómo funciona, si buscas profesor' },
+  /*
+   * Las guías de cómo dar clase, y en el pie para todo el mundo, no sólo para
+   * profesores. Media gracia de que existan es que una familia pueda comprobar
+   * que existen: es la diferencia entre decir que formamos a los profesores y
+   * poder enseñar exactamente lo que les mandamos.
+   */
+  { href: '/como-dar-clase', texto: 'Guías para dar clase' },
+  /*
    * «He perdido mi enlace» y no «Recuperar mi solicitud».
    *
    * Nadie piensa «voy a recuperar mi solicitud». Piensa «he perdido el enlace»,

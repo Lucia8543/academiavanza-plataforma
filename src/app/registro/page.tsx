@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cargarCatalogos } from '@/backend/repositories/catalogos';
+import { precioVigente } from '@/backend/repositories/tarifas';
 import { FormularioRegistro } from '@/frontend/features/portal-profesor/formulario-registro';
 
 export const metadata: Metadata = {
@@ -21,11 +22,20 @@ export const revalidate = 3600;
  * ya has hecho sobra y confunde.
  */
 export default async function PaginaRegistro() {
-  const catalogos = await cargarCatalogos();
+  const [catalogos, precio] = await Promise.all([
+    cargarCatalogos(),
+    precioVigente(),
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
-      <FormularioRegistro catalogos={catalogos} />
+      <FormularioRegistro
+        catalogos={catalogos}
+        precioTexto={new Intl.NumberFormat('es-ES', {
+          style: 'currency',
+          currency: 'EUR',
+        }).format(precio)}
+      />
     </main>
   );
 }
