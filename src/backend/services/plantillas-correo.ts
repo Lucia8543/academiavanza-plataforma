@@ -162,10 +162,9 @@ export function correoSolicitud(datos: {
     enlace,
     '',
     `Si aceptas, la familia paga ${precio} por el contacto y te damos su`,
-    'teléfono para que le escribas tú. Su número no se lo damos a nadie más, y',
-    'el tuyo no se lo damos a ella: nunca damos el teléfono de un profesor.',
-    'A partir de ahí lo arregláis vosotros: el precio de las clases y los',
-    'horarios no los tocamos.',
+    'teléfono. A partir de ahí el primer paso es tuyo: ella no tiene tu número',
+    'y no se lo vamos a dar, así que si tú no le escribes, no hay clase.',
+    'Lo demás lo arregláis vosotros: el precio y los horarios no los tocamos.',
     '',
     'Si ahora no puedes, dilo y ya está. No pasa nada y la familia no paga nada.',
     '',
@@ -185,8 +184,9 @@ export function correoSolicitud(datos: {
     ${boton('Ver y contestar', enlace)}
     <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
       Si aceptas, la familia paga <strong>${precio}</strong> por el contacto y te damos su
-      teléfono para que le escribas tú. El tuyo no se lo damos a ella: nunca damos el
-      número de un profesor. El precio de las clases y los horarios los acordáis vosotros.
+      teléfono. <strong>El primer paso es tuyo</strong>: ella no tiene tu número y no se lo
+      vamos a dar, así que si tú no le escribes, no hay clase. El precio de las clases y
+      los horarios los acordáis vosotros.
     </p>
     <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
       Si ahora no puedes, dilo y ya está. La familia no paga nada.

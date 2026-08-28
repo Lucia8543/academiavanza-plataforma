@@ -8,7 +8,11 @@ import {
   Paso,
   Raya,
 } from '@/frontend/features/guia/piezas';
-import { CADUCADAS_PARA_PAUSAR, PLAZOS } from '@/shared/reglas/cobro';
+import {
+  CADUCADAS_PARA_PAUSAR,
+  DIAS_PARA_RECLAMAR,
+  PLAZOS,
+} from '@/shared/reglas/cobro';
 
 /**
  * Cómo funciona esto, para un profesor.
@@ -228,8 +232,23 @@ export default async function GuiaProfesor() {
         >
           <p>
             Cuando aceptas, la familia paga {euros(precio)} a AcademiAvanza por
-            el contacto. Una sola vez. Entonces te damos su teléfono y le
-            escribes tú.
+            el contacto. Una sola vez. Entonces te damos su nombre y su teléfono.
+          </p>
+          <Ojo>
+            <strong>
+              A partir de aquí, si tú no escribes no pasa absolutamente nada.
+            </strong>{' '}
+            Ella no tiene tu teléfono y no se lo vamos a dar nunca, así que no
+            puede dar el paso ella aunque quiera. No hay chat, ni mensajes dentro
+            de la web, ni ninguna otra vía: <strong>o le escribes tú, o no hay
+            clase</strong>. Llámala o mándale un WhatsApp el mismo día, que lleva
+            esperando desde que te escribió.
+          </Ojo>
+          <p>
+            Y si no lo haces, a los {DIAS_PARA_RECLAMAR} días ella puede pedirnos
+            otro contacto sin volver a pagar y buscar a otra persona. No te
+            penaliza en la ficha, pero habrás perdido la clase por no mandar un
+            mensaje.
           </p>
           <p>
             <strong className="text-carbon">
