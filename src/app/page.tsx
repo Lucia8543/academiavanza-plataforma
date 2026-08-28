@@ -201,18 +201,82 @@ export default async function Portada() {
           tú.
         </p>
 
-        <div className="mt-6 rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-6">
-          <h3 className="font-bold text-verde-avanza-oscuro">
-            No nos quedamos en presentaros
+        {/* ---------------------------------------------------------------- */}
+        {/*
+          Las cifras, dentro de esta sección y no en una propia.
+
+          Estaban más abajo, con su encabezado y su línea separadora, y ahí
+          funcionaban como un mérito suelto: «hemos dado muchas clases». Aquí
+          hacen algo más útil, que es **sostener lo que viene justo debajo**. Las
+          guías no salen de ninguna parte: salen de esas mil novecientas clases,
+          y las dos tarjetas juntas dicen eso sin necesidad de escribirlo.
+
+          Por eso van en gris y no en verde, y por eso están pegadas —`mt-4`, no
+          `mt-16`—: son el dato y su consecuencia, no dos apartados. Dos cajas
+          verdes seguidas competirían entre ellas; gris y verde se leen como un
+          «por lo tanto».
+        */}
+        <div className="mt-8 rounded-xl border border-gris-borde bg-gris-claro p-6">
+          {/* «Nuestra experiencia» y no «Esto no empieza de cero»: el original
+              negaba algo malo, y para entenderlo había que pensar primero que
+              esto podía estar empezando de cero. Afirmar sale más barato. */}
+          <h3 className="text-lg font-bold text-azul-confianza">
+            Nuestra experiencia
+          </h3>
+          <p className="mt-1 text-sm text-gris-medio">
+            Llevamos dos años dando clase. Sólo en el curso {HISTORICO.curso}:
+          </p>
+
+          <dl className="mt-6 grid grid-cols-3 gap-4 text-center">
+            {/* 1.904 contadas, publicadas como «más de 1.900». No se redondea a
+                dos mil: es el único número de toda la web que alguien de la
+                etapa anterior podría sentarse a comprobar. */}
+            <Cifra numero={`+${miles(HISTORICO.clases)}`} texto="clases dadas" />
+            {/* Las horas suben aquí y las 60 familias salen de la fila. No es
+                maquillaje: 60 era la cifra más baja y, puesta en medio,
+                empequeñecía a las otras dos. Las horas son el segundo número
+                más alto y dicen lo mismo por otra vía. */}
+            <Cifra numero={`+${miles(HISTORICO.horas)}`} texto="horas de clase" />
+            {/* «Que funcionaron» no es un adjetivo puesto por quedar bien: lo
+                sostiene la línea de abajo, y por eso van juntas.
+
+                Y se habla de emparejamientos y no de personas a propósito: son
+                104 parejas, y una misma familia aparece en varias —dos
+                hermanos, dos asignaturas, un relevo a mitad de curso—. */}
+            <Cifra
+              numero={`+${HISTORICO.emparejamientos}`}
+              texto="emparejamientos que funcionaron"
+            />
+          </dl>
+
+          <p className="mt-6 text-sm leading-relaxed text-carbon">
+            <strong>
+              {HISTORICO.siguieronTrasLaPrimera} de cada 10 siguieron más allá de
+              la primera clase.
+            </strong>
+          </p>
+
+          {/* Esta nota no es letra pequeña opcional: sin ella parecería que
+              estas mil novecientas clases se han dado en la plataforma. */}
+          <p className="mt-3 text-xs leading-relaxed text-gris-medio">
+            De septiembre a julio, en un curso completo. {NOTA_HISTORICO}
+          </p>
+        </div>
+
+        {/* ---------------------------------------------------------------- */}
+        <div className="mt-4 rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-6">
+          <h3 className="text-lg font-bold text-verde-avanza-oscuro">
+            Y de esas clases ha salido algo más
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-carbon">
-            Dar bien una clase particular no es lo mismo que saberse la
-            asignatura, y casi nadie lo aprende solo.{' '}
+            En {miles(HISTORICO.clases)} clases se aprende qué funciona y qué no,
+            y eso no se queda en un cajón. Dar bien una clase particular no es lo
+            mismo que saberse la asignatura, y casi nadie lo aprende solo:{' '}
             <strong>
-              A todos los profesores que publican ficha les damos nuestras guías
+              a todos los profesores que publican ficha les damos nuestras guías
             </strong>
-            , sacadas de más de {miles(HISTORICO.clases)} clases. Son éstas, y
-            son públicas: puedes leer exactamente lo mismo que lee él.
+            . Son éstas, y son públicas, así que puedes leer exactamente lo mismo
+            que lee él.
           </p>
 
           {/* Las cuatro con nombre y apellidos, no resumidas en una frase.
@@ -252,66 +316,6 @@ export default async function Portada() {
             empiece de cero.
           </p>
         </div>
-      </section>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Las cifras del curso anterior.
-          Es lo único que una plataforma recién abierta no puede fabricar, y por
-          eso mismo hay que enseñarlas con su procedencia al lado. La nota de
-          abajo no es letra pequeña opcional: sin ella parecería que estas mil
-          novecientas clases se han dado aquí. */}
-      <section className="mt-16 border-t border-gris-borde pt-10">
-        {/* «Nuestra experiencia» y no «Esto no empieza de cero»: el original
-            negaba algo malo, y para entenderlo había que pensar primero que
-            esto podía estar empezando de cero. Afirmar sale más barato. */}
-        <h2 className="text-xl font-bold text-azul-confianza">
-          Nuestra experiencia
-        </h2>
-        <p className="mt-2 text-sm text-gris-medio">
-          AcademiAvanza lleva funcionando desde hace dos años. Sólo en el curso{' '}
-          {HISTORICO.curso}:
-        </p>
-
-        <dl className="mt-6 grid grid-cols-3 gap-4 text-center">
-          {/* 1.904 contadas, publicadas como «más de 1.900». No se redondea a
-              dos mil: es el único número de toda la web que alguien de la etapa
-              anterior podría sentarse a comprobar. */}
-          <Cifra
-            numero={`+${miles(HISTORICO.clases)}`}
-            texto="clases dadas"
-          />
-          {/* Las horas suben aquí y las 60 familias salen de la fila.
-              No es maquillaje: 60 era la cifra más baja y, puesta en medio,
-              empequeñecía a las otras dos. Las horas son el segundo número más
-              alto y dicen lo mismo por otra vía. */}
-          <Cifra
-            numero={`+${miles(HISTORICO.horas)}`}
-            texto="horas de clase"
-          />
-          {/* «Que funcionaron» no es un adjetivo puesto por quedar bien: lo
-              sostienen las dos cifras de la línea de abajo, y por eso van
-              juntas. Sin ellas sería una opinión; con ellas es un dato que
-              alguien podría comprobar.
-
-              Y se habla de emparejamientos y no de personas a propósito: son
-              104 parejas, y una misma familia aparece en varias —dos hermanos,
-              dos asignaturas, un relevo a mitad de curso—. */}
-          <Cifra
-            numero={`+${HISTORICO.emparejamientos}`}
-            texto="emparejamientos que funcionaron"
-          />
-        </dl>
-
-        <p className="mt-6 text-sm leading-relaxed text-carbon">
-          <strong>
-            {HISTORICO.siguieronTrasLaPrimera} de cada 10 siguieron más allá de
-            la primera clase.
-          </strong>
-        </p>
-
-        <p className="mt-3 text-xs leading-relaxed text-gris-medio">
-          De septiembre a julio, en un curso completo. {NOTA_HISTORICO}
-        </p>
       </section>
 
       {/* ------------------------------------------------------------------ */}
