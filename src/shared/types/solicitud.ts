@@ -76,8 +76,18 @@ export type SolicitudFamilia = {
   avisoDePago: boolean;
   motivoRechazo: string | null;
   enviadaEn: Date;
-  /** Sólo cuando está pagada. */
-  telefonoProfesor?: string;
+  /*
+   * Aquí había un `telefonoProfesor`, y ya no hay ninguno.
+   *
+   * El teléfono del profesor no sale de la plataforma en ninguna dirección y
+   * bajo ningún estado. El contacto va en un solo sentido: el profesor recibe
+   * el teléfono de la familia y es él quien decide si llama, si escribe o si
+   * da su número.
+   *
+   * El motivo es que **una parte de los profesores es menor de edad**. Repartir
+   * el teléfono de un menor a un adulto desconocido no es un detalle de
+   * producto: es lo que este diseño existe para impedir.
+   */
 };
 
 /** Lo que ve el profesor en el enlace donde decide. */

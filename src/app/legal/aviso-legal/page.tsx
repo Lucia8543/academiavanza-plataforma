@@ -114,8 +114,19 @@ export default function PaginaAvisoLegal() {
         </p>
         <p>
           Lo que ocurra entre una familia y un profesor a partir del momento en
-          que se pasan los teléfonos —el precio, los horarios, la forma de pago,
+          que él recibe su teléfono —el precio, los horarios, la forma de pago,
           la calidad de las clases— es cosa suya y no respondemos de ello.
+        </p>
+        <p>
+          El contacto va en un solo sentido y es deliberado:{' '}
+          <strong>
+            al profesor le damos el teléfono de la familia, y el suyo no se lo
+            damos a nadie
+          </strong>
+          . Es una medida de protección de datos: se comparte lo mínimo
+          imprescindible para que las dos partes puedan hablar. Si un profesor
+          decide darle su teléfono a una familia, lo hace él directamente y bajo
+          su responsabilidad.
         </p>
       </Apartado>
 

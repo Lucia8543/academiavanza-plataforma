@@ -6,6 +6,7 @@ import {
 import { precioVigente } from '@/backend/repositories/tarifas';
 import { GUIAS_DE_CLASE } from '@/shared/datos/guias-de-clase';
 import { HISTORICO, NOTA_HISTORICO } from '@/shared/datos/historico';
+import { DIAS_PARA_RECLAMAR } from '@/backend/services/solicitud';
 
 export const dynamic = 'force-dynamic';
 
@@ -335,8 +336,8 @@ export default async function Portada() {
           />
           <Paso
             numero={4}
-            titulo="Os pasamos el teléfono"
-            texto="El precio de las clases y los horarios los acordáis vosotros. Ahí nosotros ya no pintamos nada."
+            titulo="Él te escribe"
+            texto={`Le damos tu teléfono y te escribe o te llama él: por protección de datos no facilitamos el teléfono de nuestros profesores. Si en ${DIAS_PARA_RECLAMAR} días no te ha escrito, te damos otro contacto sin volver a pagar.`}
           />
         </ol>
 

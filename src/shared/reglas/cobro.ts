@@ -176,4 +176,27 @@ export const RECORDATORIO_MAS_TEMPRANO = Math.min(
  * volver al directorio después es un clic. Una regla que sólo se descubre
  * cuando ya te ha caído encima no es una regla, es una trampa.
  */
+/**
+ * Días que espera la familia, tras pagar, antes de poder decir que el profesor
+ * no ha llegado a escribirle y pedir otro contacto sin coste.
+ *
+ * Este plazo lo sostiene todo el diseño del contacto en un solo sentido: al
+ * profesor se le da el teléfono de la familia y a ella no se le da el suyo, así
+ * que **ella no puede hacer nada más que esperar**. Ha pagado y ha quedado en
+ * manos de otro, y eso obliga a ponerle un final visible.
+ *
+ * Tres días y no dos, porque dos no cubren un fin de semana: quien acepta un
+ * viernes por la tarde y escribe el lunes por la mañana no ha hecho nada mal, y
+ * un plazo que lo tratara como un abandono castigaría al profesor normal. Y
+ * tres y no siete, porque a la semana la familia ya ha buscado en otro sitio y
+ * el vale llega tarde.
+ *
+ * **Vivía en `services/solicitud.ts` y se trajo aquí** cuando hubo que
+ * prometerlo también en la portada, en la guía y en el correo de confirmación.
+ * Un plazo que se enseña en cuatro pantallas no puede vivir dentro de un
+ * servicio, entre otras cosas porque ese servicio importa las plantillas de
+ * correo: pedirle el número desde una plantilla habría creado un ciclo.
+ */
+export const DIAS_PARA_RECLAMAR = 3;
+
 export const CADUCADAS_PARA_PAUSAR = 5;

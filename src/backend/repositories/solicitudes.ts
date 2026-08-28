@@ -1,6 +1,6 @@
 import { nombrePublico } from '@/backend/repositories/directorio';
 import { PLAZOS, plazoDe, type Urgencia } from '@/shared/reglas/cobro';
-import { puedeVerTelefonos } from '@/shared/reglas/solicitud';
+import { elProfesorVeElTelefono } from '@/shared/reglas/solicitud';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import type {
   EstadoSolicitud,
@@ -53,11 +53,13 @@ export async function porTokenFamilia(
 
   if (!s) return null;
 
-  // La regla vive en `shared/reglas`, no aquí. Antes esto era un
-  // `estado === 'pagada'` escrito a mano en dos sitios distintos, y bastaba con
-  // que uno de los dos se quedara sin actualizar para enseñar un teléfono
-  // cuando no tocaba.
-  const pagada = puedeVerTelefonos(s.estado as EstadoSolicitud);
+  /*
+   * Aquí ya no se calcula nada sobre teléfonos.
+   *
+   * Esta función devuelve lo que ve la FAMILIA, y a la familia no se le enseña
+   * ningún teléfono del profesor en ningún estado. La regla sigue existiendo,
+   * pero sólo gobierna la vista del profesor, unas líneas más abajo.
+   */
 
   return {
     codigo: s.codigo,
@@ -89,10 +91,16 @@ export async function porTokenFamilia(
       : null,
     motivoRechazo: s.motivo_rechazo,
     enviadaEn: s.enviado_en,
-    // Aquí y en ningún otro sitio.
-    ...(pagada && s.profesores.telefono
-      ? { telefonoProfesor: formatearTelefono(s.profesores.telefono) }
-      : {}),
+    /*
+     * El teléfono del profesor no se devuelve nunca, ni siquiera pagada.
+     *
+     * Antes se añadía aquí cuando la solicitud estaba pagada. Se ha quitado
+     * porque una parte de los profesores es menor de edad, y darle a un adulto
+     * el móvil de un menor es exactamente el riesgo que no se puede asumir.
+     *
+     * El contacto va en un solo sentido: al profesor se le da el teléfono de la
+     * familia, y decide él si llama, si escribe o si le pasa su número.
+     */
   };
 }
 
@@ -123,7 +131,8 @@ export async function porTokenProfesor(
 
   if (!s) return null;
 
-  const pagada = puedeVerTelefonos(s.estado as EstadoSolicitud);
+  // Lo que se compró: al pagar, el profesor ve el teléfono de la familia.
+  const pagada = elProfesorVeElTelefono(s.estado as EstadoSolicitud);
 
   return {
     estado: s.estado as EstadoSolicitud,

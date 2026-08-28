@@ -133,7 +133,7 @@ export function FormularioContacto({
       <p className="mt-1 text-sm text-gris-medio">
         Escribir es gratis. Le preguntamos si puede cogerte y te lo decimos.
         Solo si acepta pagarás {euros(precio)} por el contacto, y entonces os
-        pasamos el teléfono el uno del otro.
+        damos tu teléfono para que te escriba él.
       </p>
 
       {/* Presencial significa que él va a casa del alumno, y la gente lo da

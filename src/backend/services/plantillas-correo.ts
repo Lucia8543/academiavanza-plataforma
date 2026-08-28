@@ -1,5 +1,8 @@
 import type { Correo } from '@/backend/services/correo';
-import { CADUCADAS_PARA_PAUSAR } from '@/shared/reglas/cobro';
+import {
+  CADUCADAS_PARA_PAUSAR,
+  DIAS_PARA_RECLAMAR,
+} from '@/shared/reglas/cobro';
 
 /**
  * Los correos que manda la plataforma.
@@ -158,9 +161,11 @@ export function correoSolicitud(datos: {
     'Dinos si puedes cogerla:',
     enlace,
     '',
-    `Si aceptas, la familia paga ${precio} por el contacto y os pasamos el`,
-    'teléfono el uno del otro. A partir de ahí lo arregláis vosotros: el precio',
-    'de las clases y los horarios no los tocamos.',
+    `Si aceptas, la familia paga ${precio} por el contacto y te damos su`,
+    'teléfono para que le escribas tú. Su número no se lo damos a nadie más, y',
+    'el tuyo no se lo damos a ella: nunca damos el teléfono de un profesor.',
+    'A partir de ahí lo arregláis vosotros: el precio de las clases y los',
+    'horarios no los tocamos.',
     '',
     'Si ahora no puedes, dilo y ya está. No pasa nada y la familia no paga nada.',
     '',
@@ -179,8 +184,9 @@ export function correoSolicitud(datos: {
     ${datos.mensaje ? cita(datos.mensaje) : ''}
     ${boton('Ver y contestar', enlace)}
     <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
-      Si aceptas, la familia paga <strong>${precio}</strong> por el contacto y os pasamos el teléfono el uno del otro.
-      El precio de las clases y los horarios los acordáis vosotros.
+      Si aceptas, la familia paga <strong>${precio}</strong> por el contacto y te damos su
+      teléfono para que le escribas tú. El tuyo no se lo damos a ella: nunca damos el
+      número de un profesor. El precio de las clases y los horarios los acordáis vosotros.
     </p>
     <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
       Si ahora no puedes, dilo y ya está. La familia no paga nada.
@@ -220,8 +226,12 @@ export function correoContactoAbierto(datos: {
     `Curso:    ${datos.nivel}`,
     ...(datos.mensaje ? ['', 'Lo que te contaba:', datos.mensaje] : []),
     '',
-    'Da tú el primer paso, por teléfono o por WhatsApp, como prefieras. Ella',
-    'tiene también tu número, pero se agradece que empieces tú.',
+    'Escríbele tú. Y esto es importante: ella NO tiene tu teléfono y no se lo',
+    'vamos a dar. Nunca damos el número de un profesor, porque algunos sois',
+    'menores de edad. Si no le escribes tú, no puede pasar nada.',
+    '',
+    'Llámala o mándale un WhatsApp, como prefieras, y mejor hoy que mañana:',
+    'lleva esperando desde que te escribió.',
     '',
     'AcademiAvanza',
     ...lineasDeSuFicha(datos.tokenPanel),
@@ -238,9 +248,14 @@ export function correoContactoAbierto(datos: {
     </table>
     ${boton(datos.telefonoFamilia, `tel:${telefonoLimpio}`)}
     ${datos.mensaje ? cita(datos.mensaje) : ''}
+    <p style="margin:0 0 12px;">
+      <strong>Escríbele tú.</strong> Llámala o mándale un WhatsApp, como prefieras,
+      y mejor hoy que mañana: lleva esperando desde que te escribió.
+    </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      Da tú el primer paso, por teléfono o por WhatsApp, como prefieras.
-      Ella tiene también tu número, pero se agradece que empieces tú.
+      <strong>Ella no tiene tu teléfono</strong> y no se lo vamos a dar: nunca damos el
+      número de un profesor, porque algunos sois menores de edad. Si no le escribes tú,
+      no puede pasar nada.
     </p>
     ${pieDeSuFicha(datos.tokenPanel)}
   `);
@@ -629,7 +644,7 @@ export function correoProfesorAcepta(datos: {
     '',
     `${datos.nombreProfesor} puede darte clase.`,
     '',
-    `Para que os paséis el teléfono quedan dos cosas, y las dos son rápidas.`,
+    `Para que pueda escribirte quedan dos cosas, y las dos son rápidas.`,
     '',
     `1. Haz un Bizum de ${precio} poniendo ${datos.codigo} en el concepto.`,
     '',
@@ -641,8 +656,8 @@ export function correoProfesorAcepta(datos: {
     seguimiento,
     '',
     'Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté,',
-    'te mandamos su teléfono y él tendrá el tuyo. Lo que cueste la clase lo',
-    'acordáis vosotros.',
+    'le damos tu teléfono y te escribe él. Lo que cueste la clase lo acordáis',
+    'vosotros.',
     '',
     'AcademiAvanza',
   ].join('\n');
@@ -653,7 +668,7 @@ export function correoProfesorAcepta(datos: {
       <strong>${escapar(datos.nombreProfesor)} puede darte clase.</strong>
     </p>
     <p style="margin:0 0 16px;">
-      Para que os paséis el teléfono quedan <strong>dos cosas</strong>, y las dos son rápidas.
+      Para que pueda escribirte quedan <strong>dos cosas</strong>, y las dos son rápidas.
     </p>
 
     <p style="margin:0 0 4px;"><strong>1.</strong> Haz un Bizum de <strong>${precio}</strong> poniendo este código en el concepto:</p>
@@ -672,8 +687,8 @@ export function correoProfesorAcepta(datos: {
     ${boton('Ir a mi página', seguimiento)}
 
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté, te mandamos
-      su teléfono. Lo que cueste la clase lo acordáis vosotros.
+      Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté, le damos
+      tu teléfono y te escribe él. Lo que cueste la clase lo acordáis vosotros.
     </p>
   `);
 
@@ -727,30 +742,48 @@ export function correoProfesorRechaza(datos: {
   };
 }
 
-/** 4 · Pago confirmado, con el teléfono dentro. */
+/**
+ * 4 · Pago confirmado.
+ *
+ * **Sin ningún teléfono dentro, y ésa es la decisión que sostiene el diseño.**
+ * Antes este correo llevaba el móvil del profesor. Ya no: una parte de los
+ * profesores es menor de edad, y repartir el número de un menor a un adulto al
+ * que no conoce de nada no es algo que se arregle con una advertencia.
+ *
+ * El contacto va en un solo sentido. Al profesor se le da el teléfono de la
+ * familia, y es él quien decide si llama, si escribe o si le pasa su número.
+ *
+ * Eso cambia lo que hay que contarle aquí a la familia: ya no es «aquí tienes su
+ * número», es «te va a escribir él». Y como eso la deja esperando, el correo
+ * tiene que decirle **qué hacer si no la escribe**. Sin esa salida, alguien que
+ * acaba de pagar se queda mirando el móvil sin saber a quién reclamar.
+ */
 export function correoPagoConfirmado(datos: {
   para: string;
   nombreFamilia: string;
   nombreProfesor: string;
-  telefonoProfesor: string;
   tokenFamilia: string;
 }): Correo {
   const seguimiento = `${baseUrl()}/solicitud/${datos.tokenFamilia}`;
-  const limpio = datos.telefonoProfesor.replace(/\s/g, '');
 
   const cuerpo = [
     `Hola ${datos.nombreFamilia}:`,
     '',
-    'Hemos recibido tu pago. Ya podéis hablar.',
+    `Hemos recibido tu pago y le hemos dado tu telefono a ${datos.nombreProfesor}.`,
     '',
-    `Teléfono de ${datos.nombreProfesor}: ${datos.telefonoProfesor}`,
+    `${datos.nombreProfesor} te va a escribir o te va a llamar. Dale un poco de`,
+    'margen: puede tardar unas horas en verlo.',
     '',
-    'Le hemos dado también el tuyo, así que puede que te escriba él primero.',
-    'El precio de las clases y los horarios los acordáis vosotros: nosotros ya',
-    'no intervenimos.',
+    'No te damos su numero, y no es un descuido: por proteccion de datos no',
+    'facilitamos el telefono de nuestros profesores. Es el quien decide si te lo',
+    'da cuando hableis.',
     '',
-    'Si algo no sale bien, entra aquí y te damos otro contacto sin pagar:',
+    `Si pasan ${DIAS_PARA_RECLAMAR} dias y no te ha escrito, entra aqui y te damos otro`,
+    'contacto sin volver a pagar:',
     seguimiento,
+    '',
+    'El precio de las clases y los horarios los acordais vosotros: nosotros ya',
+    'no intervenimos.',
     '',
     'AcademiAvanza',
   ].join('\n');
@@ -758,23 +791,31 @@ export function correoPagoConfirmado(datos: {
   const html = envoltorio(`
     <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreFamilia)}:</p>
     <p style="margin:0 0 16px;font-size:17px;">
-      <strong>Hemos recibido tu pago. Ya podéis hablar.</strong>
+      <strong>Hemos recibido tu pago.</strong> Ya le hemos dado tu teléfono a
+      ${escapar(datos.nombreProfesor)}.
     </p>
-    <p style="margin:0 0 4px;color:${GRIS};">Teléfono de ${escapar(datos.nombreProfesor)}</p>
-    ${boton(datos.telefonoProfesor, `tel:${limpio}`)}
+    <p style="margin:0 0 16px;">
+      <strong>Él te escribirá o te llamará.</strong> Dale un poco de margen: puede
+      tardar unas horas en verlo.
+    </p>
     <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
-      Le hemos dado también el tuyo, así que puede que te escriba él primero.
-      El precio de las clases y los horarios los acordáis vosotros.
+      No te damos su número, y no es un descuido: <strong>por protección de datos no
+      facilitamos el teléfono de nuestros profesores</strong>. Es él quien decide si te lo
+      da cuando habléis.
     </p>
-    <p style="margin:0;font-size:14px;">
-      ¿Algo no sale bien? <a href="${seguimiento}" style="color:${VERDE};">Entra aquí</a>
-      y te damos otro contacto sin pagar de nuevo.
+    <p style="margin:0 0 4px;">
+      <strong>¿Y si no te escribe?</strong> Si pasan ${DIAS_PARA_RECLAMAR} días sin
+      noticias, entra aquí y te damos otro contacto sin volver a pagar.
+    </p>
+    ${boton('Ver mi solicitud', seguimiento)}
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      El precio de las clases y los horarios los acordáis vosotros.
     </p>
   `);
 
   return {
     para: datos.para,
-    asunto: `Ya tienes el teléfono de ${datos.nombreProfesor}`,
+    asunto: `Pago recibido · ${datos.nombreProfesor} te escribirá`,
     cuerpo,
     html,
   };
@@ -808,7 +849,7 @@ export function correoRecordatorioPago(datos: {
     '',
     `${datos.nombreProfesor} dijo que puede darte clase y sigue esperando.`,
     '',
-    `Para que os paséis el teléfono falta el Bizum de ${precio} con el código`,
+    `Para que pueda escribirte falta el Bizum de ${precio} con el código`,
     `${datos.codigo} en el concepto.`,
     '',
     'Si ya lo hiciste y se te pasó avisarnos, entra y pulsa «Ya he hecho el',
@@ -831,7 +872,7 @@ export function correoRecordatorioPago(datos: {
       <strong>${escapar(datos.nombreProfesor)} dijo que puede darte clase</strong> y sigue esperando.
     </p>
     <p style="margin:0 0 16px;">
-      Para que os paséis el teléfono falta el Bizum de <strong>${precio}</strong> con el código
+      Para que pueda escribirte falta el Bizum de <strong>${precio}</strong> con el código
       <strong style="font-family:monospace;letter-spacing:2px;">${escapar(datos.codigo)}</strong> en el concepto.
     </p>
     <p style="margin:0 0 12px;color:${GRIS};">
@@ -1595,6 +1636,91 @@ export function correoEnlacePerdido(datos: {
   return {
     para: datos.para,
     asunto: 'El enlace de tu ficha',
+    cuerpo,
+    html,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 22 · Esta familia ha dejado de esperarte
+// -----------------------------------------------------------------------------
+
+/**
+ * El aviso al profesor que no llegó a escribir a tiempo.
+ *
+ * Existe por un agujero que sólo se ve cuando se recorre el caso entero. La
+ * familia paga, el profesor recibe su teléfono, pasan los días y no le escribe.
+ * Ella pide otro contacto, lo consigue, y busca a otra persona. Hasta aquí, todo
+ * previsto.
+ *
+ * Lo que no estaba previsto es que **a él no se le decía nada**. Se quedaba con
+ * el teléfono de alguien que ya le había descartado, sin saberlo. Si escribía
+ * cinco días después, estaba escribiendo a una familia que había dejado de
+ * esperarle, y ella recibía un mensaje de un desconocido al que creía haber
+ * cancelado.
+ *
+ * Su número no se puede recuperar —eso es irreversible desde el momento en que
+ * se entrega— pero sí se le puede pedir que pare, y queda constancia de que se
+ * le pidió. Es lo único que la plataforma puede hacer aquí, y por eso lo hace.
+ *
+ * **El tono no es de reproche y esto importa.** La mayoría no escribe por
+ * despiste, por exámenes o porque el aviso se le fue a spam, no por desprecio.
+ * Decirle «has perdido a esta familia por no contestar» a alguien que trabaja
+ * gratis es la forma más rápida de que se dé de baja. Lo que hay que conseguir
+ * es que no escriba, no que se sienta mal.
+ */
+export function correoFamiliaYaNoEspera(datos: {
+  para: string;
+  nombreProfesor: string;
+  nivel: string;
+  tokenPanel: string;
+}): Correo {
+  const cuerpo = [
+    `Hola ${datos.nombreProfesor}:`,
+    '',
+    `La familia que te escribió para ${datos.nivel} ha dejado de esperar tu`,
+    'respuesta y ha buscado a otra persona.',
+    '',
+    'Te pedimos una cosa importante: **no le escribas ni la llames**. Tienes su',
+    'teléfono porque nos lo pidió ella en su momento, y ahora ya no espera',
+    'ningún mensaje tuyo. Bórralo, por favor.',
+    '',
+    'No es un reproche. Lo más normal es que estuvieras de exámenes o que el',
+    'aviso se te fuera a spam. No tienes que hacer nada más y esto no te',
+    'penaliza en tu ficha.',
+    '',
+    'Para la próxima, lo único que hace falta es escribir tú el primero en',
+    'cuanto te llegue el teléfono: la familia no tiene el tuyo y no puede dar',
+    'ella el paso.',
+    '',
+    'AcademiAvanza',
+    ...lineasDeSuFicha(datos.tokenPanel),
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
+    <p style="margin:0 0 16px;">
+      La familia que te escribió para <strong>${escapar(datos.nivel)}</strong> ha dejado
+      de esperar tu respuesta y ha buscado a otra persona.
+    </p>
+    <p style="margin:0 0 16px;padding:12px 16px;background:#F7FAFC;border-left:4px solid ${AZUL};">
+      <strong>Por favor, no le escribas ni la llames.</strong> Tienes su teléfono porque
+      nos lo pidió ella en su momento, y ahora ya no espera ningún mensaje tuyo. Bórralo.
+    </p>
+    <p style="margin:0 0 16px;color:${GRIS};">
+      No es un reproche: lo más normal es que estuvieras de exámenes o que el aviso se te
+      fuera a spam. No tienes que hacer nada más y esto no te penaliza en tu ficha.
+    </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Para la próxima, lo único que hace falta es escribir tú el primero en cuanto te
+      llegue el teléfono: la familia no tiene el tuyo y no puede dar ella el paso.
+    </p>
+    ${pieDeSuFicha(datos.tokenPanel)}
+  `);
+
+  return {
+    para: datos.para,
+    asunto: 'Esta familia ya no espera tu respuesta',
     cuerpo,
     html,
   };

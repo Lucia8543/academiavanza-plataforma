@@ -65,7 +65,7 @@ export default async function PaginaProfesores({
         <p className="mt-3 max-w-2xl text-carbon">
           Todos han estudiado en un colegio de Madrid y nos han dicho en cuál.
           Escribir es gratis. Solo pagas {euros(precio)} si el profesor acepta
-          darte clase, y entonces os pasamos el teléfono el uno del otro. Lo que
+          darte clase, y entonces le damos tu teléfono para que te escriba. Lo que
           cueste la clase lo acordáis vosotros.
         </p>
       </header>

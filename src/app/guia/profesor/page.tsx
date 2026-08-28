@@ -215,7 +215,7 @@ export default async function GuiaProfesor() {
 
         <Paso
           numero={5}
-          titulo="Os pasamos los teléfonos"
+          titulo="Le escribes tú"
           dibujo={
             <Pantalla donde="Tu correo">
               <p className="text-[11px] font-semibold text-carbon">
@@ -228,8 +228,8 @@ export default async function GuiaProfesor() {
         >
           <p>
             Cuando aceptas, la familia paga {euros(precio)} a AcademiAvanza por
-            el contacto. Una sola vez. Entonces os damos el teléfono el uno del
-            otro y ya habláis directamente.
+            el contacto. Una sola vez. Entonces te damos su teléfono y le
+            escribes tú.
           </p>
           <p>
             <strong className="text-carbon">

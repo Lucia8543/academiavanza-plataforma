@@ -445,11 +445,12 @@ export function FormularioRegistro({
           />
           <p className="mt-1 text-sm text-gris-medio">
             <span className="font-medium text-carbon">
-              No aparece en tu ficha ni lo ve nadie que entre en la web.
+              Tu teléfono no lo damos nunca, ni siquiera a la familia.
             </span>{' '}
-            Lo usamos para escribirte por WhatsApp cuando una familia te quiera,
-            y sólo se lo damos a esa familia cuando tú has aceptado y ha pagado
-            el contacto.
+            No aparece en tu ficha y no lo ve nadie que entre en la web. Lo
+            usamos para escribirte nosotros por WhatsApp cuando una familia te
+            quiera. Cuando aceptas y ella paga, te damos el suyo y le escribes
+            tú; si quieres darle tu número, se lo das tú.
           </p>
           <Aviso mensaje={errores.telefono} />
         </div>

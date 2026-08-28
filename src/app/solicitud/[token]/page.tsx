@@ -328,7 +328,7 @@ export default async function PaginaSolicitud({
         {s.estado === 'devuelta' && (
           <Paso numero={3} titulo="Te devolvimos el dinero" estado="hecho">
             <p className="text-sm text-gris-medio">
-              Sigues teniendo su teléfono aquí abajo por si queréis retomarlo.
+              Si queréis retomarlo, él sigue teniendo tu teléfono.
             </p>
           </Paso>
         )}
@@ -342,25 +342,50 @@ export default async function PaginaSolicitud({
 
         {/* --- Paso 4: el teléfono ---------------------------------------- */}
         {s.estado === 'pagada' || s.estado === 'devuelta' ? (
-          <Paso numero={4} titulo="Ya podéis hablar" estado="hecho">
+          <Paso numero={4} titulo={`${s.profesor} te escribirá`} estado="hecho">
+            {/*
+              Aquí estaba el teléfono del profesor y ya no está.
+
+              El contacto va en un solo sentido: él tiene el de la familia y
+              decide si llama, si escribe o si le da su número. El motivo es que
+              parte de los profesores es menor de edad.
+
+              Lo que hay que resolver en esta pantalla es la consecuencia: la
+              familia ha pagado y ahora depende de que alguien le escriba. Por
+              eso se le dice desde el principio qué hacer si eso no pasa, y no
+              escondido tres párrafos más abajo.
+            */}
             <div className="rounded-xl border-2 border-verde-avanza bg-white p-5">
-              <p className="text-sm text-gris-medio">
-                Teléfono de {s.profesor}
+              <p className="text-carbon">
+                Ya le hemos dado tu teléfono a{' '}
+                <strong>{s.profesor}</strong>. Él te escribirá o te llamará;
+                dale un poco de margen, porque puede tardar unas horas en verlo.
               </p>
-              <p className="mt-1">
-                <a
-                  href={`tel:${s.telefonoProfesor?.replace(/\s/g, '')}`}
-                  className="text-2xl font-bold text-verde-avanza-oscuro underline underline-offset-4"
-                >
-                  {s.telefonoProfesor}
-                </a>
+              <p className="mt-3 text-sm text-gris-medio">
+                No te damos su número, y no es un descuido:{' '}
+                <strong className="text-carbon">
+                  por protección de datos no facilitamos el teléfono de nuestros
+                  profesores
+                </strong>
+                . Es él quien decide si te lo da cuando habléis.
               </p>
               <p className="mt-3 text-sm text-carbon">
-                También le hemos dado el tuyo. El precio de las clases y los
-                horarios los acordáis entre vosotros: nosotros ya no
-                intervenimos.
+                El precio de las clases y los horarios los acordáis entre
+                vosotros: nosotros ya no intervenimos.
               </p>
             </div>
+
+            {/* La salida, y no escondida abajo.
+                Ha pagado y ahora depende de que otro dé el primer paso. Si no
+                se le dice desde el principio qué pasa si eso no ocurre, lo que
+                hace no es esperar: es arrepentirse de haber pagado. */}
+            <p className="mt-4 rounded-lg border-l-4 border-aviso bg-gris-claro px-4 py-3 text-sm leading-relaxed text-carbon">
+              <strong>
+                ¿Y si no te escribe en {DIAS_PARA_RECLAMAR} días?
+              </strong>{' '}
+              Pídenos otro contacto aquí abajo y no vuelves a pagar. Eliges tú a
+              quién.
+            </p>
 
             {s.tieneVale ? (
               <div className="mt-4 rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-5">
@@ -395,7 +420,7 @@ export default async function PaginaSolicitud({
             )}
           </Paso>
         ) : (
-          <Paso numero={4} titulo="Os pasamos los teléfonos" estado="pendiente" />
+          <Paso numero={4} titulo="El profesor te escribe" estado="pendiente" />
         )}
       </ol>
 

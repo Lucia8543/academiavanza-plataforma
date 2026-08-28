@@ -107,7 +107,7 @@ export default async function PaginaAceptar({
       {s.estado === 'pendiente_profesor' && (
         <section className="mt-8">
           <p className="text-sm text-carbon">
-            Si aceptas, la familia paga el contacto y os pasamos el teléfono el
+            Si aceptas, la familia paga el contacto y te damos su teléfono el
             uno del otro. Si ahora no puedes, dilo sin más: no pasa nada y nadie
             paga nada.
           </p>
@@ -151,7 +151,12 @@ export default async function PaginaAceptar({
             <h2 className="font-bold text-verde-avanza-oscuro">Has aceptado</h2>
             <p className="mt-2 text-sm text-carbon">
               Le hemos dicho a la familia que sí. En cuanto pague el contacto te
-              avisamos con su teléfono. No tienes que hacer nada más.
+              mandamos su teléfono para que le escribas tú.
+            </p>
+            <p className="mt-2 text-sm text-gris-medio">
+              Ella no tiene el tuyo y no se lo vamos a dar: nunca damos el
+              teléfono de un profesor. Así que el primer paso lo tienes que dar
+              tú, o no va a pasar nada.
             </p>
           </div>
 
@@ -291,6 +296,7 @@ export default async function PaginaAceptar({
           <p className="text-sm text-carbon">
             Esta familia pidió que le devolviéramos el contacto. Sigues teniendo
             su teléfono por si queréis retomarlo, pero no tienes que hacer nada.
+            Ella no tiene el tuyo.
           </p>
         </div>
       )}

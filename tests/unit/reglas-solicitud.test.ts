@@ -5,7 +5,7 @@ import {
   esperaPago,
   huboPago,
   puedeReclamarVale,
-  puedeVerTelefonos,
+  elProfesorVeElTelefono,
   sigueViva,
   transicionPermitida,
 } from '../../src/shared/reglas/solicitud';
@@ -23,29 +23,37 @@ import {
  * un número que no debería estar en pantalla.
  */
 
-describe('los teléfonos no salen antes de tiempo', () => {
-  // La lista está escrita a mano y a propósito. Si alguien cambia la función
-  // para que devuelva true en un estado nuevo, tendrá que venir aquí y
-  // escribirlo, que es exactamente lo que se quiere que pase.
+describe('el profesor no ve el teléfono antes de tiempo', () => {
+  /*
+   * Esta regla gobierna un solo sentido, y el nombre del `describe` lo dice a
+   * propósito: **el teléfono de la familia hacia el profesor**. El del profesor
+   * no se enseña en ningún estado, así que aquí no hay nada que comprobar sobre
+   * él; de eso se ocupan las pruebas de integración, que miran lo que se le
+   * sirve a la familia y comprueban que el número no aparece.
+   *
+   * La lista está escrita a mano y a propósito. Si alguien cambia la función
+   * para que devuelva true en un estado nuevo, tendrá que venir aquí y
+   * escribirlo, que es exactamente lo que se quiere que pase.
+   */
   const conTelefono = ['pagada', 'devuelta'];
 
   for (const estado of ESTADOS) {
     const deberia = conTelefono.includes(estado);
 
-    it(`${estado}: ${deberia ? 'sí' : 'NO'} se ven los teléfonos`, () => {
-      expect(puedeVerTelefonos(estado)).toBe(deberia);
+    it(`${estado}: ${deberia ? 'sí' : 'NO'} ve el teléfono de la familia`, () => {
+      expect(elProfesorVeElTelefono(estado)).toBe(deberia);
     });
   }
 
-  it('nunca se ven antes de pagar', () => {
-    expect(puedeVerTelefonos('pendiente_profesor')).toBe(false);
-    expect(puedeVerTelefonos('aceptada')).toBe(false);
+  it('nunca antes de pagar', () => {
+    expect(elProfesorVeElTelefono('pendiente_profesor')).toBe(false);
+    expect(elProfesorVeElTelefono('aceptada')).toBe(false);
   });
 
   it('una solicitud rechazada, caducada o cancelada no enseña nada', () => {
-    expect(puedeVerTelefonos('rechazada')).toBe(false);
-    expect(puedeVerTelefonos('caducada')).toBe(false);
-    expect(puedeVerTelefonos('cancelada')).toBe(false);
+    expect(elProfesorVeElTelefono('rechazada')).toBe(false);
+    expect(elProfesorVeElTelefono('caducada')).toBe(false);
+    expect(elProfesorVeElTelefono('cancelada')).toBe(false);
   });
 });
 

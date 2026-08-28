@@ -164,7 +164,9 @@ describe('gastar el vale', () => {
 
     const vista = await porTokenFamilia(segunda.token);
     expect(vista?.estado).toBe('pagada');
-    expect(vista?.telefonoProfesor).toBeTruthy();
+    // Pagada con el vale, pero el teléfono del profesor sigue sin salir: eso
+    // no depende de cómo se haya pagado.
+    expect(JSON.stringify(vista)).not.toContain('600000001');
   });
 
   it('el mismo vale no se gasta dos veces', async () => {

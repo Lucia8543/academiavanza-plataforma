@@ -56,17 +56,23 @@ export function esFinal(estado: EstadoSolicitud): boolean {
 }
 
 /**
- * Qué datos de contacto se pueden enseñar en cada estado.
+ * Cuándo ve el profesor el teléfono de la familia.
  *
- * **Ésta es la regla más importante de la plataforma.** Es lo que se compra:
- * los dos teléfonos se enseñan cuando hay pago, y ni un momento antes.
+ * **Ésta es la regla más importante de la plataforma.** Es lo que se compra: el
+ * teléfono se enseña cuando hay pago, y ni un momento antes.
+ *
+ * Se llamaba `puedeVerTelefonos`, en plural, porque antes gobernaba los dos: al
+ * pagar, cada parte veía el número de la otra. **Ya no hay dos.** El teléfono
+ * del profesor no se enseña en ningún estado —lo razona el ADR 0008— así que un
+ * nombre en plural aquí sería una invitación a volver a usarla para lo que ya no
+ * hace. Un nombre que miente es como vuelven los fallos.
  *
  * Está escrita al revés de como se suele hacer —una lista de lo que SÍ, en vez
  * de esconder lo que NO— para que añadir un estado nuevo tenga como efecto por
  * defecto no enseñar nada. Un olvido así falla del lado seguro.
  */
-export function puedeVerTelefonos(estado: EstadoSolicitud): boolean {
-  // Devuelta incluida: el dinero se ha devuelto, pero hablaron. Quitarles el
+export function elProfesorVeElTelefono(estado: EstadoSolicitud): boolean {
+  // Devuelta incluida: el dinero se ha devuelto, pero hablaron. Quitarle el
   // número después de que se hayan llamado no protege a nadie y rompe una
   // relación que ya existe.
   return estado === 'pagada' || estado === 'devuelta';

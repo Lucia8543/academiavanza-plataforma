@@ -71,9 +71,12 @@ export default function PaginaPrivacidad() {
           <strong>Qué se publica y qué no.</strong> En el directorio aparece tu
           nombre de pila y la inicial de tu primer apellido, tu colegio, tus
           estudios, lo que das y tu horario orientativo.{' '}
-          <strong>Tu correo y tu teléfono no se publican nunca.</strong> El
-          teléfono solo se le da a una familia concreta cuando tú has aceptado
-          darle clase y ella ha pagado el contacto.
+          <strong>
+            Tu correo y tu teléfono no se publican, y tampoco se los damos a
+            ninguna familia.
+          </strong>{' '}
+          Cuando aceptas y la familia paga, es a ti a quien le damos su teléfono,
+          y eres tú quien decide si le escribes y si le das tu número.
         </p>
         <p>
           <strong>Cuánto tiempo:</strong> mientras tu ficha exista. Desde el
@@ -108,7 +111,7 @@ export default function PaginaPrivacidad() {
         <p>
           <strong>Para qué:</strong> para preguntarle al profesor si puede
           cogerte y, si acepta y pagas el contacto, para darle tu nombre y tu
-          teléfono. A nadie más.
+          teléfono, que es lo que le permite escribirte. A nadie más.
         </p>
         <p>
           <strong>Si no sigues adelante te preguntamos por qué</strong>, y hay
@@ -134,9 +137,28 @@ export default function PaginaPrivacidad() {
       </Apartado>
 
       <Apartado titulo="Con quién compartimos los datos">
+        {/*
+           El apartado más importante de esta página, y el que más cuidado
+           necesita: describe el reparto de datos y tiene que coincidir
+           exactamente con lo que hace el código.
+
+           El contacto va en un solo sentido. Al profesor se le da el nombre y el
+           teléfono de la familia; a la familia no se le da el teléfono del
+           profesor en ningún momento ni en ningún estado, porque parte de los
+           profesores son menores de edad.
+         */}
         <p>
-          Con el profesor al que escribes, y solo su nombre y su teléfono, y solo
-          después de que él acepte y tú pagues. Con nadie más.
+          <strong>Al profesor al que escribes</strong> le damos tu nombre y tu
+          teléfono, y sólo después de que él acepte y tú pagues. A nadie más.
+        </p>
+        <p>
+          <strong>
+            A ti no te damos el teléfono del profesor en ningún caso.
+          </strong>{' '}
+          Es él quien te escribe o te llama, y quien decide si te da su número
+          cuando habléis. Es una medida de protección de datos: minimizamos lo
+          que se comparte, y el teléfono de un profesor no hace falta para que
+          podáis hablar.
         </p>
         <p>
           Aparte, usamos tres servicios que tratan datos por encargo nuestro:{' '}

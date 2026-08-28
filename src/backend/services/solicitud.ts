@@ -6,6 +6,7 @@ import { avisar } from '@/backend/services/avisos';
 import { enviar } from '@/backend/services/correo';
 import { puedeEscribir } from '@/backend/services/limites';
 import {
+  DIAS_PARA_RECLAMAR,
   plazoDe,
   seAbreSinPagar,
   URGENCIA_POR_DEFECTO,
@@ -15,6 +16,7 @@ import {
   correoContactoAbierto,
   correoDevolucion,
   correoFamiliaNoSigue,
+  correoFamiliaYaNoEspera,
   correoFichaPausada,
   correoPagoConfirmado,
   correoProfesorAcepta,
@@ -408,7 +410,6 @@ export async function confirmarPago(codigo: string): Promise<ResultadoPago> {
           solicitud.profesores.nombre,
           solicitud.profesores.apellidos,
         ),
-        telefonoProfesor: formatearTelefono(solicitud.profesores.telefono ?? ''),
         tokenFamilia: solicitud.token_familia,
       }),
     );
@@ -641,8 +642,12 @@ export async function registrarDevolucion(
 // El vale que se pide solo
 // -----------------------------------------------------------------------------
 
-/** Días que hay que esperar tras pagar antes de poder decir que no hubo contacto. */
-export const DIAS_PARA_RECLAMAR = 3;
+/*
+ * El plazo vive en `shared/reglas/cobro.ts` con los demás, y se reexporta desde
+ * aquí porque media aplicación lo importaba de este fichero. Reexportarlo evita
+ * tocar diez sitios para mover una constante.
+ */
+export { DIAS_PARA_RECLAMAR };
 
 /** Vales que ha provocado un profesor antes de que su ficha se pause sola. */
 const VALES_PARA_PAUSAR = 2;
@@ -698,6 +703,40 @@ export type ResultadoVale =
  * tres veces, el problema no es suyo. Las cadenas largas salen marcadas en el
  * panel para poder mirarlas, pero no se bloquean.
  */
+/**
+ * Le pide al profesor que no escriba a una familia que ya no le espera.
+ *
+ * Falla en silencio a propósito. Es un aviso de cortesía y de higiene, no un
+ * paso del que dependa nada: si el correo no sale, la familia ya tiene su vale
+ * y el profesor sigue teniendo su ficha. Dejar que una excepción de Resend
+ * tumbara la reclamación del vale sería cambiar un problema pequeño por uno
+ * grande.
+ */
+async function avisarDeQueYaNoEspera(contactoId: string): Promise<void> {
+  try {
+    const c = await db.contactos.findUnique({
+      where: { id: contactoId },
+      select: {
+        niveles: { select: { nombre: true } },
+        profesores: { select: { id: true, nombre: true, email: true } },
+      },
+    });
+
+    if (!c) return;
+
+    await enviar(
+      correoFamiliaYaNoEspera({
+        para: c.profesores.email,
+        nombreProfesor: c.profesores.nombre,
+        nivel: c.niveles?.nombre ?? 'clases particulares',
+        tokenPanel: await tokenDelPanel(c.profesores.id),
+      }),
+    );
+  } catch (error) {
+    console.error('[vale] no se ha podido avisar al profesor:', error);
+  }
+}
+
 export async function pedirVale(
   tokenFamilia: string,
   motivo: MotivoVale,
@@ -767,7 +806,23 @@ export async function pedirVale(
   });
 
   if (motivo === 'sin-contacto') {
+    /*
+     * Y se le dice al profesor que pare, que es lo que faltaba.
+     *
+     * Él tiene el teléfono de esta familia desde que ella pagó, y hasta ahora
+     * nadie le contaba que había dejado de esperarle. Un profesor que escribe
+     * cinco días tarde no está siendo impuntual: está escribiendo a alguien
+     * que ya le descartó y que no espera ningún mensaje suyo.
+     *
+     * El número no se puede recuperar —eso es irreversible desde que se
+     * entrega— pero pedirle que no lo use sí se puede, y queda constancia.
+     *
+     * Va después de `revisarProfesor` y en su propio `try` porque son cosas
+     * distintas: que falle Resend no puede impedir que su ficha se revise, y
+     * que se revise su ficha no puede impedir que se le avise.
+     */
     await revisarProfesor(solicitud.profesor_id);
+    await avisarDeQueYaNoEspera(solicitud.id);
   }
 
   await mandarElVale(solicitud, caduca);

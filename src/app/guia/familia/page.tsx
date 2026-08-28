@@ -8,6 +8,7 @@ import {
   Paso,
   Raya,
 } from '@/frontend/features/guia/piezas';
+import { DIAS_PARA_RECLAMAR } from '@/backend/services/solicitud';
 import { PLAZOS } from '@/shared/reglas/cobro';
 
 /**
@@ -157,19 +158,37 @@ export default async function GuiaFamilia() {
           numero={4}
           titulo="Si acepta, pagas el contacto"
           dibujo={
-            <Pantalla donde="Tu correo">
+            <Pantalla donde="Tu móvil">
               <p className="text-[11px] font-semibold text-carbon">
-                Ya podéis hablar
+                Marta P.
               </p>
-              <Campo etiqueta="Marta" valor="6·· ··· ···" />
+              <p className="text-[11px] text-gris-medio">
+                Hola, soy Marta, de AcademiAvanza…
+              </p>
               <Raya ancho="w-2/3" />
             </Pantalla>
           }
         >
           <p>
-            {euros(precio)} por Bizum, una sola vez. En cuanto lo confirmamos, os
-            damos el teléfono el uno del otro y ya habláis directamente.
+            {euros(precio)} por Bizum, una sola vez. En cuanto lo confirmamos le
+            damos tu teléfono, y{' '}
+            <strong className="text-carbon">te escribe o te llama él</strong>.
           </p>
+          <p>
+            <strong className="text-carbon">
+              No te damos el número del profesor, y es a propósito:
+            </strong>{' '}
+            por protección de datos no facilitamos el teléfono de nuestros
+            profesores. Es él quien decide si te lo da cuando habléis.
+          </p>
+          <Ojo>
+            <strong>
+              ¿Y si no te escribe en {DIAS_PARA_RECLAMAR} días?
+            </strong>{' '}
+            Entras en tu página y te damos otro contacto sin volver a pagar.
+            Eliges tú a quién. No tienes que dar explicaciones ni discutir con
+            nadie: es un botón.
+          </Ojo>
           <p>
             Eso es todo lo que cobramos.{' '}
             <strong className="text-carbon">

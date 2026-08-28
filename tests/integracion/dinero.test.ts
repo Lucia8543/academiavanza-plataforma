@@ -67,19 +67,18 @@ describe('el recorrido completo', () => {
     expect(s.pagada_en).toBeNull();
   });
 
-  it('confirmar el pago es lo que abre los teléfonos', async () => {
+  it('confirmar el pago cambia el estado, y nada más se le abre a la familia', async () => {
     const { codigo, token } = await unaSolicitud();
     const s0 = await porCodigo(codigo);
     await decidir(s0.token_profesor, 'aceptar');
-
-    const antes = await porTokenFamilia(token);
-    expect(antes?.telefonoProfesor).toBeUndefined();
 
     await confirmarPago(codigo);
 
     const despues = await porTokenFamilia(token);
     expect(despues?.estado).toBe('pagada');
-    expect(despues?.telefonoProfesor).toBeTruthy();
+    // Lo que se abre con el pago es el teléfono de la FAMILIA hacia el
+    // profesor. Al revés no, en ningún estado: ver el bloque de abajo.
+    expect(JSON.stringify(despues)).not.toContain('600000001');
   });
 
   it('rechazar cierra sin cobrar', async () => {
@@ -90,7 +89,6 @@ describe('el recorrido completo', () => {
     const s = await porTokenFamilia(token);
 
     expect(s?.estado).toBe('rechazada');
-    expect(s?.telefonoProfesor).toBeUndefined();
     expect(s?.motivoRechazo).toBe('Ahora mismo no puedo');
   });
 
@@ -168,23 +166,34 @@ describe('⭐ ningún teléfono antes de tiempo', () => {
       const vista = await porTokenFamilia(token);
 
       expect(vista?.estado).toBe(estado);
-      expect(vista?.telefonoProfesor).toBeUndefined();
       expect(JSON.stringify(vista)).not.toContain('600000001');
     });
   }
 
-  it('en «pagada» sí, que es de lo que va todo esto', async () => {
+  /*
+   * ⭐ Y en «pagada» tampoco, que es lo que esta prueba existe para impedir.
+   *
+   * Antes el teléfono del profesor se le daba a la familia al confirmar el
+   * pago, y estas dos pruebas comprobaban justamente eso. Se han invertido:
+   * **una parte de los profesores es menor de edad**, así que su número no sale
+   * de la plataforma en ningún estado. El contacto va en un solo sentido y es
+   * el profesor quien escribe.
+   *
+   * Sin esta prueba, «que la familia vea el teléfono cuando ha pagado» es una
+   * mejora razonable que cualquiera reintroduciría en diez minutos.
+   */
+  it('⭐ en «pagada» tampoco: el número del profesor no sale nunca', async () => {
     const { codigo, token } = await unaSolicitud();
     const s0 = await porCodigo(codigo);
     await decidir(s0.token_profesor, 'aceptar');
     await confirmarPago(codigo);
 
-    expect((await porTokenFamilia(token))?.telefonoProfesor).toBeTruthy();
+    const vista = await porTokenFamilia(token);
+    expect(vista?.estado).toBe('pagada');
+    expect(JSON.stringify(vista)).not.toContain('600000001');
   });
 
-  it('en «devuelta» se mantiene, a propósito', async () => {
-    // Ya hablaron. Quitarles el número después no protege a nadie, y no está
-    // escrito en ningún documento: sin esta prueba, alguien lo «arreglaría».
+  it('⭐ en «devuelta» tampoco', async () => {
     const { codigo, token } = await unaSolicitud();
     const s0 = await porCodigo(codigo);
     await decidir(s0.token_profesor, 'aceptar');
@@ -195,7 +204,9 @@ describe('⭐ ningún teléfono antes de tiempo', () => {
       data: { estado: 'devuelta', devuelta_en: new Date() },
     });
 
-    expect((await porTokenFamilia(token))?.telefonoProfesor).toBeTruthy();
+    expect(JSON.stringify(await porTokenFamilia(token))).not.toContain(
+      '600000001',
+    );
   });
 });
 
@@ -237,7 +248,7 @@ describe('⭐ quedarse sin tarifa no regala contactos', () => {
 
     const vista = await porTokenFamilia(token);
     expect(vista?.estado).toBe('aceptada');
-    expect(vista?.telefonoProfesor).toBeUndefined();
+    expect(JSON.stringify(vista)).not.toContain('600000001');
   });
 });
 
@@ -254,7 +265,9 @@ describe('«ya he hecho el Bizum»', () => {
     const s = await porCodigo(codigo);
     expect(s.pago_avisado_en).not.toBeNull();
     expect(s.estado).toBe('aceptada');
-    expect((await porTokenFamilia(token))?.telefonoProfesor).toBeUndefined();
+    expect(JSON.stringify(await porTokenFamilia(token))).not.toContain(
+      '600000001',
+    );
   });
 
   it('sólo se puede avisar una vez', async () => {
