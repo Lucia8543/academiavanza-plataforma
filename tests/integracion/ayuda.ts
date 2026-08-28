@@ -29,14 +29,34 @@ export async function limpiar(): Promise<void> {
   await db.mantenimiento_ejecuciones.deleteMany({});
 }
 
-/** El precio del contacto. Sin esto, `precioVigente()` revienta a propósito. */
+/**
+ * El precio del contacto. Sin esto, `precioVigente()` revienta a propósito.
+ *
+ * **`vigente_desde` se pone a mano, y ésa es la parte que importa.** Dejándolo
+ * al `DEFAULT now()` de PostgreSQL, la tarifa nacía con un sello de tiempo de
+ * precisión de microsegundos; cerrarla un instante después con un `new Date()`
+ * de JavaScript, que sólo llega al milisegundo, producía un valor **anterior**
+ * si las dos cosas caían en el mismo milisegundo. Y entonces saltaba
+ * `tarifa_vigencia_valida`, que exige `vigente_hasta > vigente_desde`.
+ *
+ * Era una carrera que ganaba o perdía según lo rápido que fuera la máquina, así
+ * que fallaba una prueba de cada tantas y nunca la misma. Naciendo un minuto
+ * atrás no hay carrera que perder, y además la situación es más realista: en
+ * producción nadie cierra una tarifa en el mismo milisegundo en que la abre.
+ */
 export async function ponerTarifa(importe = 10): Promise<void> {
   await db.tarifas.updateMany({
     where: { concepto: 'match', vigente_hasta: null },
     data: { vigente_hasta: new Date() },
   });
   await db.tarifas.create({
-    data: { concepto: 'match', importe, moneda: 'EUR', motivo: 'Pruebas' },
+    data: {
+      concepto: 'match',
+      importe,
+      moneda: 'EUR',
+      motivo: 'Pruebas',
+      vigente_desde: new Date(Date.now() - 60_000),
+    },
   });
 }
 
