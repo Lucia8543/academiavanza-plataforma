@@ -89,10 +89,12 @@ export default async function Portada() {
           </span>
         </p>
 
+        {/* Se quitó «que nos han dicho en qué colegio estudiaron»: sonaba a
+            rumor y además repetía lo que ya dice la línea de arriba. Corto, que
+            es lo que se lee. */}
         <p className="mt-6 text-base text-gris-medio">
-          Profesores particulares en Madrid que nos han dicho en qué colegio
-          estudiaron. Busca por colegio, asignatura y curso, y escribe
-          directamente a quien encaje contigo.{' '}
+          Profesores particulares en Madrid. Filtra por colegio, asignatura y
+          curso, y escribe a quien te encaje.{' '}
           <span className="font-medium text-carbon">
             Más de {miles(HISTORICO.clases)} clases dadas en el último curso.
           </span>
@@ -113,6 +115,13 @@ export default async function Portada() {
           </p>
         )}
 
+        {/* Sin registro, y dicho pronto. Es de las pocas cosas en las que esto
+            gana claramente a las plataformas grandes: quien viene de una de
+            ellas espera un formulario de alta antes de poder mirar nada. */}
+        <p className="mt-4 text-sm text-gris-medio">
+          Sin registrarte y sin crear ninguna cuenta.
+        </p>
+
         {/*
           La bifurcación, arriba y sin scroll.
           Media portada está escrita para familias, y un profesor que llegue
@@ -128,7 +137,10 @@ export default async function Portada() {
           >
             Publica tu ficha gratis
           </a>
-          . Cinco minutos, y a ti no te cobramos nada nunca.
+          {/* Antes decía «y a ti no te cobramos nada nunca», y eso invitaba a
+              la familia a preguntarse por qué a ella sí. Dice lo mismo sin
+              señalar a nadie. */}
+          . Cinco minutos, sin registro y sin coste.
         </p>
       </div>
 
@@ -139,8 +151,11 @@ export default async function Portada() {
           abajo no es letra pequeña opcional: sin ella parecería que estas mil
           novecientas clases se han dado aquí. */}
       <section className="mt-16 border-t border-gris-borde pt-10">
+        {/* «Nuestra experiencia» y no «Esto no empieza de cero»: el original
+            negaba algo malo, y para entenderlo había que pensar primero que
+            esto podía estar empezando de cero. Afirmar sale más barato. */}
         <h2 className="text-xl font-bold text-azul-confianza">
-          Esto no empieza de cero
+          Nuestra experiencia
         </h2>
         <p className="mt-2 text-sm text-gris-medio">
           AcademiAvanza lleva funcionando desde hace dos años. Sólo en el curso{' '}
@@ -197,7 +212,7 @@ export default async function Portada() {
           <Paso
             numero={1}
             titulo="Escribes al profesor que te encaje"
-            texto="Gratis. Le contamos el curso y lo que necesitas, sin darle todavía ningún dato tuyo."
+            texto="Le contamos el curso, lo que necesitas y para cuándo lo necesitas, sin darle todavía ningún dato tuyo. Si corre prisa, le damos cinco días para contestar."
           />
           <Paso
             numero={2}
@@ -244,6 +259,22 @@ export default async function Portada() {
         </h2>
 
         <div className="mt-6 space-y-6">
+          {/* La urgencia va la primera de las cuatro, y con el número dentro.
+              «Nos adaptamos a tus tiempos» no significa nada; «cinco días» sí,
+              y es además un compromiso que la plataforma cumple sola: pasado el
+              plazo se cierra la solicitud y se le escribe a la familia. */}
+          <div>
+            <h3 className="font-semibold text-carbon">
+              Nos adaptamos a tu urgencia
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-gris-medio">
+              Tú dices para cuándo lo necesitas, y ese plazo manda. Si es para
+              ya, el profesor tiene cinco días para contestar; si buscas para el
+              mes que viene, treinta. Pasado el plazo cerramos la solicitud y te
+              avisamos, para que no te quedes esperando sin saber nada.
+            </p>
+          </div>
+
           <div>
             <h3 className="font-semibold text-carbon">Eliges tú, y rápido</h3>
             <p className="mt-1 text-sm leading-relaxed text-gris-medio">
