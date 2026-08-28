@@ -140,10 +140,10 @@ export default function PaginaPrivacidad() {
         </p>
         <p>
           Aparte, usamos tres servicios que tratan datos por encargo nuestro:{' '}
-          <strong>Vercel</strong> para alojar la web, <strong>Supabase</strong>{' '}
-          para la base de datos, que está en Irlanda, y <strong>Resend</strong>{' '}
-          para enviar los correos. Los tres han firmado los compromisos que exige
-          el reglamento europeo.
+          <strong>Render</strong> para alojar la web, con los servidores en
+          Fráncfort, <strong>Supabase</strong> para la base de datos, que está en
+          Irlanda, y <strong>Resend</strong> para enviar los correos. Los tres
+          han firmado los compromisos que exige el reglamento europeo.
         </p>
         <p>
           No vendemos datos, no los cedemos con fines publicitarios y no hay

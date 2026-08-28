@@ -70,9 +70,10 @@ export async function SaludDelProceso() {
       )}
 
       <p className="mt-3 text-xs text-gris-medio">
-        Se comprueba en Vercel, en la pestaña de <strong>Cron Jobs</strong>. Lo
-        más habitual es que la variable <code>CRON_SECRET</code> no coincida con
-        la del proyecto, o que el plan gratuito haya movido la hora.
+        Se comprueba en Render, en el cron{' '}
+        <strong>mantenimiento-diario</strong>. Lo más habitual es que la variable{' '}
+        <code>CRON_SECRET</code> de la tarea no coincida con la del servicio web:
+        entonces la llamada devuelve un 401 y no se ejecuta nada.
       </p>
     </div>
   );

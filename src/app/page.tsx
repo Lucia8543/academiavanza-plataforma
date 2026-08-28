@@ -401,9 +401,11 @@ export default async function Portada() {
         <h2 className="text-lg font-bold text-carbon">
           ¿Eres profesor y quieres aparecer?
         </h2>
+        {/* «Es gratuito» y no «a ti no te cobramos nada»: lo segundo obliga a
+            la familia, que viene leyendo desde arriba, a preguntarse por qué a
+            ella sí. Dice lo mismo sin abrir esa comparación. */}
         <p className="mt-2 text-sm text-gris-medio">
-          A ti no te cobramos nada, ni por aparecer ni por dar clase. Rellenar la
-          ficha lleva cinco minutos.
+          Publicar tu ficha es gratuito. Rellenarla lleva cinco minutos.
         </p>
         <a
           href="/registro"

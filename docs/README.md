@@ -70,6 +70,7 @@ Cómo se construye.
 | [Diagramas](04-tecnico/diagramas-modelo-datos.md) | Entidad-relación, estados y flujos, en Mermaid |
 | [Acceso a base de datos](04-tecnico/acceso-base-datos.md) | Guía de conexión con cliente SQL |
 | [Plan de desarrollo](04-tecnico/plan-desarrollo.md) | Etapas, pruebas y criterios de lanzamiento |
+| [Despliegue](04-tecnico/despliegue.md) | Render, tareas automáticas, dominio y variables de entorno |
 
 ---
 
