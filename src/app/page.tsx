@@ -185,12 +185,21 @@ export default async function Portada() {
           Qué es AcademiAvanza
         </h2>
 
+        {/* Sin cuándo, y a propósito.
+
+            Decía «hace tres o cuatro años», y era un número que la plataforma
+            no puede sostener: hay profesores que acaban de terminar
+            Bachillerato y otros que llevan bastante más fuera. Se probó con «lo
+            tienen reciente» y tampoco vale, porque deja fuera precisamente a
+            los segundos.
+
+            Lo que sostiene el argumento no es cuánto hace, sino que pasaron por
+            el mismo sitio. Eso es cierto para todos y no caduca. */}
         <p className="mt-4 leading-relaxed text-carbon">
           Una red que conecta a antiguos alumnos de un colegio con los que
           todavía están en él. Los profesores que ves aquí se sentaron en las
-          mismas aulas, con los mismos profesores y los mismos exámenes, hace
-          tres o cuatro años. Saben lo que se le pide a tu hijo porque se lo
-          pidieron a ellos.
+          mismas aulas, con los mismos profesores y los mismos exámenes. Saben
+          lo que se le pide a tu hijo porque se lo pidieron a ellos.
         </p>
 
         <p className="mt-3 leading-relaxed text-carbon">
