@@ -52,9 +52,10 @@ export const esquemaRegistroProfesor = z
         message: 'Ese correo no parece válido',
       }),
 
-    // El teléfono no se publica en ninguna parte. Sólo lo recibe una familia
-    // que ha aceptado el profesor y que ha pagado el contacto, y en ese momento
-    // se lo damos igual que le damos el suyo a él.
+    // El teléfono del profesor no se publica y **no se le da a nadie**, ni
+    // siquiera a la familia que paga. El contacto va en un solo sentido: él
+    // recibe el de ella y decide si le escribe. Lo razona el ADR 0008.
+    // Aquí se pide para poder avisarle nosotros.
     telefono: telefonoEspanol,
 
     // --- Colegio -------------------------------------------------------------

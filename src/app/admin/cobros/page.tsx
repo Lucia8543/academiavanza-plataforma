@@ -59,7 +59,7 @@ function mensajeWhatsApp(datos: {
     '',
     `Una familia ha visto tu ficha y quiere clases${datos.nivel ? ` de ${datos.nivel}` : ''} contigo.`,
     '',
-    'Aquí puedes ver lo que pide y decirnos si puedes cogerla o no. Si dices que sí, la familia paga el contacto y os pasamos el teléfono el uno del otro. Si no puedes, no pasa nada y nadie paga nada.',
+    'Aquí puedes ver lo que pide y decirnos si puedes cogerla o no. Si dices que sí, la familia paga el contacto y te damos su teléfono para que le escribas tú. Si no puedes, no pasa nada y nadie paga nada.',
     '',
     datos.enlace,
   ].join('\n');

@@ -188,8 +188,8 @@ export default async function PaginaSolicitud({
               <p className="text-carbon">
                 <strong>Nos has dicho que ya has hecho el Bizum.</strong> Lo
                 comprobamos a mano, así que puede tardar un rato —más si es de
-                noche o fin de semana—. En cuanto lo veamos se abre el contacto
-                y aparece aquí el teléfono.
+                noche o fin de semana—. En cuanto lo veamos le damos tu teléfono
+                al profesor y te escribe él.
               </p>
               <p className="mt-3 text-sm text-gris-medio">
                 No tienes que hacer nada más, y no vamos a volver a pedírtelo. Si

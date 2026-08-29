@@ -107,9 +107,13 @@ export default async function PaginaAceptar({
       {s.estado === 'pendiente_profesor' && (
         <section className="mt-8">
           <p className="text-sm text-carbon">
-            Si aceptas, la familia paga el contacto y te damos su teléfono el
-            uno del otro. Si ahora no puedes, dilo sin más: no pasa nada y nadie
-            paga nada.
+            Si aceptas, la familia paga el contacto y te damos su teléfono para
+            que le escribas tú. Si ahora no puedes, dilo sin más: no pasa nada y
+            nadie paga nada.
+          </p>
+          <p className="mt-2 text-sm text-gris-medio">
+            Ella no tiene el tuyo y no se lo vamos a dar: nunca damos el teléfono
+            de un profesor.
           </p>
 
           <form action={aceptar} className="mt-5">

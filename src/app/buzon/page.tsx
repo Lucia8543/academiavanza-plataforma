@@ -43,6 +43,21 @@ export default function PaginaBuzon() {
       <div className="mt-8">
         <FormularioBuzon />
       </div>
+
+      {/* Qué se hace con lo que se escribe, dicho aquí y no sólo en la política.
+          Este formulario lo puede usar cualquiera que entre en la web, incluida
+          gente que no tiene ni ficha ni solicitud y que no va a ir a leerse una
+          página legal. */}
+      <p className="mt-6 border-t border-gris-borde pt-6 text-sm leading-relaxed text-gris-medio">
+        Guardamos lo que escribas y la página desde la que nos escribes, para
+        poder arreglarlo. El correo es opcional y sólo lo usamos para
+        contestarte. Se borra todo al año de resolverlo, y está contado entero
+        en la{' '}
+        <a className="underline underline-offset-4" href="/legal/privacidad">
+          política de privacidad
+        </a>
+        .
+      </p>
     </main>
   );
 }

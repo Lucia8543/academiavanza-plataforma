@@ -40,7 +40,8 @@ export function ConfirmadorBizum() {
       </h2>
       <p className="mt-1 text-sm text-gris-medio">
         Escribe el código que viene en el concepto. Te enseño de quién es antes
-        de dar el pago por bueno y abrir los teléfonos.
+        de dar el pago por bueno y pasarle al profesor el teléfono de la
+        familia.
       </p>
 
       <form action={buscar} className="mt-4 flex flex-wrap gap-2">
@@ -63,7 +64,10 @@ export function ConfirmadorBizum() {
 
       {/* --- Error --------------------------------------------------------- */}
       {estado.paso === 'error' && (
-        <p className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
+        >
           {estado.mensaje}
         </p>
       )}
@@ -102,9 +106,9 @@ export function ConfirmadorBizum() {
           </dl>
 
           <p className="mt-3 text-sm text-carbon">
-            Comprueba que el importe coincide con lo que te ha llegado al banco.
-            Al confirmar, cada uno verá el teléfono del otro, y eso no se
-            deshace.
+            Comprueba que el importe coincide con lo que te ha llegado al
+            banco. Al confirmar, el profesor recibirá el teléfono de la familia,
+            y eso no se deshace.
           </p>
 
           <form action={cobrar} className="mt-4">
@@ -113,7 +117,9 @@ export function ConfirmadorBizum() {
               disabled={cobrando}
               className="w-full rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white disabled:opacity-60"
             >
-              {cobrando ? 'Confirmando…' : 'Sí, me ha llegado. Abrir teléfonos'}
+              {cobrando
+                ? 'Confirmando…'
+                : 'Sí, me ha llegado. Dar el contacto'}
             </button>
           </form>
         </div>

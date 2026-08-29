@@ -90,7 +90,10 @@ export function FormularioMiFicha({
       <input type="hidden" name="token" value={token} />
 
       {estado.error && (
-        <p className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
+        <p
+          role="alert"
+          className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
+        >
           {estado.error}
         </p>
       )}
@@ -296,7 +299,11 @@ export function FormularioMiFicha({
           onChange={(e) => setV((a) => ({ ...a, telefono: e.target.value }))}
         />
         <p className="mt-1 text-sm text-gris-medio">
-          No se publica. Solo lo recibe una familia que ha pagado el contacto.
+          <span className="font-medium text-carbon">
+            No lo damos nunca, ni siquiera a la familia.
+          </span>{' '}
+          No se publica y no lo ve nadie que entre en la web. Lo usamos para
+          avisarte nosotros cuando una familia te quiera.
         </p>
       </div>
 

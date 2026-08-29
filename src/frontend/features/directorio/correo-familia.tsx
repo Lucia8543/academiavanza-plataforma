@@ -91,7 +91,9 @@ export function CorreoFamilia({
         className="mt-1 w-full rounded-lg border border-gris-borde px-3 py-2 text-carbon focus:border-verde-avanza focus:outline-none"
       />
       {estado.error && (
-        <p className="mt-1 text-sm text-error">{estado.error}</p>
+        <p role="alert" className="mt-1 text-sm text-error">
+          {estado.error}
+        </p>
       )}
       <div className="mt-3 flex gap-2">
         <button

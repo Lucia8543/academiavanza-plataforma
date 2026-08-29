@@ -96,7 +96,7 @@ export async function puedeEscribir(
       permitido: false,
       motivo:
         aEste.estado === 'pagada'
-          ? 'Ya tienes el teléfono de este profesor de un contacto anterior. Si necesitas clases para otro hijo o de otra asignatura, coméntaselo directamente a él: no tienes que pagar otra vez.'
+          ? 'Ya pagaste el contacto con este profesor y él tiene tu teléfono. Si necesitas clases para otro hijo o de otra asignatura, díselo a él cuando habléis: no tienes que pagar otra vez.'
           : 'Ya le has escrito hace poco y todavía no ha contestado. Cuando lo haga podrás contarle todo lo que necesites; si es para dos hijos o dos asignaturas, se lo dices en la llamada y no pagas dos veces.',
     };
   }

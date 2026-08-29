@@ -15,6 +15,7 @@ import {
   claveCorrecta,
   haySesion,
 } from '@/backend/services/sesion-admin';
+import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
 
 /**
  * Acciones del panel de administración.
@@ -202,6 +203,25 @@ export async function rechazar(formulario: FormData) {
   const motivo =
     String(formulario.get('motivo') ?? '').trim() ||
     'La ficha no cumple los requisitos';
+
+  /*
+   * El motivo pasa por el mismo filtro que los demás campos libres.
+   *
+   * Era el hueco que quedaba del hallazgo grande de la primera revisión: los
+   * otros tres campos de texto libre se cubrieron y éste se quedó fuera, aunque
+   * es de los que más lejos llegan. Lo que se escriba aquí **se guarda en la
+   * base de datos, sale por correo al profesor y se pinta en su panel**.
+   *
+   * Aquí quien escribe es administración y no un usuario, y eso no lo hace
+   * menos delicado: lo hace más fácil de cortar, porque quien lo escribe está
+   * delante y puede reformularlo en diez segundos.
+   *
+   * Se corta **antes** de tocar la base de datos. Guardar primero y avisar
+   * después dejaría el dato dentro, que es justo lo que hay que evitar.
+   */
+  if (detectarDatosSensibles(motivo)) {
+    redirect('/admin?aviso=motivo-sensible');
+  }
 
   const profesor = await db.profesores.update({
     where: { id },

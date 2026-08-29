@@ -146,7 +146,10 @@ export function FormularioContacto({
       )}
 
       {estado.mensaje && (
-        <div className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
+        <div
+          role="alert"
+          className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
+        >
           {estado.mensaje}
         </div>
       )}

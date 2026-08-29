@@ -18,7 +18,14 @@
 
   /* Neutros */
   --color-carbon: #1f2937;
-  --color-gris-medio: #6b7280;
+  /* Era #6b7280, y daba 4,39:1 sobre las tarjetas grises y 4,31:1 sobre las
+     verdes. Las dos por debajo del 4,5:1 que exige la WCAG para texto normal, y
+     axe lo marcaba en las dieciséis páginas medidas.
+
+     Con #646b79 sube a 4,87 sobre gris, 4,78 sobre verde y 5,36 sobre blanco.
+     Es un gris apenas medio tono más oscuro: no cambia el aspecto de nada y
+     arregla la única incidencia grave de accesibilidad de casi todo el sitio. */
+  --color-gris-medio: #646b79;
   --color-gris-claro: #f3f4f6;
   --color-gris-borde: #e5e7eb;
 

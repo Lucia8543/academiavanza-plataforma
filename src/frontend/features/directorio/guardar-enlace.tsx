@@ -67,8 +67,8 @@ export function GuardarEnlace({
     <div className="mt-6 rounded-xl border-2 border-azul-confianza bg-white p-5">
       <h2 className="font-bold text-azul-confianza">Guarda esta página</h2>
       <p className="mt-1 text-sm text-carbon">
-        Es tu sitio para ver cómo va todo, pagar cuando toque y ver el teléfono
-        del profesor. No tiene contraseña:{' '}
+        Es tu sitio para ver cómo va todo, pagar cuando toque y pedir otro
+        contacto si hace falta. No tiene contraseña:{' '}
         <strong>si pierdes el enlace, pierdes la entrada</strong>. Tardas diez
         segundos en dejarlo a mano.
       </p>

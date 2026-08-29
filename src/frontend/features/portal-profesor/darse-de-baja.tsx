@@ -84,7 +84,10 @@ export function DarseDeBaja({ token }: { token: string }) {
         />
 
         {estado.error && (
-          <p className="mt-2 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
+          <p
+            role="alert"
+            className="mt-2 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
+          >
             {estado.error}
           </p>
         )}

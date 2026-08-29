@@ -24,7 +24,9 @@ export function FormularioEntrar() {
           className="mt-1 w-full rounded-lg border border-gris-borde px-3 py-2 text-carbon focus:border-verde-avanza focus:outline-none focus:ring-1 focus:ring-verde-avanza"
         />
         {estado.error && (
-          <p className="mt-2 text-sm text-error">{estado.error}</p>
+          <p role="alert" className="mt-2 text-sm text-error">
+            {estado.error}
+          </p>
         )}
       </div>
 

@@ -96,7 +96,7 @@ export async function comprobarCodigo(
   };
 }
 
-/** Segundo paso: confirmar. Aquí se abren los teléfonos. */
+/** Segundo paso: confirmar. Aquí es donde el profesor recibe el teléfono. */
 export async function confirmar(
   _previo: EstadoCobro,
   formulario: FormData,
@@ -120,7 +120,7 @@ export async function confirmar(
 
   return {
     paso: 'hecho',
-    mensaje: `Cobrado. ${resultado.nombreFamilia} y ${resultado.profesor} ya tienen el teléfono el uno del otro.`,
+    mensaje: `Cobrado. ${resultado.profesor} ya tiene el teléfono de ${resultado.nombreFamilia} y le escribirá.`,
   };
 }
 

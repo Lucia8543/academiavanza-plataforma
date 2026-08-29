@@ -102,6 +102,8 @@ export type ResumenMantenimiento = {
   /** Recordatorios a profesores que tienen una familia esperando. */
   profesoresRecordados: number;
   borradas: number;
+  /** Incidencias del buzón resueltas hace más de un año. */
+  incidenciasBorradas: number;
   recordatorios: number;
   pausadas: number;
   pagosRecordados: number;
@@ -137,6 +139,7 @@ export async function pasarMantenimiento(): Promise<ResumenMantenimiento> {
     ),
     caducadas: await contar('caducar', caducarSolicitudes),
     borradas: await contar('borrar', borrarContactosViejos),
+    incidenciasBorradas: await contar('borrar-incidencias', borrarIncidenciasViejas),
     recordatorios: await contar('recordar', mandarRecordatorios),
     pausadas: await contar('pausar', pausarSinRespuesta),
     pagosRecordados: await contar('recordar-pago', recordarPagos),
@@ -164,6 +167,7 @@ export async function pasarMantenimiento(): Promise<ResumenMantenimiento> {
           caducadas: resumen.caducadas,
           profesoresRecordados: resumen.profesoresRecordados,
           borradas: resumen.borradas,
+          incidenciasBorradas: resumen.incidenciasBorradas,
           recordatorios: resumen.recordatorios,
           pausadas: resumen.pausadas,
           pagosRecordados: resumen.pagosRecordados,
@@ -817,6 +821,29 @@ export async function borrarContactosViejos(): Promise<number> {
   });
 
   return borradas + anonimizadas;
+}
+
+/**
+ * El buzón también caduca.
+ *
+ * Recoge texto libre de cualquiera que entre en la web, y a veces un correo. Se
+ * quedaba para siempre: no aparecía en la política de privacidad, no tenía plazo
+ * y no se borraba cuando un profesor se daba de baja.
+ *
+ * Un año desde que se resuelve. Antes de resolverse no se toca, porque una
+ * incidencia pendiente sigue siendo trabajo por hacer; después, lo que queda es
+ * un texto que ya no sirve para nada y un correo de alguien que sólo quería
+ * avisar de que un botón no iba.
+ */
+export async function borrarIncidenciasViejas(): Promise<number> {
+  const { count } = await db.incidencias.deleteMany({
+    where: {
+      estado: 'resuelta',
+      resuelto_en: { lt: haceDias(365) },
+    },
+  });
+
+  return count;
 }
 
 /**

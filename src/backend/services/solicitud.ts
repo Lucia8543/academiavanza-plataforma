@@ -363,7 +363,7 @@ export async function buscarPorCodigo(codigo: string) {
 /**
  * Lucía confirma que el Bizum ha llegado.
  *
- * Es el único punto de todo el sistema donde se abren los teléfonos, y por eso
+ * Es el único punto de todo el sistema donde se entrega un teléfono, y por eso
  * exige que la solicitud esté aceptada: no se puede pagar por un contacto que
  * el profesor no ha aprobado, ni pagar dos veces el mismo.
  */

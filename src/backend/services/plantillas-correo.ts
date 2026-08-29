@@ -301,8 +301,8 @@ export function correoFichaPublicada(datos: {
     '  3. Un WhatsApp, sólo si las dos anteriores no te han llegado.',
     '',
     'Verás el curso y lo que te cuenta, y un enlace para decir si puedes',
-    'cogerla. Tu teléfono no se lo damos a nadie hasta que aceptas y la familia',
-    'paga el contacto.',
+    'cogerla. Tu teléfono no se lo damos a nadie, nunca, ni siquiera a ella:',
+    'cuando aceptes y pague, te damos el suyo y le escribes tú.',
     '',
     'Desde aquí puedes cambiar lo que quieras, decir que vas justo de sitio o',
     'pausar la ficha del todo:',
@@ -343,7 +343,8 @@ export function correoFichaPublicada(datos: {
     </ol>
     <p style="margin:0 0 16px;color:${GRIS};">
       Verás el curso y lo que te cuenta, y un enlace para decir si puedes cogerla.
-      Tu teléfono no se lo damos a nadie hasta que aceptas y la familia paga el contacto.
+      <strong>Tu teléfono no se lo damos a nadie, nunca</strong>, ni siquiera a ella:
+      cuando aceptes y pague, te damos el suyo y le escribes tú.
     </p>
     <p style="margin:0 0 8px;">Desde aquí puedes cambiar lo que quieras, decir que vas justo de sitio o pausar la ficha del todo:</p>
     <p style="margin:0 0 16px;"><a href="${panel}" style="color:${VERDE};">Entrar en mi ficha</a></p>

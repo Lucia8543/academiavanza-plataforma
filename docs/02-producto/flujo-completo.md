@@ -207,7 +207,7 @@ familia a un profesor equivocado, y eso no se deshace.
 
 ---
 
-## 8. Se abren los teléfonos
+## 8. El profesor recibe el teléfono de la familia
 
 Al confirmar, y solo entonces:
 

@@ -21,8 +21,14 @@ export const metadata = { title: 'Panel · AcademiAvanza' };
 // Nunca se guarda en caché: aquí se viene a ver el estado de ahora.
 export const dynamic = 'force-dynamic';
 
-export default async function PaginaAdmin() {
+export default async function PaginaAdmin({
+  searchParams,
+}: {
+  searchParams: Promise<{ aviso?: string }>;
+}) {
   if (!(await haySesion())) redirect('/admin/entrar');
+
+  const { aviso } = await searchParams;
 
   const [
     pendientes,
@@ -62,6 +68,33 @@ export default async function PaginaAdmin() {
           </button>
         </form>
       </header>
+
+      {/*
+        El rechazo que no se guardó.
+
+        Va arriba del todo y en rojo porque lo que hay que entender es que **no
+        se ha hecho nada**: la ficha sigue pendiente y al profesor no le ha
+        llegado ningún correo. Un aviso discreto aquí haría creer que se
+        rechazó y que sólo hubo una pega de forma.
+      */}
+      {aviso === 'motivo-sensible' && (
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border-2 border-error bg-red-50 p-4"
+        >
+          <h2 className="font-bold text-error">No se ha rechazado la ficha</h2>
+          <p className="mt-1 text-sm leading-relaxed text-carbon">
+            El motivo que has escrito menciona algo que parece un dato de salud.
+            Ese texto se le manda al profesor por correo y se queda guardado en
+            su ficha, así que no lo hemos guardado.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-gris-medio">
+            La ficha sigue pendiente y él no ha recibido nada. Vuelve a
+            rechazarla explicando qué falta en la ficha, sin mencionar
+            diagnósticos ni salud de nadie.
+          </p>
+        </div>
+      )}
 
       <SaludDelProceso />
 

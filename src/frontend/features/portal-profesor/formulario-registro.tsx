@@ -358,7 +358,10 @@ export function FormularioRegistro({
         </p>
       </header>
       {estado.mensaje && (
-        <div className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
+        <div
+          role="alert"
+          className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
+        >
           <p className="font-medium">{estado.mensaje}</p>
           {listaErrores.length > 0 && (
             <ul className="mt-2 list-inside list-disc space-y-1">

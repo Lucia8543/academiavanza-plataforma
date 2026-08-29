@@ -75,7 +75,10 @@ export default async function PaginaRecuperar({
       </div>
 
       {error && (
-        <p className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error">
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
+        >
           {error === 'faltan'
             ? 'Rellena los dos campos.'
             : 'No hemos encontrado nada con esos datos. Revisa que el código esté bien copiado y que sea el mismo teléfono con el que escribiste.'}

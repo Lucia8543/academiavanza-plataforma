@@ -136,6 +136,33 @@ export default function PaginaPrivacidad() {
         </p>
       </Apartado>
 
+      {/* El buzón no estaba declarado en ninguna parte, y recoge texto libre y
+          un correo de cualquiera que entre en la web —no hace falta tener ficha
+          ni solicitud—. Es un tratamiento como los otros dos y necesita su
+          apartado: qué se guarda, para qué, con qué base y cuánto dura. */}
+      <Apartado titulo="Si nos escribes al buzón de fallos">
+        <p>
+          <strong>Qué guardamos:</strong> lo que escribes, la página desde la que
+          nos escribiste y, sólo si lo dejas, tu correo. Nada más. No hace falta
+          tener ficha ni solicitud para usarlo.
+        </p>
+        <p>
+          <strong>Para qué:</strong> para arreglar lo que se haya roto y, si nos
+          dejaste el correo, para contestarte. Para nada más.
+        </p>
+        <p>
+          <strong>Con qué base legal:</strong> nuestro interés legítimo en que la
+          plataforma funcione, y tu consentimiento si nos dejas el correo para
+          que te respondamos.
+        </p>
+        <p>
+          <strong>Cuánto tiempo:</strong>{' '}
+          <strong>un año desde que se resuelve</strong>, y se borra solo. La
+          dirección de la página se guarda recortada a propósito, sin la parte
+          que identifica tu solicitud o tu ficha.
+        </p>
+      </Apartado>
+
       <Apartado titulo="Con quién compartimos los datos">
         {/*
            El apartado más importante de esta página, y el que más cuidado
@@ -200,12 +227,45 @@ export default function PaginaPrivacidad() {
         </p>
       </Apartado>
 
+      {/*
+        Este apartado decía «esta web no está dirigida a menores de edad», y no
+        era verdad: parte de los profesores del directorio son estudiantes de
+        último curso de instituto o de primero de carrera, y algunos no han
+        cumplido los dieciocho. Una política de privacidad que afirma algo falso
+        sobre menores es peor que no tener apartado.
+
+        La redacción de ahora dice lo que sí es cierto y separa los dos lados:
+        del alumno no se recoge nada y quien escribe tiene que ser adulto; del
+        profesor se recoge su ficha, y ahí se pone la edad mínima.
+
+        Los catorce años son el suelo legal —artículo 7 de la LOPDGDD, que es
+        desde donde un menor puede consentir por sí mismo el tratamiento de sus
+        datos—, no una decisión de producto. Si se quiere subir a dieciséis o a
+        dieciocho, se cambia aquí y en el formulario de alta, que hoy no
+        pregunta la edad en ningún sitio.
+      */}
       <Apartado titulo="Menores">
         <p>
-          Esta web no está dirigida a menores de edad y no les pedimos datos.
-          Quien escribe a un profesor tiene que declarar que es la madre, el
-          padre o el tutor legal del alumno. Si detectamos que alguien ha
-          escrito siendo menor, borramos el mensaje.
+          <strong>Del alumno no recogemos ningún dato.</strong> Ni su nombre, ni
+          su edad, ni su colegio. Quien escribe a un profesor tiene que declarar
+          que es la madre, el padre o el tutor legal, y si detectamos que ha
+          escrito el propio alumno, borramos el mensaje.
+        </p>
+        <p>
+          <strong>Para publicar ficha de profesor hay que tener al menos 14
+          años.</strong> Es la edad a partir de la cual la ley española permite
+          decidir por uno mismo sobre sus propios datos. Si tienes entre 14 y 18,
+          publica la ficha sabiéndolo tu madre, tu padre o tu tutor: en el
+          directorio aparecen tu nombre de pila, tu colegio y tus estudios.
+          Puedes borrarla tú mismo cuando quieras, desde el enlace de tu ficha, y
+          también puede pedirlo quien te tutele escribiendo a{' '}
+          <a
+            href="mailto:info@academiavanza.es"
+            className="text-verde-avanza-oscuro underline underline-offset-4"
+          >
+            info@academiavanza.es
+          </a>
+          .
         </p>
       </Apartado>
 
