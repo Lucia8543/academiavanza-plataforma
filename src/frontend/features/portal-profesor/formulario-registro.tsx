@@ -267,7 +267,7 @@ export function FormularioRegistro({
           <ol className="mt-3 space-y-2">
             <li>
               <strong>Un aviso al móvil</strong>, al momento, si activas los
-              avisos aquí abajo. Es la vía rápida: lo tocas y contestas desde
+              avisos aquí abajo. Es la vía rápida, porque lo tocas y contestas desde
               ahí.
             </li>
             <li>
@@ -554,7 +554,7 @@ export function FormularioRegistro({
             onChange={(e) => cambiar('anosExperiencia', e.target.value)}
           />
           <p className="mt-1 text-sm text-gris-medio">
-            Aparece en tu ficha. Si empiezas ahora, déjalo en blanco: no resta.
+            Aparece en tu ficha. Si empiezas ahora, déjalo en blanco, que no resta.
           </p>
           <Aviso mensaje={errores.anosExperiencia} />
         </div>
@@ -692,7 +692,7 @@ export function FormularioRegistro({
               <span>
                 Puedo ir a otras zonas si el horario o la duración compensan.{' '}
                 <span className="text-gris-medio">
-                  Márcalo si te lo plantearías: hay familias de fuera de tu zona
+                  Márcalo si te lo plantearías, porque hay familias de fuera de tu zona
                   que, si no, ni te escriben.
                 </span>
               </span>
@@ -817,7 +817,7 @@ export function FormularioRegistro({
       */}
       <Seccion
         titulo="¿Puedes coger alumnos ahora mismo?"
-        ayuda="Da igual lo que contestes: tu ficha se publica igual. Esto sólo cambia cómo apareces."
+        ayuda="Da igual lo que contestes, porque tu ficha se publica igual. Esto sólo cambia cómo apareces."
       >
         <div className="space-y-3">
           {OPCIONES_CUPO.map((o) => (

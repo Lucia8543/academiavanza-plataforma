@@ -229,7 +229,7 @@ export function FormularioMiFicha({
               <span>
                 Puedo ir a otras zonas si el horario o la duración compensan.{' '}
                 <span className="text-gris-medio">
-                  Márcalo si te lo plantearías: hay familias de fuera de tu zona
+                  Márcalo si te lo plantearías, porque hay familias de fuera de tu zona
                   que, si no, ni te escriben.
                 </span>
               </span>

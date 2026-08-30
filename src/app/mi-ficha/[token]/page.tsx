@@ -64,7 +64,7 @@ export default async function PaginaMiFicha({
           Hola, {ficha.nombre}
         </h1>
         <p className="mt-2 text-carbon">
-          Esta es tu ficha. Guarda esta dirección: es tu forma de entrar y no hay
+          Esta es tu ficha. Guarda esta dirección, que es tu forma de entrar y no hay
           ninguna contraseña.
         </p>
       </header>
@@ -295,7 +295,7 @@ export default async function PaginaMiFicha({
           <p className="mt-2 text-sm text-gris-medio">
             Cuando una familia no sigue adelante le preguntamos por qué, y aquí
             está lo que han contestado en los últimos seis meses. Casi nunca
-            tiene que ver contigo: lo normal es que no cuadre un horario o que
+            tiene que ver contigo, y lo normal es que no cuadre un horario o que
             les quede lejos.
           </p>
 

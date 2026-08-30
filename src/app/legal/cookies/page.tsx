@@ -48,7 +48,7 @@ export default function PaginaCookies() {
           se crea al entrar en el panel de administración, que no es público.
         </p>
         <p>
-          Es una cookie técnica: sin ella el panel no puede funcionar, y por eso
+          Es una cookie técnica, y sin ella el panel no puede funcionar, así que por eso
           no requiere consentimiento.
         </p>
       </Apartado>

@@ -28,7 +28,7 @@ export default function PaginaBuzon() {
       </p>
 
       <p className="mt-3 leading-relaxed text-gris-medio">
-        Esto no es atención al cliente ni un formulario de contacto: es el sitio
+        Esto no es atención al cliente ni un formulario de contacto, sino el sitio
         donde apuntamos lo que hay que arreglar. Si lo que necesitas es que
         alguien te conteste sobre una solicitud concreta, escríbenos a{' '}
         <a

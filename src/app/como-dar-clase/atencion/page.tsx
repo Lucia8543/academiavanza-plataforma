@@ -72,7 +72,7 @@ export default function GuiaAtencion() {
         <p>
           «¿Lo sacas antes que yo?» convierte un ejercicio en una carrera y una
           carrera se aguanta mucho mejor que un ejercicio. Hazlo tú también y
-          déjale ganar de vez en cuando: si pierde siempre, deja de jugar.
+          déjale ganar de vez en cuando, porque si pierde siempre deja de jugar.
         </p>
         <p>
           Y cuando lo notes especialmente inquieto, dale más tiempo del que
@@ -88,14 +88,14 @@ export default function GuiaAtencion() {
           se acaba nunca. Tapa el resto, o dáselos de uno en uno.
         </p>
         <p>
-          Lo mismo con las instrucciones: una cosa cada vez. «Lee el enunciado y
+          Lo mismo con las instrucciones, una cosa cada vez. «Lee el enunciado y
           subraya los datos» y, cuando lo haya hecho, la siguiente.
         </p>
       </Consejo>
 
       <Consejo titulo="4. Flexibiliza el cómo, no el cuánto">
         <p>
-          Se puede cambiar casi todo sin bajar el listón: el tiempo, el orden de
+          Se puede cambiar casi todo sin bajar el listón. El tiempo, el orden de
           los ejercicios, que responda hablando en vez de escribiendo, que se
           levante entre bloques.
         </p>
@@ -123,7 +123,7 @@ export default function GuiaAtencion() {
         <strong>Dónde está tu límite.</strong> No preguntes si tiene un
         diagnóstico, no pidas informes y no sugieras ninguno. No eres clínico y
         equivocarte ahí hace daño de verdad. Si la familia decide contártelo, lo
-        usas para dar mejor la clase y no lo escribes en ningún sitio: ni en tu
+        usas para dar mejor la clase y no lo escribes en ningún sitio, ni en tu
         ficha, ni en el formulario, ni se lo cuentas a nadie. AcademiAvanza no
         guarda datos de salud de ningún alumno, y por eso el formulario de las
         familias rechaza los mensajes que los mencionan.
@@ -131,7 +131,7 @@ export default function GuiaAtencion() {
 
       <p className="mt-6 text-sm leading-relaxed text-gris-medio">
         Y si lo que ves te preocupa más allá de la asignatura, díselo a la
-        familia tal cual lo has visto: «le cuesta arrancar», «se bloquea con los
+        familia tal cual lo has visto, «le cuesta arrancar» o «se bloquea con los
         exámenes». Y que decidan ellos. Describir es tu trabajo; interpretar, no.
       </p>
 

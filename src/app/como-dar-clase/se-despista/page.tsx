@@ -28,7 +28,7 @@ export default function GuiaSeDespista() {
     <main className="mx-auto max-w-2xl px-6 py-12">
       <CabeceraGuia
         titulo="Evitar distracciones en clases a domicilio"
-        entradilla="Das clase en su casa, en su cuarto, con la cama a un metro y el móvil sobre la mesa. Antes de concluir que no quiere trabajar, revisa dónde le has sentado: buena parte de las distracciones vienen del entorno, no del alumno."
+        entradilla="Das clase en su casa, en su cuarto, con la cama a un metro y el móvil sobre la mesa. Antes de concluir que no quiere trabajar, revisa dónde le has sentado, porque buena parte de las distracciones vienen del entorno y no del alumno."
         minutos={3}
       />
 
@@ -44,14 +44,14 @@ export default function GuiaSeDespista() {
 
       <Consejo titulo="1. Lo primero es la mesa">
         <p>
-          Sobre la mesa, sólo lo que hace falta para el ejercicio de ahora: el
+          Sobre la mesa, sólo lo que hace falta para el ejercicio de ahora. El
           cuaderno, el boli y poco más. El estuche entero, los otros libros y el
           cargador son tres cosas con las que jugar.
         </p>
         <p>
           <strong className="text-carbon">El móvil, boca abajo y fuera de la
           mesa.</strong>{' '}
-          Pídelo el primer día como algo normal, no como un castigo: «lo dejamos
+          Pídelo el primer día como algo normal, no como un castigo. «Lo dejamos
           ahí y lo coges al acabar». Si lo pides el tercer día, después de una
           clase mala, parece una bronca.
         </p>
@@ -68,7 +68,7 @@ export default function GuiaSeDespista() {
           además él sabe cuándo acaba cada trozo.
         </p>
         <p>
-          Dilo en alto al empezar: «ahora veinte minutos con esto, luego paramos
+          Dilo en alto al empezar. «Ahora veinte minutos con esto, luego paramos
           un momento». Saber que hay un final cercano es lo que le permite
           aguantar hasta él.
         </p>
@@ -83,7 +83,7 @@ export default function GuiaSeDespista() {
           . Lo haces tú también, en tu hoja, y comparáis.
         </p>
         <p>
-          Déjale ganar de vez en cuando. No es engañarle: es que si pierde
+          Déjale ganar de vez en cuando. No es engañarle, es que si pierde
           siempre, deja de jugar, y con el juego se va lo único que le tenía
           sentado.
         </p>
@@ -122,7 +122,7 @@ export default function GuiaSeDespista() {
 
       <Ojo>
         Si esto se repite clase tras clase y nada de lo de arriba mueve la aguja,
-        coméntaselo a la familia: es información que les sirve. Pero{' '}
+        coméntaselo a la familia, que es información que les sirve. Pero{' '}
         <strong>no le pongas nombre a lo que le pasa</strong> ni sugieras ningún
         diagnóstico. Eso no te toca a ti y equivocarse ahí hace daño de verdad.
       </Ojo>

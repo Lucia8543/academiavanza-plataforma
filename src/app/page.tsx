@@ -219,7 +219,7 @@ export default async function Portada() {
         </p>
 
         <p className="mt-3 leading-relaxed text-carbon">
-          Nació de una idea sencilla: en los colegios ya se recomiendan
+          Nació de una idea sencilla. En los colegios ya se recomiendan
           exalumnos brillantes para dar clases, pero se hace de boca en boca, y
           eso significa que sólo funciona si conoces a la persona adecuada.
           Aquí están todos a la vista, con su colegio y sus estudios, y eliges
@@ -339,7 +339,7 @@ export default async function Portada() {
               «responden de cómo dan la clase», y eso no es verdad ni podría
               serlo: no los empleamos. */}
           <p className="mt-4 text-xs leading-relaxed text-gris-medio">
-            Cada profesor da su clase como considera: no trabajan para nosotros
+            Cada profesor da su clase como considera, porque no trabajan para nosotros
             y no intervenimos en cómo enseñan. Lo que sí hacemos es que ninguno
             empiece de cero.
           </p>
@@ -369,7 +369,7 @@ export default async function Portada() {
           <Paso
             numero={4}
             titulo="Él te escribe"
-            texto={`Le damos tu teléfono y te escribe o te llama él: por protección de datos no facilitamos el teléfono de nuestros profesores. Si en ${DIAS_PARA_RECLAMAR} días no te ha escrito, te damos otro contacto sin volver a pagar.`}
+            texto={`Le damos tu teléfono y te escribe o te llama él, porque por protección de datos no facilitamos el teléfono de nuestros profesores. Si en ${DIAS_PARA_RECLAMAR} días no te ha escrito, te damos otro contacto sin volver a pagar.`}
           />
         </ol>
 

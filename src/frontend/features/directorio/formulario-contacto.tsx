@@ -211,7 +211,7 @@ export function FormularioContacto({
             onChange={(e) => cambiar('email', e.target.value)}
           />
           <p className="mt-1 text-sm text-gris-medio">
-            Es para avisarte de lo que pasa: cuando el profesor conteste y
+            Es para avisarte de lo que pasa, cuando el profesor conteste y
             cuando podáis hablar.{' '}
             <span className="font-medium text-carbon">
               A él no se lo damos.
@@ -330,7 +330,7 @@ export function FormularioContacto({
             </select>
             <p className="mt-1 text-sm text-gris-medio">
               El profesor la ve antes de contestar, para saber si le viene bien
-              desplazarse. No pongas tu dirección: con el barrio sobra.
+              desplazarse. No pongas tu dirección, que con el barrio sobra.
             </p>
             <Aviso mensaje={errores.zona} />
 
@@ -429,7 +429,7 @@ export function FormularioContacto({
             <span className="font-normal text-gris-medio">(opcional)</span>
           </label>
           <p className="mt-1 mb-2 text-sm text-gris-medio">
-            Cuéntale lo práctico: qué asignatura, cuántos días a la semana, si
+            Cuéntale lo práctico, o sea qué asignatura, cuántos días a la semana, si
             hay examen pronto.{' '}
             <span className="font-medium text-carbon">
               No escribas aquí nada sobre la salud de tu hijo

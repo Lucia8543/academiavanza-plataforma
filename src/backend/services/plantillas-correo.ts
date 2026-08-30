@@ -167,9 +167,9 @@ export function correoSolicitud(datos: {
     enlace,
     '',
     `Si aceptas, la familia paga ${precio} por el contacto y te damos su`,
-    'teléfono. A partir de ahí el primer paso es tuyo: ella no tiene tu número',
-    'y no se lo vamos a dar, así que si tú no le escribes, no hay clase.',
-    'Lo demás lo arregláis vosotros: el precio y los horarios no los tocamos.',
+    'teléfono. A partir de ahí el primer paso es tuyo, porque ella no tiene tu',
+    'número y no se lo vamos a dar. Si tú no le escribes, no hay clase.',
+    'Lo demás lo arregláis vosotros, que el precio y los horarios no los tocamos.',
     '',
     'Si ahora no puedes, dilo y ya está. No pasa nada y la familia no paga nada.',
     '',
@@ -232,9 +232,9 @@ export function correoContactoAbierto(datos: {
     `Curso:    ${datos.nivel}`,
     ...(datos.mensaje ? ['', 'Lo que te contaba:', datos.mensaje] : []),
     '',
-    'Escríbele tú. Y esto es importante: ella NO tiene tu teléfono y no se lo',
-    'vamos a dar. Nunca damos el número de un profesor, porque algunos sois',
-    'menores de edad. Si no le escribes tú, no puede pasar nada.',
+    'Escríbele tú, y esto es importante, porque ella NO tiene tu teléfono y no',
+    'se lo vamos a dar. Nunca damos el número de un profesor, porque algunos',
+    'sois menores de edad. Si no le escribes tú, no puede pasar nada.',
     '',
     'Llámala o mándale un WhatsApp, como prefieras, y mejor hoy que mañana:',
     'lleva esperando desde que te escribió.',
@@ -256,7 +256,7 @@ export function correoContactoAbierto(datos: {
     ${datos.mensaje ? cita(datos.mensaje) : ''}
     <p style="margin:0 0 12px;">
       <strong>Escríbele tú.</strong> Llámala o mándale un WhatsApp, como prefieras,
-      y mejor hoy que mañana: lleva esperando desde que te escribió.
+      y mejor hoy que mañana, que lleva esperando desde que te escribió.
     </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
       <strong>Ella no tiene tu teléfono</strong> y no se lo vamos a dar: nunca damos el
@@ -318,14 +318,14 @@ export function correoFichaPublicada(datos: {
     'pero avisaremos a las familias de que ya tienes alumnos y de que puedes',
     'tardar más. Y cuando te quede hueco otra vez, lo cambias con un botón.',
     '',
-    'Guarda este correo: ese segundo enlace es tu forma de entrar, y no hay',
+    'Guarda este correo. Ese segundo enlace es tu forma de entrar, y no hay',
     'contraseña que recordar. Y si lo pierdes, te lo volvemos a mandar aquí:',
     `${baseUrl()}/mi-ficha`,
     '',
-    'Antes de tu primera clase, léete esto. Son nuestras guías: autonomía y',
-    'hábito de estudio, metodología para clases online, distracciones en clases',
-    'a domicilio y adaptaciones para dificultades de atención. Breves, y salen',
-    'de más de mil novecientas clases.',
+    'Antes de tu primera clase, léete esto. Son nuestras guías sobre autonomía',
+    'y hábito de estudio, metodología para clases online, distracciones en',
+    'clases a domicilio y adaptaciones para dificultades de atención. Breves, y',
+    'salen de más de mil novecientas clases.',
     '',
     `${baseUrl()}/como-dar-clase`,
     '',
@@ -360,7 +360,7 @@ export function correoFichaPublicada(datos: {
       lo cambias con un botón.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
-      Guarda este correo: ese enlace es tu forma de entrar y no hay ninguna contraseña
+      Guarda este correo. Ese enlace es tu forma de entrar y no hay ninguna contraseña
       que recordar. Si lo pierdes,
       <a href="${baseUrl()}/mi-ficha" style="color:${VERDE};">te lo mandamos otra vez</a>.
     </p>
@@ -464,7 +464,7 @@ export function correoFichaPausada(datos: {
     'contigo después de que aceptaras darles clase. Hemos pausado tu ficha para',
     'que no siga llegándote gente mientras tanto.',
     '',
-    'No pasa nada y no es un aviso: lo más normal es que hayas cambiado de',
+    'No pasa nada y no es ningún aviso. Lo más normal es que hayas cambiado de',
     'número, estés de exámenes o se te pasara. Sólo queremos que ninguna familia',
     'pague por un contacto que no va a llegar a ninguna parte.',
     '',
@@ -481,7 +481,7 @@ export function correoFichaPausada(datos: {
       después de que aceptaras darles clase. Hemos pausado tu ficha para que no siga llegándote gente mientras tanto.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};">
-      No es un aviso ni un castigo: lo más normal es que hayas cambiado de número, estés de exámenes
+      No es un aviso ni un castigo. Lo más normal es que hayas cambiado de número, estés de exámenes
       o se te pasara. Sólo queremos que ninguna familia pague por un contacto que no va a llegar a ninguna parte.
     </p>
     ${boton('Revisar mi ficha y volver', panel)}
@@ -532,7 +532,7 @@ export function correoConfirmarDisponibilidad(datos: {
     <p style="margin:0 0 16px;">Llevas ${datos.meses} meses en el directorio y queremos asegurarnos de que <strong>sigues cogiendo alumnos</strong>. Es para que ninguna familia escriba a alguien que ya no da clase.</p>
     ${boton('Sigo disponible', panel)}
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      Si no nos dices nada, dentro de dos semanas pausaremos tu ficha. No se borra: la puedes volver a activar cuando quieras con ese mismo enlace.
+      Si no nos dices nada, dentro de dos semanas pausaremos tu ficha. No se borra, y la puedes volver a activar cuando quieras con ese mismo enlace.
     </p>
   `);
 
@@ -582,7 +582,7 @@ export function correoSolicitudRecibida(datos: {
     seguimiento,
     '',
     'Guarda este correo. Ese enlace lleva a tu página, que es donde verás cómo',
-    'va todo. No tiene contraseña: si lo pierdes, pierdes la entrada.',
+    'va todo. No tiene contraseña, así que si lo pierdes, pierdes la entrada.',
     '',
     `Y si lo pierdes, tu código es ${datos.codigo}. Con él y tu teléfono vuelves`,
     'a entrar desde «He perdido mi enlace», abajo del todo en cualquier página.',
@@ -603,7 +603,7 @@ export function correoSolicitudRecibida(datos: {
     ${boton('Ver cómo va', seguimiento)}
     <p style="margin:0 0 8px;color:${GRIS};font-size:14px;">
       <strong style="color:${CARBON};">Guarda este correo.</strong> Ese botón lleva a tu
-      página, que es donde verás cómo va todo. No tiene contraseña: si pierdes el enlace,
+      página, que es donde verás cómo va todo. No tiene contraseña, así que si pierdes el enlace,
       pierdes la entrada.
     </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
@@ -720,7 +720,7 @@ export function correoProfesorRechaza(datos: {
     `Hola ${datos.nombreFamilia}:`,
     '',
     `${datos.nombreProfesor} no puede cogerte ahora mismo.`,
-    ...(datos.motivo ? ['', `Nos dice: «${datos.motivo}»`] : []),
+    ...(datos.motivo ? ['', `Nos dice esto, «${datos.motivo}»`] : []),
     '',
     'No has pagado nada y no vas a pagar nada por esto. Hay más profesores en',
     'el directorio y escribirles sigue siendo gratis:',
@@ -781,7 +781,7 @@ export function correoPagoConfirmado(datos: {
     `${datos.nombreProfesor} te va a escribir o te va a llamar. Dale un poco de`,
     'margen: puede tardar unas horas en verlo.',
     '',
-    'No te damos su numero, y no es un descuido: por proteccion de datos no',
+    'No te damos su numero, y no es ningun descuido. Por proteccion de datos no',
     'facilitamos el telefono de nuestros profesores. Es el quien decide si te lo',
     'da cuando hableis.',
     '',
@@ -789,8 +789,8 @@ export function correoPagoConfirmado(datos: {
     'contacto sin volver a pagar:',
     seguimiento,
     '',
-    'El precio de las clases y los horarios los acordais vosotros: nosotros ya',
-    'no intervenimos.',
+    'El precio de las clases y los horarios los acordais vosotros, que nosotros',
+    'ya no intervenimos.',
     '',
     'AcademiAvanza',
   ].join('\n');
@@ -802,7 +802,7 @@ export function correoPagoConfirmado(datos: {
       ${escapar(datos.nombreProfesor)}.
     </p>
     <p style="margin:0 0 16px;">
-      <strong>Él te escribirá o te llamará.</strong> Dale un poco de margen: puede
+      <strong>Él te escribirá o te llamará.</strong> Dale un poco de margen, que puede
       tardar unas horas en verlo.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
@@ -862,7 +862,7 @@ export function correoRecordatorioPago(datos: {
     'Si ya lo hiciste y se te pasó avisarnos, entra y pulsa «Ya he hecho el',
     'Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.',
     '',
-    'Y si ya no te hace falta, dínoslo también: es otro botón, y así él deja de',
+    'Y si ya no te hace falta, dínoslo también. Es otro botón, y así él deja de',
     'esperar. No pasa nada.',
     '',
     seguimiento,
@@ -887,7 +887,7 @@ export function correoRecordatorioPago(datos: {
       Entra y pulsa «Ya he hecho el Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};">
-      Y si ya no te hace falta, dínoslo también: es otro botón, y así él deja de esperar. No pasa nada.
+      Y si ya no te hace falta, dínoslo también. Es otro botón, y así él deja de esperar. No pasa nada.
     </p>
     ${boton('Ir a mi página', seguimiento)}
     <p style="margin:0;color:${GRIS};font-size:14px;">
@@ -1264,7 +1264,7 @@ export function correoValeConcedido(datos: {
 
   return {
     para: datos.para,
-    asunto: `Tu contacto gratis: código ${datos.codigo}`,
+    asunto: `Tu contacto gratis, con el código ${datos.codigo}`,
     cuerpo,
     html,
   };
@@ -1300,16 +1300,16 @@ export function correoFichaRecibida(datos: {
     'lo que las familias miran, y te escribimos en cuanto esté publicada. Suele',
     'ser cosa de un día o dos.',
     '',
-    'Mientras tanto, guarda este enlace. Es tu acceso permanente: desde ahí',
+    'Mientras tanto, guarda este enlace. Es tu acceso permanente, y desde ahí',
     'puedes corregir lo que sea, cambiar horarios o pausar la ficha. No hay',
     'contraseña, así que si pierdes el enlace pierdes la entrada.',
     '',
     panel,
     '',
-    'Y mientras esperas, algo que merece la pena leer: nuestras guías para dar',
-    'clase. Son breves y salen de más de mil novecientas clases. La primera,',
-    'sobre autonomía y hábito de estudio, es la que más falta hace: es el caso',
-    'más frecuente con diferencia.',
+    'Y mientras esperas, hay algo que merece la pena leer. Son nuestras guías',
+    'para dar clase, breves y sacadas de más de mil novecientas clases. La',
+    'primera, sobre autonomía y hábito de estudio, es la que más falta hace,',
+    'porque es el caso más frecuente con diferencia.',
     '',
     `${baseUrl()}/como-dar-clase`,
     '',
@@ -1327,7 +1327,7 @@ export function correoFichaRecibida(datos: {
       Suele ser cosa de un día o dos.
     </p>
     <p style="margin:0 0 4px;">
-      <strong>Guarda este correo.</strong> Ese botón es tu acceso permanente: desde ahí
+      <strong>Guarda este correo.</strong> Ese botón es tu acceso permanente, y desde ahí
       corriges lo que sea, cambias horarios o pausas la ficha.
     </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
@@ -1336,9 +1336,9 @@ export function correoFichaRecibida(datos: {
     ${boton('Ver mi ficha', panel)}
     <p style="margin:0 0 16px;">
       <strong>Y mientras esperas, algo que merece la pena leer.</strong> Son nuestras
-      guías para dar clase: breves, y sacadas de más de mil novecientas clases. La
-      primera, sobre autonomía y hábito de estudio, es la que más falta hace: es el
-      caso más frecuente con diferencia.
+      guías para dar clase, breves y sacadas de más de mil novecientas clases. La
+      primera, sobre autonomía y hábito de estudio, es la que más falta hace,
+      porque es el caso más frecuente con diferencia.
       <br>
       <a href="${baseUrl()}/como-dar-clase" style="color:${VERDE};">Ver las guías</a>
     </p>
@@ -1406,7 +1406,7 @@ export function correoSolicitudSinContestar(datos: {
     '',
     plazo,
     '',
-    'Con decir que no también nos vale, y no pasa nada: es mejor',
+    'Con decir que no también nos vale, y no pasa nada. Es mejor',
     'para ella saberlo hoy que seguir esperando.',
     ...(aviso ? ['', aviso] : []),
     '',
@@ -1488,7 +1488,7 @@ export function correoSolicitudCaducada(datos: {
     <p style="margin:0 0 16px;">No has pagado nada y no vas a pagar nada por esto.</p>
     ${boton(`Ver otros profesores de ${escapar(datos.nivel)}`, directorio)}
     <p style="margin:0;color:${GRIS};font-size:14px;">
-      Sentimos la espera. Escribir a otro profesor es gratis: sólo se paga si acepta.
+      Sentimos la espera. Escribir a otro profesor es gratis, y sólo se paga si acepta.
     </p>
   `);
 
@@ -1531,7 +1531,7 @@ export function correoFichaPausadaSinContestar(datos: {
     'contestarlas, así que hemos pausado tu ficha para que no te siga llegando',
     'gente mientras tanto.',
     '',
-    'No es un aviso ni un castigo: lo más normal es que estés de exámenes, que',
+    'No es un aviso ni un castigo. Lo más normal es que estés de exámenes, que',
     'los correos se te fueran a spam o que ahora mismo no te venga bien. Sólo',
     'queremos que ninguna familia espere una semana para nada.',
     '',
@@ -1552,7 +1552,7 @@ export function correoFichaPausadaSinContestar(datos: {
       mientras tanto.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};">
-      No es un aviso ni un castigo: lo más normal es que estés de exámenes, que los correos
+      No es un aviso ni un castigo. Lo más normal es que estés de exámenes, que los correos
       se te fueran a spam o que ahora mismo no te venga bien. Sólo queremos que ninguna
       familia espere una semana para nada.
     </p>
@@ -1609,7 +1609,7 @@ export function correoEnlacePerdido(datos: {
     'Desde ahí puedes cambiar lo que quieras, pausar la ficha si no te viene',
     'bien que te escriban, o darte de baja.',
     '',
-    'Guárdalo donde no se te pierda: en favoritos, o mándatelo a ti mismo por',
+    'Guárdalo donde no se te pierda, en favoritos o mandándotelo a ti mismo por',
     'WhatsApp. No hay contraseña, así que este enlace es tu entrada.',
     '',
     'Si no has pedido tú este correo, no tienes que hacer nada. Alguien ha',
@@ -1630,7 +1630,7 @@ export function correoEnlacePerdido(datos: {
     </p>
     ${boton('Ver mi ficha', panel)}
     <p style="margin:0 0 16px;">
-      Guárdalo donde no se te pierda: en favoritos, o mándatelo a ti mismo por WhatsApp.
+      Guárdalo donde no se te pierda, en favoritos o mandándotelo a ti mismo por WhatsApp.
       No hay contraseña, así que este enlace es tu entrada.
     </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
@@ -1697,8 +1697,8 @@ export function correoFamiliaYaNoEspera(datos: {
     'penaliza en tu ficha.',
     '',
     'Para la próxima, lo único que hace falta es escribir tú el primero en',
-    'cuanto te llegue el teléfono: la familia no tiene el tuyo y no puede dar',
-    'ella el paso.',
+    'cuanto te llegue el teléfono, porque la familia no tiene el tuyo y no puede',
+    'dar ella el paso.',
     '',
     'AcademiAvanza',
     ...lineasDeSuFicha(datos.tokenPanel),
@@ -1720,7 +1720,7 @@ export function correoFamiliaYaNoEspera(datos: {
     </p>
     <p style="margin:0;color:${GRIS};font-size:14px;">
       Para la próxima, lo único que hace falta es escribir tú el primero en cuanto te
-      llegue el teléfono: la familia no tiene el tuyo y no puede dar ella el paso.
+      llegue el teléfono, porque la familia no tiene el tuyo y no puede dar ella el paso.
     </p>
     ${pieDeSuFicha(datos.tokenPanel)}
   `);

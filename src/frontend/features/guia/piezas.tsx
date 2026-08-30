@@ -244,7 +244,7 @@ export function CabeceraGuia({
 export function PieDeGuia() {
   return (
     <p className="mt-12 border-t border-gris-borde pt-6 text-sm text-gris-medio">
-      Esto no es una norma ni te lo va a revisar nadie: son cosas que funcionan,
+      Esto no es una norma ni te lo va a revisar nadie. Son cosas que funcionan,
       escritas para que no tengas que descubrirlas tú.{' '}
       <a href="/como-dar-clase" className="underline underline-offset-4">
         Aquí están las demás guías

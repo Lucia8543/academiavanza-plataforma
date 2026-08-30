@@ -29,7 +29,7 @@ export default function GuiaOnline() {
     <main className="mx-auto max-w-2xl px-6 py-12">
       <CabeceraGuia
         titulo="Metodología para clases online"
-        entradilla="Al otro lado hay un adolescente con el móvil a diez centímetros y una pestaña abierta que tú no ves. Una clase online rara vez se pierde por la conexión: se pierde cuando hablas tú y no escribe nadie."
+        entradilla="Al otro lado hay un adolescente con el móvil a diez centímetros y una pestaña abierta que tú no ves. Una clase online rara vez se pierde por la conexión, sino cuando hablas tú y no escribe nadie."
         minutos={3}
       />
 
@@ -50,7 +50,7 @@ export default function GuiaOnline() {
           que el alumno se ha ido.
         </p>
         <p>
-          Ten abierto de antemano: la pizarra, los ejercicios que vais a hacer y
+          Ten abierto de antemano la pizarra, los ejercicios que vais a hacer y
           los apuntes. Nada más. Cada ventana de más es una cosa que buscar en
           directo.
         </p>
@@ -68,7 +68,7 @@ export default function GuiaOnline() {
           te enseñe la hoja a la cámara. Peor, pero mucho mejor que escribir tú.
         </p>
         <p>
-          Compartir pantalla sirve para enseñar algo concreto: un enunciado, una
+          Compartir pantalla sirve para enseñar algo concreto, un enunciado, una
           corrección, una gráfica. No para tenerla puesta la hora entera.
         </p>
       </Consejo>
@@ -107,7 +107,7 @@ export default function GuiaOnline() {
           ]}
         />
         <p>
-          «¿Se entiende?» no vale: todo el mundo dice que sí.
+          «¿Se entiende?» no vale, porque todo el mundo dice que sí.
         </p>
       </Consejo>
 
@@ -124,7 +124,7 @@ export default function GuiaOnline() {
         <strong>No grabes la clase.</strong> Al otro lado hay un menor de edad, y
         grabar a un menor exige permiso expreso de su padre o su madre y decidir
         dónde se guarda eso y cuánto tiempo. Si la familia te lo pide a ti,
-        habladlo vosotros: AcademiAvanza no participa en eso ni guarda nada de
+        habladlo vosotros, que AcademiAvanza no participa en eso ni guarda nada de
         vuestras clases.
       </Ojo>
 

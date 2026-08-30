@@ -56,7 +56,7 @@ export default async function PaginaRecuperar({
         He perdido mi enlace
       </h1>
       <p className="mt-2 text-carbon">
-        No pasa nada, se recupera. Necesitamos dos cosas: tu{' '}
+        No pasa nada, se recupera. Necesitamos dos cosas, tu{' '}
         <strong>código</strong> y el <strong>teléfono</strong> con el que
         escribiste al profesor.
       </p>
@@ -68,7 +68,7 @@ export default async function PaginaRecuperar({
         <p className="font-medium">¿Dónde está mi código?</p>
         <p className="mt-1">
           Son cinco letras y números, tipo <strong>27XJS</strong>. Lo tienes en
-          el correo que te mandamos al escribir al profesor: busca
+          el correo que te mandamos al escribir al profesor. Busca
           «AcademiAvanza» en tu buzón, y mira también el spam. Y si ya has
           pagado, es lo que pusiste en el concepto del Bizum.
         </p>

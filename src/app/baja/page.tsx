@@ -53,7 +53,7 @@ export default async function PaginaBaja({
       </p>
 
       <p className="mt-6 text-sm leading-relaxed text-gris-medio">
-        Si algún día quieres volver, puedes darte de alta otra vez desde cero: no
+        Si algún día quieres volver, puedes darte de alta otra vez desde cero, que no
         guardamos nada tuyo para reconocerte. Y si crees que esto ha sido un
         error, escríbenos a{' '}
         <a

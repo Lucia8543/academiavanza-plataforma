@@ -32,7 +32,7 @@ export const GUIAS_DE_CLASE: GuiaDeClase[] = [
     href: '/como-dar-clase/no-arranca',
     titulo: 'Autonomía y hábito de estudio',
     paraElProfesor:
-      'Cómo estructurar la sesión para que el alumno gane autonomía: qué revisar al empezar, cómo plantear los ejercicios sin resolvérselos y cómo dejar la tarea definida para que se cumpla.',
+      'Cómo estructurar la sesión para que el alumno gane autonomía, con qué revisar al empezar, cómo plantear los ejercicios sin resolvérselos y cómo dejar la tarea definida para que se cumpla.',
     paraLaFamilia:
       'Para el alumno que comprende los contenidos cuando alguien le acompaña, pero no consigue ponerse a trabajar por su cuenta.',
     minutos: 4,
@@ -41,7 +41,7 @@ export const GUIAS_DE_CLASE: GuiaDeClase[] = [
     href: '/como-dar-clase/online',
     titulo: 'Metodología para clases online',
     paraElProfesor:
-      'Cómo aprovechar una sesión por videollamada: uso de la pizarra compartida, reparto de los tiempos y preguntas de comprobación que aseguran que el alumno participa.',
+      'Cómo aprovechar una sesión por videollamada, con el uso de la pizarra compartida, reparto de los tiempos y preguntas de comprobación que aseguran que el alumno participa.',
     paraLaFamilia:
       'Para que una clase por videollamada resulte tan aprovechada como una presencial.',
     minutos: 3,

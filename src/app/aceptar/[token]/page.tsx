@@ -126,11 +126,11 @@ export default async function PaginaAceptar({
         <section className="mt-8">
           <p className="text-sm text-carbon">
             Si aceptas, la familia paga el contacto y te damos su teléfono para
-            que le escribas tú. Si ahora no puedes, dilo sin más: no pasa nada y
+            que le escribas tú. Si ahora no puedes, dilo sin más, que no pasa nada y
             nadie paga nada.
           </p>
           <p className="mt-2 text-sm text-gris-medio">
-            Ella no tiene el tuyo y no se lo vamos a dar: nunca damos el teléfono
+            Ella no tiene el tuyo y no se lo vamos a dar, porque nunca damos el teléfono
             de un profesor.
           </p>
 
@@ -176,7 +176,7 @@ export default async function PaginaAceptar({
               mandamos su teléfono para que le escribas tú.
             </p>
             <p className="mt-2 text-sm text-gris-medio">
-              Ella no tiene el tuyo y no se lo vamos a dar: nunca damos el
+              Ella no tiene el tuyo y no se lo vamos a dar, porque nunca damos el
               teléfono de un profesor. Así que el primer paso lo tienes que dar
               tú, o no va a pasar nada.
             </p>
@@ -315,7 +315,7 @@ export default async function PaginaAceptar({
             {s.estado === 'cancelada'
               ? 'Esta familia nos dijo que al final no le hacía falta.'
               : 'Esta solicitud se cerró porque nadie siguió adelante.'}{' '}
-            No tienes que hacer nada y no te afecta en nada: tu ficha sigue como
+            No tienes que hacer nada y no te afecta en nada, porque tu ficha sigue como
             estaba.
           </p>
         </div>

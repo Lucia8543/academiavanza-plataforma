@@ -211,7 +211,7 @@ export default async function PaginaSolicitud({
             <div className="rounded-xl border-2 border-verde-avanza bg-verde-avanza-claro p-5">
               {s.gratisPorVale ? (
                 <p className="text-carbon">
-                  Este contacto no te cuesta nada: estás usando el vale del
+                  Este contacto no te cuesta nada, porque estás usando el vale del
                   anterior. No tienes que hacer nada, recarga en un momento.
                 </p>
               ) : (

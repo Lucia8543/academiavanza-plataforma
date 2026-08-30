@@ -127,7 +127,7 @@ export default async function PaginaProfesores({
             todo una familia que sí va a pagar, y la fórmula anterior la
             invitaba a compararse. Mismo criterio que en la portada. */}
         <p className="mt-2 max-w-2xl text-sm text-gris-medio">
-          Publicar tu ficha es gratuito: quien paga el contacto es la familia, y
+          Publicar tu ficha es gratuito, porque quien paga el contacto es la familia, y
           solo si tú aceptas darle clase. Rellenas el formulario, lo revisamos y
           tu ficha se publica.
         </p>

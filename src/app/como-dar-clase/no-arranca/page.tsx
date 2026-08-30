@@ -30,15 +30,15 @@ export default function GuiaNoArranca() {
     <main className="mx-auto max-w-2xl px-6 py-12">
       <CabeceraGuia
         titulo="Autonomía y hábito de estudio"
-        entradilla="Es el perfil más frecuente y el que peor se interpreta desde fuera. No es un problema de comprensión: cuando alguien se sienta con él, lo entiende todo. El problema es empezar solo."
+        entradilla="Es el perfil más frecuente y el que peor se interpreta desde fuera. No es un problema de comprensión, porque cuando alguien se sienta con él lo entiende todo. El problema es empezar solo."
         minutos={4}
       />
 
       <EnTreintaSegundos
         puntos={[
           'Empieza preguntando qué ha hecho esta semana, no explicando.',
-          'No le des el paso siguiente: pregúntale cuál cree que es.',
-          'Los deberes se dejan por escrito: qué ejercicios, cuánto tiempo y qué hacer si se atasca.',
+          'No le des el paso siguiente. Pregúntale cuál cree que es.',
+          'Los deberes se dejan por escrito, con qué ejercicios, cuánto tiempo y qué hacer si se atasca.',
           'Veinte minutos cuatro días valen más que dos horas un domingo.',
           'Si se bloquea, que lo apunte y pase al siguiente. No que lo deje todo.',
         ]}
@@ -76,7 +76,7 @@ export default function GuiaNoArranca() {
           ]}
         />
         <p>
-          Aunque la respuesta sea «nada», te sirve: ya sabes que el problema no
+          Aunque la respuesta sea «nada», te sirve, porque ya sabes que el problema no
           está en la asignatura, está en ponerse. Y te lo ha dicho él, que es
           distinto de decírselo tú.
         </p>
@@ -147,7 +147,7 @@ export default function GuiaNoArranca() {
           </li>
         </ul>
         <p>
-          El objetivo no es que lo resuelva: es que llegue a la próxima clase con
+          El objetivo no es que lo resuelva, sino que llegue a la próxima clase con
           preguntas concretas en vez de con «no he hecho ninguno porque no
           entendía nada».
         </p>
@@ -195,7 +195,7 @@ export default function GuiaNoArranca() {
       </Consejo>
 
       <Ojo>
-        Ojo con una cosa: esto no es terapia y tú no eres su psicólogo. Si lo que
+        Ojo con una cosa, porque esto no es terapia y tú no eres su psicólogo. Si lo
         ves va más allá de la asignatura, como angustia o algo que te preocupa
         de verdad, tu trabajo es decírselo a la familia, no gestionarlo tú.
       </Ojo>

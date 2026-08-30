@@ -90,7 +90,7 @@ export default async function GuiaProfesor() {
             >
               academiavanza.es/registro
             </a>{' '}
-            y cuentas quién eres: tu colegio, qué estudias, qué asignaturas y
+            y cuentas quién eres, con tu colegio, qué estudias, qué asignaturas y
             cursos te ves capaz de dar, y cuándo puedes.
           </p>
           <p>
@@ -168,7 +168,7 @@ export default async function GuiaProfesor() {
           }
         >
           <p>
-            Te llega un correo con lo que necesita: el curso, la asignatura, si
+            Te llega un correo con lo que necesita, o sea el curso, la asignatura, si
             es online o a domicilio y para cuándo. Si quieres, también te avisamos
             al móvil.
           </p>
@@ -197,7 +197,7 @@ export default async function GuiaProfesor() {
           }
         >
           <p>
-            Un botón. Si no puedes, ahí acaba: no pasa nada y la familia puede
+            Un botón. Si no puedes, ahí acaba, que no pasa nada y la familia puede
             buscar a otra persona enseguida.
           </p>
           <p>
@@ -274,7 +274,7 @@ export default async function GuiaProfesor() {
         >
           <p>
             El precio de la clase, el horario y dónde os veis lo decidís entre
-            vosotros. Nosotros ahí ya no pintamos nada: no somos tu jefe, no te
+            vosotros. Nosotros ahí ya no pintamos nada, porque no somos tu jefe, no te
             contratamos y no tocamos ese dinero.
           </p>
           <p>
@@ -317,7 +317,7 @@ export default async function GuiaProfesor() {
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-gris-medio">
           Esto de arriba es cómo funciona la web. Lo otro es lo que se te va a
-          complicar de verdad en la clase: la autonomía del alumno, la
+          complicar de verdad en la clase, que es la autonomía del alumno, la
           metodología de una sesión online, las distracciones cuando das clase en
           su casa y las adaptaciones para quien tiene dificultades de atención.
           Breves, y salen de más de mil novecientas clases.

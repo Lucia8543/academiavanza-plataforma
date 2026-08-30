@@ -113,7 +113,7 @@ export default async function PaginaEnlacePerdido({
       </p>
 
       <p className="mt-3 text-sm leading-relaxed text-gris-medio">
-        Aquí no hay contraseñas: ese enlace es tu entrada, y es también desde
+        Aquí no hay contraseñas. Ese enlace es tu entrada, y es también desde
         donde puedes cambiar tus datos, pausar la ficha o darte de baja.
       </p>
 

@@ -80,7 +80,7 @@ export default function PaginaPrivacidad() {
         </p>
         <p>
           <strong>Cuánto tiempo:</strong> mientras tu ficha exista. Desde el
-          enlace de tu ficha puedes pausarla, y también borrarla tú mismo: al
+          enlace de tu ficha puedes pausarla, y también borrarla tú mismo, porque al
           final de esa página hay un apartado para darte de baja. Se borran tu
           nombre, tu correo, tu teléfono y lo que hayas escrito, y no hace falta
           que nos lo pidas ni que esperes a que contestemos. Si alguna familia
@@ -106,7 +106,7 @@ export default function PaginaPrivacidad() {
         </p>
         <p>
           <strong>El correo es nuestro, no del profesor.</strong> Lo usamos solo
-          para avisarte de lo que pasa con tu solicitud: que ha contestado, que
+          para avisarte de lo que pasa con tu solicitud, de que ha contestado o de que
           el pago está confirmado. Al profesor se le da tu nombre y tu teléfono,
           y nada más.
         </p>
@@ -124,12 +124,12 @@ export default function PaginaPrivacidad() {
         </p>
         <p>
           <strong>Si no sigues adelante te preguntamos por qué</strong>, y hay
-          que elegir una respuesta de una lista corta: el horario, la distancia,
+          que elegir una respuesta de una lista corta, con el horario, la distancia,
           el precio y poco más. No hay ningún hueco para escribir, y es
           deliberado. Al profesor le contamos esos motivos{' '}
           <strong>agrupados y sin decirle quién ha dicho cada cosa</strong>, para
           que sepa por qué no le eligen sin poder señalar a nadie. Si el motivo
-          es que no querías pagar el contacto, eso no se le cuenta: es una queja
+          es que no querías pagar el contacto, eso no se le cuenta, porque es una queja
           sobre nosotros, no sobre él.
         </p>
         <p>
@@ -141,7 +141,7 @@ export default function PaginaPrivacidad() {
           <strong>Cuánto tiempo:</strong>{' '}
           <strong>noventa días desde que escribes</strong>. Pasado ese plazo, el
           mensaje y tu teléfono se borran automáticamente. No hay que pedirlo ni
-          hay que acordarse: lo hace un proceso que corre solo todos los días.
+          hay que acordarse, porque lo hace un proceso que corre solo todos los días.
         </p>
       </Apartado>
 
@@ -192,7 +192,7 @@ export default function PaginaPrivacidad() {
             A ti no te damos el teléfono del profesor en ningún caso.
           </strong>{' '}
           Es él quien te escribe o te llama, y quien decide si te da su número
-          cuando habléis. Es una medida de protección de datos: minimizamos lo
+          cuando habléis. Es una medida de protección de datos, porque minimizamos lo
           que se comparte, y el teléfono de un profesor no hace falta para que
           podáis hablar.
         </p>
@@ -264,7 +264,7 @@ export default function PaginaPrivacidad() {
           <strong>Para publicar ficha de profesor hay que tener al menos 14
           años.</strong> Es la edad a partir de la cual la ley española permite
           decidir por uno mismo sobre sus propios datos. Si tienes entre 14 y 18,
-          publica la ficha sabiéndolo tu madre, tu padre o tu tutor: en el
+          publica la ficha sabiéndolo tu madre, tu padre o tu tutor, porque en el
           directorio aparecen tu nombre de pila, tu colegio y tus estudios.
           Puedes borrarla tú mismo cuando quieras, desde el enlace de tu ficha, y
           también puede pedirlo quien te tutele escribiendo a{' '}

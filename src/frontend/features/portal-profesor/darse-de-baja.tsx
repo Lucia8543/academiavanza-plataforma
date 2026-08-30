@@ -52,7 +52,7 @@ export function DarseDeBaja({ token }: { token: string }) {
 
       <p className="mt-2 text-sm leading-relaxed text-carbon">
         Si alguna familia llegó a pagar por tu contacto, se conserva únicamente
-        la fecha y el importe, sin tu nombre: es lo que acredita que ese dinero
+        la fecha y el importe, sin tu nombre, porque es lo que acredita que ese dinero
         entró, y no podemos destruirlo.
       </p>
 
@@ -63,7 +63,7 @@ export function DarseDeBaja({ token }: { token: string }) {
 
       <p className="mt-3 text-sm font-medium text-carbon">
         Esto no se puede deshacer. Si sólo quieres dejar de recibir solicitudes
-        una temporada, cierra esto y usa «Pausar mi ficha»: no borra nada y
+        una temporada, cierra esto y usa «Pausar mi ficha», que no borra nada y
         puedes volver cuando quieras.
       </p>
 

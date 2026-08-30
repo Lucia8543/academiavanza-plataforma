@@ -192,7 +192,7 @@ export function mensajeDeAviso(deteccion: Deteccion): string {
       'Parece que estás mencionando el origen de tu familia. No podemos guardar ese tipo de información.',
   };
 
-  return `${porQue[deteccion.categoria]} Cuéntaselo al profesor por teléfono si crees que le ayuda: eso es una conversación entre vosotros y nosotros no pintamos nada.`;
+  return `${porQue[deteccion.categoria]} Cuéntaselo al profesor por teléfono si crees que le ayuda, porque eso es una conversación entre vosotros y nosotros no pintamos nada.`;
 }
 
 /**
@@ -217,5 +217,5 @@ export function mensajeDeAvisoProfesor(deteccion: Deteccion): string {
       'Has mencionado el origen de una familia o de un alumno, y este texto se publica en tu ficha.',
   };
 
-  return `${porQue[deteccion.categoria]} Puedes contarlo de otra forma: «tengo paciencia», «voy despacio con quien lo necesita», «he dado clase a chavales muy distintos».`;
+  return `${porQue[deteccion.categoria]} Puedes contarlo de otra forma, como «tengo paciencia», «voy despacio con quien lo necesita» o «he dado clase a chavales muy distintos».`;
 }

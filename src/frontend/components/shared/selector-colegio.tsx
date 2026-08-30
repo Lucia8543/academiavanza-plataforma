@@ -114,7 +114,7 @@ export function SelectorColegio({
         inputMode="search"
         autoComplete="off"
         className="w-full rounded-lg border border-gris-borde px-3 py-2 text-carbon focus:border-verde-avanza focus:outline-none focus:ring-1 focus:ring-verde-avanza"
-        placeholder="Escribe las primeras letras: mon, sale, ángel…"
+        placeholder="Escribe las primeras letras, mon, sale, ángel…"
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />

@@ -26,7 +26,7 @@ import { GUIAS_DE_CLASE } from '@/shared/datos/guias-de-clase';
 export const metadata: Metadata = {
   title: 'Guías para dar clase · AcademiAvanza',
   description:
-    'Lo que recibe cada profesor al publicar su ficha: autonomía y hábito de estudio, metodología para clases online, distracciones en clases a domicilio y adaptaciones para dificultades de atención.',
+    'Lo que recibe cada profesor al publicar su ficha. Autonomía y hábito de estudio, metodología para clases online, distracciones en clases a domicilio y adaptaciones para dificultades de atención.',
 };
 
 
@@ -43,7 +43,7 @@ export default function IndiceGuiasDeClase() {
 
       <p className="mt-4 leading-relaxed text-carbon">
         Dar bien una clase particular no es lo mismo que dominar la asignatura.
-        Casi toda la dificultad está fuera del temario: el alumno que se queda
+        Casi toda la dificultad está fuera del temario, con el alumno que se queda
         mirando el enunciado sin saber por dónde empezar, el que llega sin haber
         practicado nada, o el que pierde la atención a los diez minutos.
       </p>
@@ -69,7 +69,7 @@ export default function IndiceGuiasDeClase() {
         </p>
         <p className="mt-3 text-sm leading-relaxed text-carbon">
           Nadie aprende a andar porque le expliquen cómo se anda. Se cae, se
-          levanta y lo vuelve a intentar. Un ejercicio funciona igual: si le das
+          levanta y lo vuelve a intentar. Un ejercicio funciona igual, porque si le das
           el paso siguiente, le has resuelto el ejercicio; si le preguntas cuál
           cree que es, le has enseñado a buscarlo la próxima vez.
         </p>
@@ -100,7 +100,7 @@ export default function IndiceGuiasDeClase() {
       {/* ------------------------------------------------------------------ */}
       <p className="mt-10 rounded-lg border-l-4 border-aviso bg-gris-claro px-4 py-3 text-sm leading-relaxed text-carbon">
         <strong>Nada de esto es obligatorio y nadie te lo va a revisar.</strong>{' '}
-        No trabajas para AcademiAvanza: das clase por tu cuenta y acuerdas el
+        No trabajas para AcademiAvanza. Das clase por tu cuenta y acuerdas el
         precio y el horario con la familia. Esto son cosas que funcionan,
         escritas para que no tengas que descubrirlas tú a base de clases
         regulares.

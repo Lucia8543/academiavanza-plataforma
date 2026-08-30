@@ -63,7 +63,7 @@ export async function comprobarCodigo(
   if (!s) {
     return {
       paso: 'error',
-      mensaje: `No existe ninguna solicitud con el código ${codigo}. Revisa el concepto del Bizum: no hay ni ceros ni oes, ni unos ni íes.`,
+      mensaje: `No existe ninguna solicitud con el código ${codigo}. Revisa el concepto del Bizum, que no lleva ni ceros ni oes, ni unos ni íes.`,
     };
   }
 
@@ -77,7 +77,7 @@ export async function comprobarCodigo(
   if (s.estado !== 'aceptada') {
     return {
       paso: 'error',
-      mensaje: `El profesor todavía no ha aceptado esta solicitud (está en «${s.estado}»). No deberías haber recibido este Bizum: devuélvelo.`,
+      mensaje: `El profesor todavía no ha aceptado esta solicitud (está en «${s.estado}»). No deberías haber recibido este Bizum, así que devuélvelo.`,
     };
   }
 

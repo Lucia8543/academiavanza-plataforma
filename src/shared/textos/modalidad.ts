@@ -52,7 +52,7 @@ export function comoDaClase(
 
 /** La aclaración larga, para donde haya sitio. */
 export const EXPLICACION_PRESENCIAL =
-  'Las clases presenciales son en casa del alumno: es el profesor quien se desplaza.';
+  'Las clases presenciales son en casa del alumno, y es el profesor quien se desplaza.';
 
 /**
  * Lo que se le dice a una familia que está fuera de la zona habitual.
@@ -62,8 +62,8 @@ export const EXPLICACION_PRESENCIAL =
  * intentarlo es quedarse sin un profesor que sí la habría cogido.
  */
 export const ANIMO_FUERA_DE_ZONA =
-  'Si vives en otra zona, escríbele igualmente: muchos se desplazan más lejos ' +
-  'cuando el horario compensa, y preguntar no cuesta nada.';
+  'Si vives en otra zona, escríbele igualmente, que muchos se desplazan más ' +
+  'lejos cuando el horario compensa, y preguntar no cuesta nada.';
 
 /*
  * Los textos del hueco vivían aquí y se han ido a `shared/reglas/cupo.ts`.

@@ -77,7 +77,7 @@ export default function PaginaAvisoLegal() {
 
       <Apartado titulo="Qué se paga">
         <p>
-          Publicar una ficha es gratis y siempre lo será: al profesor no se le
+          Publicar una ficha es gratis y siempre lo será, porque al profesor no se le
           cobra nada, ni por aparecer ni por dar clases.
         </p>
         <p>
@@ -88,7 +88,7 @@ export default function PaginaAvisoLegal() {
         </p>
         <p>
           <strong>Si el contacto no funciona, no lo pierdes.</strong> En tu
-          propia página de seguimiento hay dos botones: uno para decir que no
+          propia página de seguimiento hay dos botones, uno para decir que no
           conseguiste hablar con el profesor y otro para decir que hablasteis y
           no salió bien. En cualquiera de los dos casos te damos otro contacto
           sin volver a pagar, al momento y sin tener que escribir a nadie.
@@ -123,7 +123,7 @@ export default function PaginaAvisoLegal() {
             al profesor le damos el teléfono de la familia, y el suyo no se lo
             damos a nadie
           </strong>
-          . Es una medida de protección de datos: se comparte lo mínimo
+          . Es una medida de protección de datos, porque se comparte lo mínimo
           imprescindible para que las dos partes puedan hablar. Si un profesor
           decide darle su teléfono a una familia, lo hace él directamente y bajo
           su responsabilidad.
@@ -133,7 +133,7 @@ export default function PaginaAvisoLegal() {
       <Apartado titulo="Uso de la web">
         <p>
           Los contenidos de esta web son de AcademiAvanza. Puedes leerlos,
-          compartir enlaces y usarlos para lo que están: encontrar profesor o
+          compartir enlaces y usarlos para lo que están, que es encontrar profesor o
           publicar tu ficha.
         </p>
         <p>

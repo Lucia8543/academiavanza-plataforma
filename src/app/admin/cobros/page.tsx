@@ -551,7 +551,7 @@ export default async function PaginaCobros() {
           <>
             <p className="mt-2 text-sm text-gris-medio">
               {totalMotivos} respuesta{totalMotivos === 1 ? '' : 's'} desde el
-              principio. Esto no se lo enseñes a nadie: son los motivos en
+              principio. Esto no se lo enseñes a nadie, porque son los motivos en
               crudo, y el de arriba del todo es el que dice si el precio del
               contacto está frenando a la gente.
             </p>
@@ -585,7 +585,7 @@ export default async function PaginaCobros() {
         <h2 className="text-lg font-bold text-carbon">Precio del contacto</h2>
         <p className="mt-1 text-sm text-gris-medio">
           Ahora mismo: <strong>{euros(precio)}</strong>. Cambiarlo no afecta a
-          las solicitudes que ya existen: cada una se queda con lo que costaba
+          las solicitudes que ya existen, porque cada una se queda con lo que costaba
           cuando se creó.
         </p>
 

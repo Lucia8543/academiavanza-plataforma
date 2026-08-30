@@ -161,7 +161,7 @@ export function ActivarAvisos({ token }: { token: string }) {
             <li>Abre AcademiAvanza desde el icono nuevo y vuelve aquí.</li>
           </ol>
           <p className="text-gris-medio">
-            Si prefieres no hacerlo, no pasa nada: te avisaremos por correo
+            Si prefieres no hacerlo, no pasa nada, que te avisaremos por correo
             igualmente, y por WhatsApp si el correo tampoco llega.
           </p>
         </div>
@@ -200,7 +200,7 @@ export function ActivarAvisos({ token }: { token: string }) {
 
           <p className="rounded-lg bg-gris-claro px-3 py-2">
             <span className="font-medium">Y si prefieres no tocar nada,</span>{' '}
-            tampoco pasa nada: te avisaremos por correo igualmente, y por
+            tampoco pasa nada, que te avisaremos por correo igualmente, y por
             WhatsApp si el correo tampoco llega. Estate pendiente del correo.
           </p>
         </div>
@@ -228,7 +228,7 @@ export function ActivarAvisos({ token }: { token: string }) {
             <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               <p>{mensaje}</p>
               <p className="mt-1 font-medium">
-                No te vas a perder nada: te avisaremos por correo igualmente, y
+                No te vas a perder nada, porque te avisaremos por correo igualmente, y
                 por WhatsApp si el correo tampoco llega. Estate pendiente del
                 correo.
               </p>

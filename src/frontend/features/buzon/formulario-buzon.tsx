@@ -72,7 +72,7 @@ export function FormularioBuzon() {
       />
 
       <p className="mt-1 text-xs text-gris-medio">
-        No nos cuentes nada sobre la salud de tu hijo ni de tus alumnos: para
+        No nos cuentes nada sobre la salud de tu hijo ni de tus alumnos, porque para
         arreglar la web no nos hace falta y no podemos guardarlo.
       </p>
 

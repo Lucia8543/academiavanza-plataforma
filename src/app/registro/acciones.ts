@@ -69,6 +69,11 @@ export async function enviarRegistro(
     niveles: formulario.getAll('niveles').map(String),
     certificaciones: formulario.getAll('certificaciones').map(String),
     modalidad: cadena('modalidad') || 'online',
+    // Cuánto hueco le queda. Se leía en el formulario y se guardaba en la base
+    // de datos, pero **este paso de en medio se olvidó de copiarlo**, así que
+    // llegaba vacío y el valor por defecto lo convertía en «busco alumnos».
+    // Quien decía que estaba lleno acababa publicado como disponible.
+    cupo: cadena('cupo') || 'busca',
     zona: cadena('zona'),
     desplazamientoFlexible:
       formulario.get('desplazamientoFlexible') === 'on',
@@ -84,6 +89,7 @@ export async function enviarRegistro(
     email: String(datos.email ?? ''),
     telefono: String(datos.telefono ?? ''),
     colegioId: String(datos.colegioId ?? ''),
+    cupo: String(datos.cupo ?? 'busca'),
     colegioOtro: String(datos.colegioOtro ?? ''),
     titulacion: String(datos.titulacion ?? ''),
     universidad: String(datos.universidad ?? ''),

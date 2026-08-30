@@ -86,13 +86,13 @@ export const AVISO_CUPO: Record<Cupo, string | null> = {
   busca: null,
   justo:
     'Nos ha dicho que ya tiene alumnos y va justo de tiempo, así que puede ' +
-    'tardar más en contestar o decir que no. No es desinterés: es que tiene ' +
+    'tardar más en contestar o decir que no. No es desinterés, es que tiene ' +
     'la agenda casi llena. Si tienes prisa, escribe también a algún otro.',
   completo:
-    'Ahora mismo no puede coger a nadie más: nos ha dicho que tiene la agenda ' +
-    'completa este curso. Por eso no te dejamos escribirle, para que no pagues ' +
-    'por un contacto que no iba a salir adelante. Su ficha sigue aquí porque ' +
-    'puede volver a tener hueco más adelante.',
+    'Ahora mismo no puede coger a nadie más, porque nos ha dicho que tiene la ' +
+    'agenda completa este curso. Por eso no te dejamos escribirle, para que no ' +
+    'pagues por un contacto que no iba a salir adelante. Su ficha sigue aquí ' +
+    'porque puede volver a tener hueco más adelante.',
 };
 
 /** Lo que ve el profesor al elegir, en su alta y en su panel. */

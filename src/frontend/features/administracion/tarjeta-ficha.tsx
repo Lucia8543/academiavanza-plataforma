@@ -65,7 +65,7 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
       {!f.telefono && (
         <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
           <span className="font-medium">Sin teléfono.</span> Esta ficha es de
-          antes de que lo pidiéramos y no se puede publicar: es lo que recibe la
+          antes de que lo pidiéramos y no se puede publicar, porque es lo que recibe la
           familia cuando paga. Escríbele para pedírselo, o bórrala si es una
           prueba.
         </p>
@@ -89,7 +89,7 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
             <p>
               <span className="font-medium">Escribió el colegio a mano.</span>{' '}
-              Hasta que esté en el catálogo no se puede publicar: saldría sin
+              Hasta que esté en el catálogo no se puede publicar, porque saldría sin
               colegio y sin poder filtrarse por él.
             </p>
             <p className="mt-1">

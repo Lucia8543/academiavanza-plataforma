@@ -113,7 +113,7 @@ export default async function GuiaFamilia() {
             <strong className="text-carbon">
               No te pedimos ningún dato de tu hijo
             </strong>{' '}
-            que permita identificarlo: ni su nombre, ni su edad, ni su colegio.
+            que permita identificarlo, ni su nombre, ni su edad, ni su colegio.
             Solo el curso.
           </p>
           <p>
@@ -219,7 +219,7 @@ export default async function GuiaFamilia() {
             . Solo tienes que elegir a quién.
           </p>
           <p>
-            No hay que dar explicaciones ni justificar nada: te preguntamos el
+            No hay que dar explicaciones ni justificar nada. Te preguntamos el
             motivo con una lista corta, y se lo contamos al profesor agrupado y
             sin decirle quién ha dicho qué.
           </p>
