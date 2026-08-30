@@ -184,8 +184,8 @@ export function ActivarAvisos({ token }: { token: string }) {
               «i» dentro de un círculo.
             </li>
             <li>
-              Se abre un menú. Busca <strong>«Notificaciones»</strong> —puede
-              estar dentro de «Configuración del sitio» o «Permisos»—.
+              Se abre un menú. Busca <strong>«Notificaciones»</strong>, que
+              puede estar dentro de «Configuración del sitio» o «Permisos».
             </li>
             <li>
               Cámbialo de <strong>«Bloquear»</strong> a{' '}

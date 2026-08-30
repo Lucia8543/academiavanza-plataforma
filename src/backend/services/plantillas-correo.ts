@@ -137,6 +137,8 @@ export function correoSolicitud(datos: {
   para: string;
   nombreProfesor: string;
   nivel: string;
+  /** Dónde vive la familia. Vacío si el profesor sólo da clase online. */
+  zona: string | null;
   mensaje: string | null;
   tokenProfesor: string;
   tokenPanel: string;
@@ -156,6 +158,9 @@ export function correoSolicitud(datos: {
     'Antes de darte ningún dato suyo necesitamos saber si te viene bien.',
     '',
     `Curso: ${datos.nivel}`,
+    // La zona va junto al curso y no al final: son las dos cosas que decide
+    // cualquiera antes de contestar, y aquí es donde se contesta.
+    ...(datos.zona ? [`Zona: ${datos.zona}`] : []),
     ...(datos.mensaje ? ['', 'Lo que te cuenta:', datos.mensaje] : []),
     '',
     'Dinos si puedes cogerla:',
@@ -179,6 +184,7 @@ export function correoSolicitud(datos: {
     <p style="margin:0 0 16px;">Una familia ha visto tu ficha y <strong>quiere clases contigo</strong>. Antes de darte ningún dato suyo necesitamos saber si te viene bien.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px;">
       ${dato('Curso', datos.nivel)}
+      ${datos.zona ? dato('Zona', datos.zona) : ''}
     </table>
     ${datos.mensaje ? cita(datos.mensaje) : ''}
     ${boton('Ver y contestar', enlace)}
@@ -1290,8 +1296,8 @@ export function correoFichaRecibida(datos: {
   const cuerpo = [
     `Hola ${datos.nombreProfesor}:`,
     '',
-    'Hemos recibido tu ficha. La revisamos a mano —sobre todo el colegio, que es',
-    'lo que las familias miran— y te escribimos en cuanto esté publicada. Suele',
+    'Hemos recibido tu ficha. La revisamos a mano, sobre todo el colegio, que es',
+    'lo que las familias miran, y te escribimos en cuanto esté publicada. Suele',
     'ser cosa de un día o dos.',
     '',
     'Mientras tanto, guarda este enlace. Es tu acceso permanente: desde ahí',
@@ -1316,8 +1322,8 @@ export function correoFichaRecibida(datos: {
   const html = envoltorio(`
     <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
     <p style="margin:0 0 16px;">
-      <strong>Hemos recibido tu ficha.</strong> La revisamos a mano —sobre todo el colegio,
-      que es lo que las familias miran— y te escribimos en cuanto esté publicada.
+      <strong>Hemos recibido tu ficha.</strong> La revisamos a mano, sobre todo el colegio,
+      que es lo que las familias miran, y te escribimos en cuanto esté publicada.
       Suele ser cosa de un día o dos.
     </p>
     <p style="margin:0 0 4px;">

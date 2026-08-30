@@ -80,16 +80,16 @@ export default function GuiaOnline() {
         </p>
         <ul className="mt-3 space-y-2">
           <li>
-            <strong className="text-carbon">10-15 minutos</strong> — explicas o
+            <strong className="text-carbon">10-15 minutos:</strong> explicas o
             repasáis lo de la semana.
           </li>
           <li>
-            <strong className="text-carbon">Un ejercicio suyo</strong> — lo hace
+            <strong className="text-carbon">Un ejercicio suyo:</strong> lo hace
             él mientras tú callas. Cuesta callarse; hazlo igual.
           </li>
           <li>
-            <strong className="text-carbon">Lo corregís juntos</strong> — y
-            vuelta a empezar.
+            <strong className="text-carbon">Lo corregís juntos:</strong> y vuelta a
+            empezar.
           </li>
         </ul>
       </Consejo>

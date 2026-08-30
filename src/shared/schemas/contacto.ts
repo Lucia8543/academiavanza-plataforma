@@ -4,6 +4,7 @@ import {
   detectarDatosSensibles,
   mensajeDeAviso,
 } from '@/shared/schemas/datos-sensibles';
+import { esZonaValida } from '@/shared/datos/zonas';
 import { telefonoEspanol } from '@/shared/schemas/telefono';
 
 /**
@@ -77,6 +78,27 @@ export const esquemaContacto = z.object({
    * identifica a nadie ni es categoría especial.
    */
   nivelId: z.string().trim().min(1, 'Dinos a qué curso va'),
+
+  /**
+   * Dónde vive la familia, para que el profesor sepa si le compensa ir.
+   *
+   * Sólo se pregunta cuando el profesor da clase presencial: a quien sólo da
+   * online, la zona no le dice nada, y cada campo de más es gente que se va sin
+   * escribir. Por eso es opcional aquí y obligatorio en el formulario cuando
+   * toca.
+   *
+   * Se valida contra la lista cerrada. No es paranoia de formato: es lo que
+   * garantiza que aquí no acabe una dirección con calle y número, que es lo que
+   * la gente escribe cuando le preguntas dónde vive y le das un hueco libre.
+   */
+  zona: z
+    .string()
+    .trim()
+    .optional()
+    .default('')
+    .refine((v) => v === '' || esZonaValida(v), {
+      message: 'Elige una zona de la lista',
+    }),
 
   modalidad: z.enum(['online', 'presencial', 'ambas']).optional(),
 

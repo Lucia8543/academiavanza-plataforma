@@ -8,6 +8,7 @@ import {
   URGENCIA_POR_DEFECTO,
   type Urgencia,
 } from '@/shared/reglas/cobro';
+import { GRUPOS_DE_ZONAS } from '@/shared/datos/zonas';
 import { EXPLICACION_PRESENCIAL } from '@/shared/textos/modalidad';
 import { porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 import { sugerirCorreo } from '@/shared/schemas/correo-erratas';
@@ -47,6 +48,7 @@ type Valores = {
   telefono: string;
   email: string;
   nivelId: string;
+  zona: string;
   urgencia: Urgencia;
   mensaje: string;
   vale: string;
@@ -57,6 +59,7 @@ const VACIO: Valores = {
   telefono: '',
   email: '',
   nivelId: '',
+  zona: '',
   urgencia: URGENCIA_POR_DEFECTO,
   mensaje: '',
   vale: '',
@@ -280,6 +283,48 @@ export function FormularioContacto({
         )}
 
         {/*
+          Dónde vive, y sólo si el profesor se desplaza.
+          A quien da clase online la zona no le dice nada, y cada campo de más
+          es gente que cierra la pestaña sin escribir.
+
+          Es un desplegable y no un hueco libre a propósito: preguntada a pelo,
+          la gente contesta con su dirección, y una calle con número al lado del
+          curso de una menor es un dato que no queremos tener. Con el distrito
+          el profesor decide igual de bien.
+        */}
+        {daPresencial && (
+          <div>
+            <label className={claseEtiqueta} htmlFor="zona">
+              ¿En qué zona vivís?
+            </label>
+            <select
+              id="zona"
+              name="zona"
+              required
+              className={claseCampo}
+              value={v.zona}
+              onChange={(e) => cambiar('zona', e.target.value)}
+            >
+              <option value="">Elige la zona</option>
+              {GRUPOS_DE_ZONAS.map((g) => (
+                <optgroup key={g.titulo} label={g.titulo}>
+                  {g.zonas.map((z) => (
+                    <option key={z} value={z}>
+                      {z}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <p className="mt-1 text-sm text-gris-medio">
+              El profesor la ve antes de contestar, para saber si le viene bien
+              desplazarse. No pongas tu dirección: con el barrio sobra.
+            </p>
+            <Aviso mensaje={errores.zona} />
+          </div>
+        )}
+
+        {/*
           Para cuándo lo necesita.
 
           Decide cuánto tiempo tiene el profesor antes de que la solicitud se
@@ -342,7 +387,7 @@ export function FormularioContacto({
             <span className="font-medium text-carbon">
               No escribas aquí nada sobre la salud de tu hijo
             </span>{' '}
-            —diagnósticos, informes, medicación— ni sobre vuestra religión u
+            (diagnósticos, informes, medicación) ni sobre vuestra religión u
             origen. No podemos guardar esa información. Si crees que el profesor
             debe saberlo, díselo por teléfono.
           </p>

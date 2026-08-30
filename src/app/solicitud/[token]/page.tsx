@@ -187,8 +187,8 @@ export default async function PaginaSolicitud({
             <div className="rounded-xl border-2 border-azul-confianza bg-white p-5">
               <p className="text-carbon">
                 <strong>Nos has dicho que ya has hecho el Bizum.</strong> Lo
-                comprobamos a mano, así que puede tardar un rato —más si es de
-                noche o fin de semana—. En cuanto lo veamos le damos tu teléfono
+                comprobamos a mano, así que puede tardar un rato, y más si es de
+                noche o fin de semana. En cuanto lo veamos le damos tu teléfono
                 al profesor y te escribe él.
               </p>
               <p className="mt-3 text-sm text-gris-medio">
@@ -287,9 +287,9 @@ export default async function PaginaSolicitud({
               )}
 
               <p className="mt-4 border-t border-verde-avanza pt-3 text-sm text-gris-medio">
-                Comprobamos los pagos a mano, así que puede pasar un rato hasta
-                que se abra —más si es de noche o fin de semana—. Te avisaremos
-                por correo en cuanto esté.
+                Comprobamos los pagos a mano, así que puede pasar un rato hasta que le
+                pasemos tu teléfono al profesor, y más si es de noche o fin de
+                semana. Te avisamos por correo en cuanto esté.
               </p>
 
               {s.intencionPago !== 'si' && <Dejarlo token={token} />}

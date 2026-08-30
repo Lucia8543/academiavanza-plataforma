@@ -39,7 +39,7 @@ export default function GuiaAtencion() {
     <main className="mx-auto max-w-2xl px-6 py-12">
       <CabeceraGuia
         titulo="Adaptaciones para dificultades de atención"
-        entradilla="Hay alumnos con capacidad de sobra para quienes sostener la atención supone un esfuerzo añadido. No necesitas saber a qué se debe —ni te corresponde averiguarlo— para preparar una clase que les funcione."
+        entradilla="Hay alumnos con capacidad de sobra para quienes sostener la atención supone un esfuerzo añadido. No necesitas saber a qué se debe, ni te corresponde averiguarlo, para preparar una clase que les funcione."
         minutos={4}
       />
 
@@ -131,8 +131,8 @@ export default function GuiaAtencion() {
 
       <p className="mt-6 text-sm leading-relaxed text-gris-medio">
         Y si lo que ves te preocupa más allá de la asignatura, díselo a la
-        familia tal cual lo has visto —«le cuesta arrancar», «se bloquea con los
-        exámenes»— y que decidan ellos. Describir es tu trabajo; interpretar, no.
+        familia tal cual lo has visto: «le cuesta arrancar», «se bloquea con los
+        exámenes». Y que decidan ellos. Describir es tu trabajo; interpretar, no.
       </p>
 
       <PieDeGuia />

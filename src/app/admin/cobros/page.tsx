@@ -615,7 +615,7 @@ export default async function PaginaCobros() {
                 {t.vigente_hasta
                   ? ` hasta ${new Date(t.vigente_hasta).toLocaleDateString('es-ES')}`
                   : ' · vigente'}
-                {t.motivo ? ` — ${t.motivo}` : ''}
+                {t.motivo ? ` · ${t.motivo}` : ''}
               </li>
             ))}
           </ul>

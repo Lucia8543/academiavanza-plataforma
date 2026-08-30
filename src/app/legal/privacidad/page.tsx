@@ -92,8 +92,15 @@ export default function PaginaPrivacidad() {
       <Apartado titulo="Si eres una familia">
         <p>
           <strong>Qué guardamos:</strong> el nombre de la persona adulta que
-          escribe, su teléfono, su correo, el curso del alumno y el mensaje que
-          quiera escribir. Nada más.
+          escribe, su teléfono, su correo, el curso del alumno, la zona donde
+          vivís y el mensaje que quiera escribir. Nada más.
+        </p>
+        <p>
+          <strong>La zona es el barrio o el municipio, nunca la dirección.</strong>{' '}
+          Se elige de una lista cerrada, no hay dónde escribirla, y sólo se
+          pregunta si el profesor da clase a domicilio. Sirve para que él sepa si
+          le compensa desplazarse antes de aceptar, y así nadie paga por un
+          contacto que iba a quedarse en nada.
         </p>
         <p>
           <strong>El correo es nuestro, no del profesor.</strong> Lo usamos solo

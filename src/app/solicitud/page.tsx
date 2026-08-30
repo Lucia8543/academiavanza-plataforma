@@ -68,8 +68,8 @@ export default async function PaginaRecuperar({
         <p className="font-medium">¿Dónde está mi código?</p>
         <p className="mt-1">
           Son cinco letras y números, tipo <strong>27XJS</strong>. Lo tienes en
-          el correo que te mandamos al escribir al profesor —busca
-          «AcademiAvanza» en tu buzón, y mira también el spam—. Y si ya has
+          el correo que te mandamos al escribir al profesor: busca
+          «AcademiAvanza» en tu buzón, y mira también el spam. Y si ya has
           pagado, es lo que pusiste en el concepto del Bizum.
         </p>
       </div>

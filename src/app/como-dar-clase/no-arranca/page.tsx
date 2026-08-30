@@ -113,16 +113,16 @@ export default function GuiaNoArranca() {
         </p>
         <ul className="mt-3 space-y-2">
           <li>
-            <strong className="text-carbon">Qué</strong> — página, número, tipo
-            de ejercicio. Nada de «repasa el tema».
+            <strong className="text-carbon">Qué:</strong> página, número, tipo de
+            ejercicio. Nada de «repasa el tema».
           </li>
           <li>
-            <strong className="text-carbon">Cuánto</strong> — «esto son veinte
+            <strong className="text-carbon">Cuánto:</strong> «esto son veinte
             minutos». No más. Una tarea con final a la vista se empieza; una
             abierta se aplaza.
           </li>
           <li>
-            <strong className="text-carbon">Qué hacer si se atasca</strong> —
+            <strong className="text-carbon">Qué hacer si se atasca:</strong>{' '}
             intentarlo, apuntar la duda y seguir.
           </li>
         </ul>
@@ -135,14 +135,14 @@ export default function GuiaNoArranca() {
         </p>
         <ul className="mt-3 space-y-2">
           <li>
-            <strong className="text-carbon">Rojo</strong> — no sale. Paro.
+            <strong className="text-carbon">Rojo:</strong> no sale. Paro.
           </li>
           <li>
-            <strong className="text-carbon">Amarillo</strong> — lo pienso dos
+            <strong className="text-carbon">Amarillo:</strong> lo pienso dos
             minutos y lo apunto en una hoja.
           </li>
           <li>
-            <strong className="text-carbon">Verde</strong> — sigo con el
+            <strong className="text-carbon">Verde:</strong> sigo con el
             siguiente.
           </li>
         </ul>
@@ -196,8 +196,8 @@ export default function GuiaNoArranca() {
 
       <Ojo>
         Ojo con una cosa: esto no es terapia y tú no eres su psicólogo. Si lo que
-        ves va más allá de la asignatura —angustia, algo que te preocupa de
-        verdad— tu trabajo es decírselo a la familia, no gestionarlo tú.
+        ves va más allá de la asignatura, como angustia o algo que te preocupa
+        de verdad, tu trabajo es decírselo a la familia, no gestionarlo tú.
       </Ojo>
 
       <PieDeGuia />

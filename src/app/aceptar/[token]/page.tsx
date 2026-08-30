@@ -89,6 +89,23 @@ export default async function PaginaAceptar({
           <dt className="inline font-medium text-carbon">Curso: </dt>
           <dd className="inline text-carbon">{s.nivel ?? '—'}</dd>
         </div>
+        {/*
+          Dónde vive, justo debajo del curso.
+
+          Son las dos preguntas que se hace cualquiera antes de decir que sí, y
+          antes no estaba: se aceptaba a ciegas y a veces se descubría después
+          que la familia vivía a una hora, con los diez euros ya cobrados.
+
+          Sólo aparece si la solicitud la trae. Las anteriores a que se
+          preguntara, y las de quien sólo da clase online, no la tienen, y una
+          fila con un guión sería ruido.
+        */}
+        {s.zona && (
+          <div>
+            <dt className="inline font-medium text-carbon">Zona: </dt>
+            <dd className="inline text-carbon">{s.zona}</dd>
+          </div>
+        )}
         <div>
           <dt className="inline font-medium text-carbon">Recibida: </dt>
           <dd className="inline text-carbon">

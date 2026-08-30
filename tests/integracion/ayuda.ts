@@ -133,6 +133,9 @@ export function datosDeFamilia(
     // Obligatorio en el tipo aunque el esquema le ponga valor por defecto: en
     // Zod, `.default()` sale del parseo siempre relleno.
     urgencia: URGENCIA_POR_DEFECTO,
+    // Vacío por defecto: sólo se pregunta a quien escribe a un profesor que da
+    // clase presencial. Las pruebas que lo necesiten lo pasan por `overrides`.
+    zona: '',
     mensaje: '',
     esTutorLegal: true,
     aceptaPrivacidad: true,

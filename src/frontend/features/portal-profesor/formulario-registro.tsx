@@ -354,7 +354,7 @@ export function FormularioRegistro({
           >
             Entra aquí
           </Link>{' '}
-          — te mandamos tu enlace al correo.
+          y te mandamos tu enlace al correo.
         </p>
       </header>
       {estado.mensaje && (

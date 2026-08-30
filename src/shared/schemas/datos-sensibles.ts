@@ -210,7 +210,7 @@ export function mensajeDeAviso(deteccion: Deteccion): string {
 export function mensajeDeAvisoProfesor(deteccion: Deteccion): string {
   const porQue: Record<Categoria, string> = {
     salud:
-      'Has mencionado un diagnóstico o una condición de salud. Se entiende por qué —dice algo bueno de cómo das clase—, pero este texto se publica en tu ficha, y ahí no podemos hablar de la salud de nadie.',
+      'Has mencionado un diagnóstico o una condición de salud. Se entiende por qué, y dice algo bueno de cómo das clase, pero este texto se publica en tu ficha, y ahí no podemos hablar de la salud de nadie.',
     creencias:
       'Has mencionado creencias religiosas, y este texto se publica en tu ficha.',
     origen:

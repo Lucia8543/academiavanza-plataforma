@@ -64,7 +64,7 @@ export default function PaginaAvisoLegal() {
             <strong>
               No comprobamos la titulación ni el expediente de nadie.
             </strong>{' '}
-            Lo que aparece en cada ficha —el colegio, la carrera, los idiomas—
+            Lo que aparece en cada ficha (el colegio, la carrera, los idiomas)
             lo declara el propio profesor. Nosotros revisamos que la ficha esté
             bien escrita y sea coherente, no que sea cierta.
           </li>
@@ -114,8 +114,8 @@ export default function PaginaAvisoLegal() {
         </p>
         <p>
           Lo que ocurra entre una familia y un profesor a partir del momento en
-          que él recibe su teléfono —el precio, los horarios, la forma de pago,
-          la calidad de las clases— es cosa suya y no respondemos de ello.
+          que él recibe su teléfono (el precio, los horarios, la forma de pago,
+          la calidad de las clases) es cosa suya y no respondemos de ello.
         </p>
         <p>
           El contacto va en un solo sentido y es deliberado:{' '}

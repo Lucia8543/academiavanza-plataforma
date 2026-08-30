@@ -103,7 +103,7 @@ export default function GuiaSeDespista() {
           frases={[
             'Este déjalo, hacemos el siguiente y luego volvemos.',
             'Explícamelo tú a mí, que a ver si me lío.',
-            'Sal a la pizarra —o al papel— y lo escribes tú.',
+            'Sal a la pizarra, o al papel, y lo escribes tú.',
           ]}
         />
         <p>

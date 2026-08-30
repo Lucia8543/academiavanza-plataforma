@@ -96,6 +96,14 @@ export type SolicitudProfesor = {
   nombreFamilia: string;
   nivel: string | null;
   mensaje: string | null;
+  /**
+   * Distrito o municipio donde vive la familia, para decidir si compensa ir.
+   *
+   * Vacío en las solicitudes anteriores a que se preguntara, y en las de
+   * profesores que sólo dan clase online. Nunca es una dirección: sale de una
+   * lista cerrada.
+   */
+  zona: string | null;
   enviadaEn: Date;
   /** Ya tiene al menos un aparato apuntado: no hay que volver a pedirle nada. */
   avisadoPorMovil: boolean;

@@ -130,6 +130,9 @@ export async function crearSolicitud(
         email_familia: datos.email,
         nivel_id: datos.nivelId,
         mensaje: datos.mensaje || null,
+        // Vacío cuando el profesor sólo da clase online: no se le pregunta,
+        // porque la zona no cambia nada en esa decisión.
+        zona: datos.zona || null,
         // Para cuándo lo necesita. Decide en cuántos días caduca si el profesor
         // no contesta, y se le dice a los dos en el primer correo.
         urgencia: datos.urgencia ?? URGENCIA_POR_DEFECTO,
@@ -968,6 +971,7 @@ async function avisarAlProfesor(
       para: profesor.email,
       nombreProfesor: profesor.nombre,
       nivel: nivel?.nombre ?? 'sin especificar',
+      zona: datos.zona || null,
       mensaje: datos.mensaje || null,
       tokenProfesor,
       tokenPanel: await tokenDelPanel(profesor.id),

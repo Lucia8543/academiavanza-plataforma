@@ -115,6 +115,7 @@ export async function porTokenProfesor(
       nombre_familia: true,
       telefono_familia: true,
       mensaje: true,
+      zona: true,
       enviado_en: true,
       niveles: { select: { nombre: true } },
       profesores: {
@@ -139,6 +140,7 @@ export async function porTokenProfesor(
     nombreFamilia: s.nombre_familia,
     nivel: s.niveles?.nombre ?? null,
     mensaje: s.mensaje,
+    zona: s.zona,
     enviadaEn: s.enviado_en,
     avisadoPorMovil: s.profesores._count.suscripciones_push > 0,
     cupo: s.profesores.cupo === 'justo' ? 'justo' : 'busca',

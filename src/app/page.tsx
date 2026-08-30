@@ -17,13 +17,29 @@ const euros = (n: number) =>
 
 const miles = (n: number) => new Intl.NumberFormat('es-ES').format(n);
 
+/**
+ * Una cifra del histórico, y cambia de forma según el ancho.
+ *
+ * En el móvil van **una por línea**, con el número a la izquierda y su
+ * explicación al lado. En tres columnas de cien píxeles no cabían: «+1.904» ya
+ * ocupaba la columna entera y «emparejamientos que funcionaron» se partía en
+ * tres líneas contra la cifra de al lado. Tres números apretujados no se leen
+ * como tres logros, se leen como ruido.
+ *
+ * De 640 píxeles para arriba vuelven a las tres columnas centradas, que ahí sí
+ * respiran y se comparan de un vistazo.
+ *
+ * El ancho fijo del número en móvil es lo que alinea las tres explicaciones en
+ * la misma vertical, y `tabular-nums` evita que el 1 sea más estrecho que el 9
+ * y las descuadre.
+ */
 function Cifra({ numero, texto }: { numero: string; texto: string }) {
   return (
-    <div>
-      <dt className="text-3xl font-extrabold text-verde-avanza sm:text-4xl">
+    <div className="flex items-baseline gap-4 py-4 sm:block sm:py-0">
+      <dt className="w-28 shrink-0 text-3xl font-extrabold tabular-nums text-verde-avanza sm:w-auto sm:text-4xl">
         {numero}
       </dt>
-      <dd className="mt-1 text-sm leading-tight text-gris-medio">{texto}</dd>
+      <dd className="text-sm leading-snug text-gris-medio sm:mt-2">{texto}</dd>
     </div>
   );
 }
@@ -236,7 +252,10 @@ export default async function Portada() {
             Llevamos dos años dando clase. Sólo en el curso {HISTORICO.curso}:
           </p>
 
-          <dl className="mt-6 grid grid-cols-3 gap-4 text-center">
+          {/* En móvil es una lista con separadores; a partir de `sm`, la
+              rejilla de tres columnas de siempre. Las dos formas conviven en el
+              mismo marcado y no hay nada duplicado ni oculto. */}
+          <dl className="mt-4 divide-y divide-gris-borde sm:mt-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:divide-y-0 sm:text-center">
             {/* 1.904 contadas, publicadas como «más de 1.900». No se redondea a
                 dos mil: es el único número de toda la web que alguien de la
                 etapa anterior podría sentarse a comprobar. */}
