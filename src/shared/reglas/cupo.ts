@@ -72,7 +72,7 @@ export const ORDEN_CUPO: Record<Cupo, number> = {
 export const ETIQUETA_CUPO: Record<Cupo, string | null> = {
   busca: null,
   justo: 'Ya tiene alumnos, va justo',
-  completo: 'Sin hueco este curso',
+  completo: 'Sin hueco por ahora',
 };
 
 /**
@@ -90,7 +90,7 @@ export const AVISO_CUPO: Record<Cupo, string | null> = {
     'la agenda casi llena. Si tienes prisa, escribe también a algún otro.',
   completo:
     'Ahora mismo no puede coger a nadie más, porque nos ha dicho que tiene la ' +
-    'agenda completa este curso. Por eso no te dejamos escribirle, para que no ' +
+    'agenda llena. Por eso no te dejamos escribirle, para que no ' +
     'pagues por un contacto que no iba a salir adelante. Su ficha sigue aquí ' +
     'porque puede volver a tener hueco más adelante.',
 };
@@ -115,7 +115,7 @@ export const OPCIONES_CUPO: {
   },
   {
     valor: 'completo',
-    titulo: 'No tengo más hueco este curso',
+    titulo: 'No tengo más hueco por ahora',
     texto:
       'Tu ficha se publica igual y se te ve, pero nadie puede escribirte hasta ' +
       'que digas lo contrario. Es lo que hay que marcar si ya tienes todos tus ' +
