@@ -136,6 +136,7 @@ export function datosDeFamilia(
     // Vacío por defecto: sólo se pregunta a quien escribe a un profesor que da
     // clase presencial. Las pruebas que lo necesiten lo pasan por `overrides`.
     zona: '',
+    barrio: '',
     mensaje: '',
     esTutorLegal: true,
     aceptaPrivacidad: true,

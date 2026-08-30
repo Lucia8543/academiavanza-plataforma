@@ -98,7 +98,9 @@ export default function PaginaPrivacidad() {
         <p>
           <strong>La zona es el barrio o el municipio, nunca la dirección.</strong>{' '}
           Se elige de una lista cerrada, no hay dónde escribirla, y sólo se
-          pregunta si el profesor da clase a domicilio. Sirve para que él sepa si
+          pregunta si el profesor da clase a domicilio. Si quieres, puedes
+          precisar el barrio dentro del distrito, pero es opcional y puedes
+          dejarlo sin decir. Sirve para que él sepa si
           le compensa desplazarse antes de aceptar, y así nadie paga por un
           contacto que iba a quedarse en nada.
         </p>

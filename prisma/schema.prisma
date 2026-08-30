@@ -37,6 +37,7 @@ model contactos {
   nivel_id             String?          @db.Uuid
   mensaje              String?
   zona                 String?
+  barrio               String?
   es_tutor_legal       Boolean          @default(false)
   acepta_privacidad    Boolean          @default(false)
   enviado_en           DateTime         @default(now()) @db.Timestamptz(6)

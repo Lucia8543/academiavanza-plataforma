@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BARRIOS,
+  esBarrioValido,
   esZonaValida,
   GRUPOS_DE_ZONAS,
   OTRA_ZONA,
+  zonaCompleta,
   ZONAS,
 } from '@/shared/datos/zonas';
 import { esquemaContacto } from '@/shared/schemas/contacto';
@@ -79,5 +82,62 @@ describe('⭐ el formulario no deja colar una dirección', () => {
     // A quien no se desplaza, la zona no le dice nada, así que no se le
     // pregunta. Si esto fallara, nadie podría escribir a un profesor online.
     expect(esquemaContacto.safeParse(BASE).success).toBe(true);
+  });
+});
+
+describe('el barrio, dentro de su distrito', () => {
+  it('los 21 distritos tienen barrios y los municipios no', () => {
+    const [capital, fuera] = GRUPOS_DE_ZONAS;
+    for (const d of capital.zonas) expect(BARRIOS[d], d).toBeDefined();
+    for (const m of fuera.zonas) expect(BARRIOS[m], m).toBeUndefined();
+  });
+
+  it('ningún barrio está en dos distritos', () => {
+    const todos = Object.values(BARRIOS).flat();
+    expect(new Set(todos).size).toBe(todos.length);
+  });
+
+  it('sabe a qué distrito pertenece cada uno', () => {
+    expect(esBarrioValido('Chamberí', 'Ríos Rosas')).toBe(true);
+    // Vallehermoso es de Chamberí, no de Salamanca. Es justo el error que
+    // comete quien cambia de distrito con el barrio ya elegido.
+    expect(esBarrioValido('Salamanca', 'Vallehermoso')).toBe(false);
+    expect(esBarrioValido('Getafe', 'Ríos Rosas')).toBe(false);
+  });
+
+  it('lo junta como lo lee el profesor', () => {
+    expect(zonaCompleta('Chamberí', 'Ríos Rosas')).toBe('Ríos Rosas (Chamberí)');
+    expect(zonaCompleta('Getafe', null)).toBe('Getafe');
+    expect(zonaCompleta(null, null)).toBeNull();
+  });
+});
+
+describe('⭐ el barrio tiene que ser de ese distrito', () => {
+  it('deja pasar el que sí lo es', () => {
+    const r = esquemaContacto.safeParse({
+      ...BASE,
+      zona: 'Chamberí',
+      barrio: 'Ríos Rosas',
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('rechaza el barrio de otro distrito', () => {
+    const r = esquemaContacto.safeParse({
+      ...BASE,
+      zona: 'Salamanca',
+      barrio: 'Ríos Rosas',
+    });
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some((i) => i.path[0] === 'barrio')).toBe(true);
+    }
+  });
+
+  it('deja pasar el distrito sin barrio, que es el caso normal', () => {
+    // Si esto fallara, quien no sepa el nombre oficial de su barrio no podría
+    // enviar el formulario, que es exactamente lo que queríamos evitar.
+    const r = esquemaContacto.safeParse({ ...BASE, zona: 'Chamberí' });
+    expect(r.success).toBe(true);
   });
 });

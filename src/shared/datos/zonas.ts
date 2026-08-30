@@ -103,3 +103,121 @@ export const ZONAS: readonly string[] = [
 export function esZonaValida(valor: string): boolean {
   return ZONAS.includes(valor);
 }
+
+/**
+ * Los barrios oficiales de cada distrito de Madrid.
+ *
+ * El distrito solo se queda corto donde más falta hace. Fuencarral-El Pardo va
+ * desde Tetuán hasta la sierra, y Latina y Carabanchel son enormes: decir «vivo
+ * en Latina» no le resuelve al profesor si le compensa ir. Por eso hay un
+ * segundo paso.
+ *
+ * **Y por eso el barrio es opcional.** Mucha gente no sabe cómo se llama
+ * oficialmente el suyo: quien vive en Ríos Rosas dirá «Chamberí» antes que
+ * «Vallehermoso» o «Gaztambide», que son los de al lado. Obligar a acertar
+ * sería cambiar un formulario que se rellena por uno que se abandona. Quien lo
+ * sepa afina; quien no, se queda en el distrito y el profesor decide igual.
+ *
+ * Van en dos pasos y no en una lista de ciento treinta y uno por lo mismo:
+ * ninguna de las dos listas pasa de ocho o nueve opciones una vez elegido el
+ * distrito, y eso sí se lee.
+ *
+ * Los municipios de fuera no tienen desglose. Un municipio ya es una unidad lo
+ * bastante pequeña, y sus barrios no los conoce nadie más que quien vive allí.
+ */
+export const BARRIOS: Record<string, readonly string[]> = {
+  Centro: ['Palacio', 'Embajadores', 'Cortes', 'Justicia', 'Universidad', 'Sol'],
+  Arganzuela: [
+    'Imperial', 'Acacias', 'Chopera', 'Legazpi', 'Delicias',
+    'Palos de Moguer', 'Atocha',
+  ],
+  Retiro: ['Pacífico', 'Adelfas', 'Estrella', 'Ibiza', 'Jerónimos', 'Niño Jesús'],
+  Salamanca: [
+    'Recoletos', 'Goya', 'Fuente del Berro', 'Guindalera', 'Lista', 'Castellana',
+  ],
+  Chamartín: [
+    'El Viso', 'Prosperidad', 'Ciudad Jardín', 'Hispanoamérica',
+    'Nueva España', 'Castilla',
+  ],
+  Tetuán: [
+    'Bellas Vistas', 'Cuatro Caminos', 'Castillejos', 'Almenara',
+    'Valdeacederas', 'Berruguete',
+  ],
+  Chamberí: [
+    'Gaztambide', 'Arapiles', 'Trafalgar', 'Almagro', 'Vallehermoso',
+    'Ríos Rosas',
+  ],
+  'Fuencarral-El Pardo': [
+    'El Pardo', 'Fuentelarreina', 'Peñagrande', 'Barrio del Pilar', 'La Paz',
+    'Valverde', 'Mirasierra', 'El Goloso',
+  ],
+  'Moncloa-Aravaca': [
+    'Casa de Campo', 'Argüelles', 'Ciudad Universitaria', 'Valdezarza',
+    'Valdemarín', 'El Plantío', 'Aravaca',
+  ],
+  Latina: [
+    'Los Cármenes', 'Puerta del Ángel', 'Lucero', 'Aluche', 'Campamento',
+    'Cuatro Vientos', 'Las Águilas',
+  ],
+  Carabanchel: [
+    'Comillas', 'Opañel', 'San Isidro', 'Vista Alegre', 'Puerta Bonita',
+    'Buenavista', 'Abrantes',
+  ],
+  Usera: [
+    'Orcasitas', 'Orcasur', 'San Fermín', 'Almendrales', 'Moscardó', 'Zofío',
+    'Pradolongo',
+  ],
+  'Puente de Vallecas': [
+    'Entrevías', 'San Diego', 'Palomeras Bajas', 'Palomeras Sureste',
+    'Portazgo', 'Numancia',
+  ],
+  Moratalaz: [
+    'Pavones', 'Horcajo', 'Marroquina', 'Media Legua', 'Fontarrón', 'Vinateros',
+  ],
+  'Ciudad Lineal': [
+    'Ventas', 'Pueblo Nuevo', 'Quintana', 'Concepción', 'San Pascual',
+    'San Juan Bautista', 'Colina', 'Atalaya', 'Costillares',
+  ],
+  Hortaleza: [
+    'Palomas', 'Piovera', 'Canillas', 'Pinar del Rey', 'Apóstol Santiago',
+    'Valdefuentes',
+  ],
+  Villaverde: [
+    'Villaverde Alto', 'San Cristóbal', 'Butarque', 'Los Rosales', 'Los Ángeles',
+  ],
+  'Villa de Vallecas': [
+    'Casco Histórico de Vallecas', 'Santa Eugenia', 'Ensanche de Vallecas',
+  ],
+  Vicálvaro: [
+    'Casco Histórico de Vicálvaro', 'Ambroz', 'Valdebernardo', 'Valderribas',
+    'El Cañaveral',
+  ],
+  'San Blas-Canillejas': [
+    'Simancas', 'Hellín', 'Amposta', 'Arcos', 'Rosas', 'Rejas', 'Canillejas',
+    'Salvador',
+  ],
+  Barajas: [
+    'Alameda de Osuna', 'Aeropuerto', 'Casco Histórico de Barajas', 'Timón',
+    'Corralejos',
+  ],
+};
+
+/** Si ese barrio pertenece de verdad a esa zona. */
+export function esBarrioValido(zona: string, barrio: string): boolean {
+  return (BARRIOS[zona] ?? []).includes(barrio);
+}
+
+/**
+ * Lo que ve el profesor, en una línea.
+ *
+ * El barrio delante y el distrito entre paréntesis: quien conoce Madrid ubica
+ * antes «Ríos Rosas» que «Chamberí», y quien no lo conoce necesita el distrito
+ * para situarse. Así valen los dos.
+ */
+export function zonaCompleta(
+  zona: string | null,
+  barrio: string | null,
+): string | null {
+  if (!zona) return null;
+  return barrio ? `${barrio} (${zona})` : zona;
+}

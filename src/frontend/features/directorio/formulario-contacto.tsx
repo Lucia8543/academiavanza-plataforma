@@ -8,7 +8,7 @@ import {
   URGENCIA_POR_DEFECTO,
   type Urgencia,
 } from '@/shared/reglas/cobro';
-import { GRUPOS_DE_ZONAS } from '@/shared/datos/zonas';
+import { BARRIOS, GRUPOS_DE_ZONAS } from '@/shared/datos/zonas';
 import { EXPLICACION_PRESENCIAL } from '@/shared/textos/modalidad';
 import { porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 import { sugerirCorreo } from '@/shared/schemas/correo-erratas';
@@ -49,6 +49,7 @@ type Valores = {
   email: string;
   nivelId: string;
   zona: string;
+  barrio: string;
   urgencia: Urgencia;
   mensaje: string;
   vale: string;
@@ -60,6 +61,7 @@ const VACIO: Valores = {
   email: '',
   nivelId: '',
   zona: '',
+  barrio: '',
   urgencia: URGENCIA_POR_DEFECTO,
   mensaje: '',
   vale: '',
@@ -303,7 +305,17 @@ export function FormularioContacto({
               required
               className={claseCampo}
               value={v.zona}
-              onChange={(e) => cambiar('zona', e.target.value)}
+              onChange={(e) =>
+                // El barrio se vacía al cambiar de distrito. Si no, quien se
+                // equivoca de distrito y lo corrige se queda con un barrio de
+                // otro sitio, y el servidor le rechaza el envío sin que se vea
+                // por qué.
+                setV((actual) => ({
+                  ...actual,
+                  zona: e.target.value,
+                  barrio: '',
+                }))
+              }
             >
               <option value="">Elige la zona</option>
               {GRUPOS_DE_ZONAS.map((g) => (
@@ -321,6 +333,41 @@ export function FormularioContacto({
               desplazarse. No pongas tu dirección: con el barrio sobra.
             </p>
             <Aviso mensaje={errores.zona} />
+
+            {/*
+              El barrio, y sólo si el distrito elegido tiene desglose: los
+              municipios de fuera no lo tienen.
+
+              Es opcional de verdad, y lo dice la etiqueta. Mucha gente no sabe
+              cómo se llama oficialmente su barrio, y quien no lo encuentre se
+              queda en el distrito sin que pase nada. Obligar aquí sería cambiar
+              precisión por formularios abandonados.
+            */}
+            {BARRIOS[v.zona] && (
+              <div className="mt-3">
+                <label className={claseEtiqueta} htmlFor="barrio">
+                  ¿Y en qué barrio?{' '}
+                  <span className="font-normal text-gris-medio">
+                    (si lo sabes)
+                  </span>
+                </label>
+                <select
+                  id="barrio"
+                  name="barrio"
+                  className={claseCampo}
+                  value={v.barrio}
+                  onChange={(e) => cambiar('barrio', e.target.value)}
+                >
+                  <option value="">Prefiero no precisar</option>
+                  {BARRIOS[v.zona].map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+                <Aviso mensaje={errores.barrio} />
+              </div>
+            )}
           </div>
         )}
 

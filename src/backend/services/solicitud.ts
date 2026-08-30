@@ -11,6 +11,7 @@ import {
   seAbreSinPagar,
   URGENCIA_POR_DEFECTO,
 } from '@/shared/reglas/cobro';
+import { zonaCompleta } from '@/shared/datos/zonas';
 import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
 import {
   correoContactoAbierto,
@@ -133,6 +134,7 @@ export async function crearSolicitud(
         // Vacío cuando el profesor sólo da clase online: no se le pregunta,
         // porque la zona no cambia nada en esa decisión.
         zona: datos.zona || null,
+        barrio: datos.barrio || null,
         // Para cuándo lo necesita. Decide en cuántos días caduca si el profesor
         // no contesta, y se le dice a los dos en el primer correo.
         urgencia: datos.urgencia ?? URGENCIA_POR_DEFECTO,
@@ -971,7 +973,7 @@ async function avisarAlProfesor(
       para: profesor.email,
       nombreProfesor: profesor.nombre,
       nivel: nivel?.nombre ?? 'sin especificar',
-      zona: datos.zona || null,
+      zona: zonaCompleta(datos.zona || null, datos.barrio || null),
       mensaje: datos.mensaje || null,
       tokenProfesor,
       tokenPanel: await tokenDelPanel(profesor.id),

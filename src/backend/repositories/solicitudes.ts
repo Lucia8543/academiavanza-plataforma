@@ -1,6 +1,7 @@
 import { nombrePublico } from '@/backend/repositories/directorio';
 import { PLAZOS, plazoDe, type Urgencia } from '@/shared/reglas/cobro';
 import { elProfesorVeElTelefono } from '@/shared/reglas/solicitud';
+import { zonaCompleta } from '@/shared/datos/zonas';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import type {
   EstadoSolicitud,
@@ -116,6 +117,7 @@ export async function porTokenProfesor(
       telefono_familia: true,
       mensaje: true,
       zona: true,
+      barrio: true,
       enviado_en: true,
       niveles: { select: { nombre: true } },
       profesores: {
@@ -140,7 +142,8 @@ export async function porTokenProfesor(
     nombreFamilia: s.nombre_familia,
     nivel: s.niveles?.nombre ?? null,
     mensaje: s.mensaje,
-    zona: s.zona,
+    // Al profesor se le da ya montado: «Ríos Rosas (Chamberí)».
+    zona: zonaCompleta(s.zona, s.barrio),
     enviadaEn: s.enviado_en,
     avisadoPorMovil: s.profesores._count.suscripciones_push > 0,
     cupo: s.profesores.cupo === 'justo' ? 'justo' : 'busca',

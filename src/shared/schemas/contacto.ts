@@ -4,7 +4,7 @@ import {
   detectarDatosSensibles,
   mensajeDeAviso,
 } from '@/shared/schemas/datos-sensibles';
-import { esZonaValida } from '@/shared/datos/zonas';
+import { esBarrioValido, esZonaValida } from '@/shared/datos/zonas';
 import { telefonoEspanol } from '@/shared/schemas/telefono';
 
 /**
@@ -100,6 +100,19 @@ export const esquemaContacto = z.object({
       message: 'Elige una zona de la lista',
     }),
 
+  /**
+   * El barrio dentro del distrito, y sólo si la familia lo sabe.
+   *
+   * Opcional a conciencia: mucha gente no conoce el nombre oficial del suyo, y
+   * obligar a acertar cambiaría un formulario que se rellena por uno que se
+   * abandona. Quien lo sepa afina; quien no, se queda en el distrito y el
+   * profesor decide igual de bien.
+   *
+   * Que pertenezca de verdad al distrito elegido se comprueba abajo, en el
+   * `superRefine`, porque hace falta mirar los dos campos a la vez.
+   */
+  barrio: z.string().trim().optional().default(''),
+
   modalidad: z.enum(['online', 'presencial', 'ambas']).optional(),
 
   mensaje: z
@@ -141,6 +154,18 @@ export const esquemaContacto = z.object({
   // navegador ya avise mientras se escribe: el aviso del navegador es una
   // cortesía y esto es la regla. Si alguien envía el formulario sin
   // JavaScript, la comprobación sigue en pie.
+  // Un barrio que no es de ese distrito no es un despiste de formato: o el
+  // formulario se envió a mano, o alguien cambió el distrito después de elegir
+  // el barrio. En los dos casos el dato resultante sería mentira.
+  .superRefine((datos, ctx) => {
+    if (datos.barrio && !esBarrioValido(datos.zona, datos.barrio)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['barrio'],
+        message: 'Ese barrio no es de ese distrito',
+      });
+    }
+  })
   .superRefine((datos, ctx) => {
     const deteccion = detectarDatosSensibles(datos.mensaje ?? '');
     if (!deteccion) return;
