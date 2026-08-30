@@ -16,6 +16,7 @@ import {
   haySesion,
 } from '@/backend/services/sesion-admin';
 import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
+import { normalizarCupo } from '@/shared/reglas/cupo';
 
 /**
  * Acciones del panel de administración.
@@ -244,6 +245,29 @@ export async function rechazar(formulario: FormData) {
 }
 
 /** Retira del directorio una ficha ya publicada, sin borrarla. */
+/**
+ * Cambiar el hueco de un profesor desde el panel.
+ *
+ * Existe porque el profesor ya puede hacerlo solo, desde su ficha, y aun así
+ * hace falta: quien se apuntó antes de que la pregunta estuviera en el alta, o
+ * quien avisa por WhatsApp de que se ha llenado, no va a entrar en su enlace a
+ * cambiar un botón. Antes de esto, la única salida era pedírselo y esperar.
+ *
+ * No manda ningún correo. Es un ajuste de visibilidad, no una decisión sobre
+ * su ficha, y avisar de cada cambio sería ruido.
+ */
+export async function cambiarCupo(formulario: FormData) {
+  await exigirSesion();
+
+  const id = String(formulario.get('id'));
+  const cupo = normalizarCupo(formulario.get('cupo'));
+
+  await db.profesores.update({ where: { id }, data: { cupo } });
+
+  revalidatePath('/admin');
+  revalidatePath('/profesores');
+}
+
 export async function retirar(formulario: FormData) {
   await exigirSesion();
   const id = String(formulario.get('id'));

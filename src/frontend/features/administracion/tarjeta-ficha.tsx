@@ -1,11 +1,13 @@
 import {
   aprobar,
   borrar,
+  cambiarCupo,
   darDeAltaColegio,
   rechazar,
   retirar,
 } from '@/app/admin/acciones';
 import type { Ficha } from '@/backend/repositories/profesores';
+import { ETIQUETA_CUPO, normalizarCupo, OPCIONES_CUPO } from '@/shared/reglas/cupo';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
 
 /**
@@ -38,6 +40,8 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
     (c) =>
       `${c.certificaciones_idioma.idioma} ${c.certificaciones_idioma.nivel_mcer ?? ''}`.trim(),
   );
+
+  const cupo = normalizarCupo(f.cupo);
 
   return (
     <article className="rounded-xl border border-gris-borde bg-white p-5">
@@ -206,14 +210,54 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
             </form>
           </>
         ) : (
-          <form action={retirar}>
-            <input type="hidden" name="id" value={f.id} />
-            <button
-              className={`${boton} border border-gris-borde text-carbon hover:bg-gris-claro`}
-            >
-              Retirar del directorio
-            </button>
-          </form>
+          <>
+            {/*
+              El hueco, cambiable desde aquí.
+
+              El profesor ya puede hacerlo solo desde su ficha, pero quien te
+              avisa por WhatsApp de que se ha llenado no va a entrar en su
+              enlace a buscar un botón. Antes de esto, la única salida era
+              pedírselo y esperar a que lo hiciera.
+
+              Sólo aparece en las publicadas: en una ficha pendiente el hueco
+              no significa nada porque todavía no la ve ninguna familia.
+            */}
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <span className="text-sm text-gris-medio">Hueco:</span>
+              {OPCIONES_CUPO.map((o) => (
+                <form key={o.valor} action={cambiarCupo}>
+                  <input type="hidden" name="id" value={f.id} />
+                  <input type="hidden" name="cupo" value={o.valor} />
+                  <button
+                    title={o.texto}
+                    className={`${boton} border text-sm ${
+                      cupo === o.valor
+                        ? o.valor === 'completo'
+                          ? 'border-gris-medio bg-gris-claro text-carbon'
+                          : o.valor === 'justo'
+                            ? 'border-amber-300 bg-amber-50 text-amber-900'
+                            : 'border-verde-avanza bg-verde-avanza-claro text-verde-avanza-oscuro'
+                        : 'border-gris-borde text-gris-medio hover:bg-gris-claro'
+                    }`}
+                  >
+                    {cupo === o.valor ? '✓ ' : ''}
+                    {o.valor === 'busca'
+                      ? 'Busca'
+                      : (ETIQUETA_CUPO[o.valor] ?? o.titulo)}
+                  </button>
+                </form>
+              ))}
+            </div>
+
+            <form action={retirar}>
+              <input type="hidden" name="id" value={f.id} />
+              <button
+                className={`${boton} border border-gris-borde text-carbon hover:bg-gris-claro`}
+              >
+                Retirar del directorio
+              </button>
+            </form>
+          </>
         )}
 
         <form action={borrar} className="ml-auto">

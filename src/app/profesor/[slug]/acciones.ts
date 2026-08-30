@@ -89,7 +89,12 @@ export async function enviarContacto(
         ? resultado.explicacion
         : resultado.motivo === 'no-disponible'
           ? 'Este profesor ya no está disponible. Prueba con otro del directorio.'
-          : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.';
+          : resultado.motivo === 'sin-hueco'
+            ? // Pasa cuando la página se cargó antes de que él dijera que se
+              // había llenado. Se explica el motivo: «no está disponible» a
+              // secas, sobre una ficha que sí se ve, parece un fallo.
+              'Este profesor acaba de decirnos que ya no tiene hueco este curso, así que no podemos pasarle tu mensaje. No se te ha cobrado nada. Prueba con otro del directorio.'
+            : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.';
 
     return { ok: false, mensaje, valores };
   }

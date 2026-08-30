@@ -1,3 +1,4 @@
+import type { Cupo } from '@/shared/reglas/cupo';
 /**
  * La solicitud de una familia, vista desde fuera.
  *
@@ -108,7 +109,7 @@ export type SolicitudProfesor = {
   /** Ya tiene al menos un aparato apuntado: no hay que volver a pedirle nada. */
   avisadoPorMovil: boolean;
   /** Cómo está ahora mismo su ficha, para poder confirmárselo tras cambiarlo. */
-  cupo: 'busca' | 'justo';
+  cupo: Cupo;
   /** Su ficha está pausada: no aparece en el directorio. */
   pausado: boolean;
   /** Sólo cuando está pagada. */

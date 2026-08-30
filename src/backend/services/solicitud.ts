@@ -12,6 +12,7 @@ import {
   URGENCIA_POR_DEFECTO,
 } from '@/shared/reglas/cobro';
 import { zonaCompleta } from '@/shared/datos/zonas';
+import { aceptaSolicitudes, normalizarCupo } from '@/shared/reglas/cupo';
 import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
 import {
   correoContactoAbierto,
@@ -70,7 +71,7 @@ function tokenNuevo(): string {
 
 export type ResultadoAlta =
   | { ok: true; token: string; codigo: string }
-  | { ok: false; motivo: 'no-disponible' | 'error' }
+  | { ok: false; motivo: 'no-disponible' | 'sin-hueco' | 'error' }
   | { ok: false; motivo: 'demasiadas'; explicacion: string };
 
 /**
@@ -88,11 +89,32 @@ export async function crearSolicitud(
 ): Promise<ResultadoAlta> {
   const profesor = await db.profesores.findFirst({
     where: { slug, estado: 'activo', disponible: true },
-    select: { id: true, nombre: true, apellidos: true, email: true },
+    select: {
+      id: true,
+      nombre: true,
+      apellidos: true,
+      email: true,
+      cupo: true,
+    },
   });
 
-
   if (!profesor) return { ok: false, motivo: 'no-disponible' };
+
+  /*
+   * Quien no tiene hueco no recibe solicitudes, y se comprueba aquí.
+   *
+   * La ficha ya no enseña el formulario, pero eso es una cortesía del
+   * navegador: la página se pudo cargar hace media hora, justo antes de que él
+   * dijera que estaba lleno. Sin esta línea, ese envío entraría, la familia
+   * pagaría diez euros y el profesor recibiría a alguien a quien no puede
+   * coger.
+   *
+   * Va después de buscarlo y antes de tocar nada, que es donde no cuesta nada
+   * y donde todavía no hay ninguna fila escrita.
+   */
+  if (!aceptaSolicitudes(normalizarCupo(profesor.cupo))) {
+    return { ok: false, motivo: 'sin-hueco' };
+  }
 
   // Antes de guardar nada: ¿este teléfono está escribiendo a medio directorio?
   const permiso = await puedeEscribir(datos.telefono, profesor.id);

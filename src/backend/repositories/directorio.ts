@@ -1,3 +1,4 @@
+import { CUPOS, normalizarCupo } from '@/shared/reglas/cupo';
 import type { Prisma } from '@prisma/client';
 import { FRANJAS, type Franja } from '@/shared/schemas/profesor';
 import type {
@@ -147,10 +148,12 @@ export async function buscarProfesores(
    * mérito, antigüedad ni nada que premie a unos sobre otros. Lo único que se
    * antepone es poder coger al alumno, que es lo que las dos partes quieren.
    */
-  const ordenadas = [
-    ...barajar(fichas.filter((f) => f.cupo !== 'justo')),
-    ...barajar(fichas.filter((f) => f.cupo === 'justo')),
-  ];
+  // Tres grupos, barajado dentro de cada uno: primero quien busca, luego quien
+  // va justo, y al final quien no tiene hueco. Ese último sigue apareciendo:
+  // una academia de cuarenta profesores tiene que verse con cuarenta.
+  const ordenadas = CUPOS.flatMap((c) =>
+    barajar(fichas.filter((f) => normalizarCupo(f.cupo) === c)),
+  );
 
   return ordenadas.map((f) => ({
     id: f.id,
@@ -166,7 +169,7 @@ export async function buscarProfesores(
     modalidad: f.modalidad as Modalidad,
     zona: f.zona_otra,
     desplazamientoFlexible: f.desplazamiento_flexible,
-    cupo: f.cupo === 'justo' ? ('justo' as const) : ('busca' as const),
+    cupo: normalizarCupo(f.cupo),
     asignaturas: f.profesor_asignaturas.map((a) => a.asignaturas.nombre),
     niveles: f.profesor_niveles.map((n) => n.niveles.nombre),
     idiomas: f.profesor_certificaciones.map((c) =>
@@ -212,7 +215,7 @@ export async function buscarPorSlug(
     modalidad: f.modalidad as Modalidad,
     zona: f.zona_otra,
     desplazamientoFlexible: f.desplazamiento_flexible,
-    cupo: f.cupo === 'justo' ? ('justo' as const) : ('busca' as const),
+    cupo: normalizarCupo(f.cupo),
     asignaturas: f.profesor_asignaturas.map((a) => a.asignaturas.nombre),
     niveles: f.profesor_niveles.map((n) => n.niveles.nombre),
     idiomas: f.profesor_certificaciones.map((c) =>

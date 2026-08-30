@@ -65,24 +65,20 @@ export const ANIMO_FUERA_DE_ZONA =
   'Si vives en otra zona, escríbele igualmente: muchos se desplazan más lejos ' +
   'cuando el horario compensa, y preguntar no cuesta nada.';
 
-/**
- * Lo que se le dice a una familia sobre un profesor que va justo de sitio.
+/*
+ * Los textos del hueco vivían aquí y se han ido a `shared/reglas/cupo.ts`.
  *
- * Ni se le esconde ni se le desanima: se le da el dato para que decida a quién
- * escribe primero. Escribir sigue siendo gratis y él sigue pudiendo decir que
- * sí, pero la familia merece saber que puede tardar más o decir que no.
+ * Cuando eran dos estados bastaba con dos constantes sueltas. Con tres, el
+ * texto y el comportamiento tienen que ir juntos: la etiqueta, el aviso, el
+ * orden en el directorio y si se le puede escribir o no son la misma decisión
+ * vista desde cuatro sitios, y separarlas era la forma segura de que un día
+ * dijeran cosas distintas.
  *
- * Y se dice **el motivo**, no sólo el hecho. «Puede tardar» a secas suena a
- * desinterés y hace pensar que el profesor es informal; «ya tiene alumnos» dice
- * exactamente lo contrario y además es la verdad.
+ * El criterio de siempre sigue en pie, y está allí: se dice **el motivo** y no
+ * sólo el hecho. «Puede tardar» a secas suena a desinterés y hace pensar que el
+ * profesor es informal; «ya tiene alumnos» dice lo contrario y además es
+ * verdad.
  */
-export const AVISO_CUPO_JUSTO =
-  'Nos ha dicho que ya tiene alumnos y va justo de tiempo, así que puede ' +
-  'tardar más en contestar o decir que no. No es desinterés: es que tiene la ' +
-  'agenda casi llena. Si tienes prisa, escribe también a algún otro.';
-
-/** La etiqueta corta, para la tarjeta del directorio. */
-export const ETIQUETA_CUPO_JUSTO = 'Ya tiene alumnos, va justo';
 
 /**
  * Lo que se le recuerda al profesor cada vez que se le pregunta por su cupo.

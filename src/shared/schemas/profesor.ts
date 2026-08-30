@@ -84,6 +84,22 @@ export const esquemaRegistroProfesor = z
     certificaciones: z.array(z.string()).default([]),
 
     modalidad: z.enum(['online', 'presencial', 'ambas']),
+
+    /**
+     * Si puede coger alumnos nuevos ahora mismo.
+     *
+     * Se pregunta en el alta y no sólo en el panel porque la mitad de los
+     * profesores que se apuntan **ya tienen alumnos del curso pasado**. Sin
+     * esta pregunta, o no se registran —«¿para qué, si estoy lleno?»— o se
+     * registran como disponibles y les llueven familias que no pueden coger.
+     *
+     * Las dos cosas dejan el directorio mintiendo: en un caso enseña menos
+     * profesores de los que hay, y en el otro enseña como libres a gente que
+     * no lo está.
+     *
+     * Por defecto `busca`, que es el caso de quien se apunta por primera vez.
+     */
+    cupo: z.enum(['busca', 'justo', 'completo']).optional().default('busca'),
     zona: texto(80).optional().default(''),
 
     /**

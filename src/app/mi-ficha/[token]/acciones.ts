@@ -16,6 +16,7 @@ import {
 } from '@/shared/schemas/datos-sensibles';
 import { interpretarFranja } from '@/shared/schemas/profesor';
 import { normalizarTelefono, telefonoEspanol } from '@/shared/schemas/telefono';
+import { esCupoOPausa } from '@/shared/reglas/cupo';
 
 /**
  * Acciones del panel del profesor.
@@ -63,7 +64,7 @@ export async function apuntarCupo(formulario: FormData) {
   if (!id) return;
 
   const cupo = String(formulario.get('cupo') ?? '');
-  if (cupo !== 'busca' && cupo !== 'justo' && cupo !== 'ninguno') return;
+  if (!esCupoOPausa(cupo)) return;
 
   await cambiarCupo(id, cupo);
   revalidatePath('/mi-ficha', 'layout');

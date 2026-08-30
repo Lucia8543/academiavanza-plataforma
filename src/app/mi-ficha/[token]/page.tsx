@@ -16,6 +16,7 @@ import { DarseDeBaja } from '@/frontend/features/portal-profesor/darse-de-baja';
 import { SinContestar } from '@/frontend/features/portal-profesor/sin-contestar';
 import { FormularioMiFicha } from '@/frontend/features/portal-profesor/formulario-mi-ficha';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
+import { OPCIONES_CUPO } from '@/shared/reglas/cupo';
 import { CUPO_SE_CAMBIA } from '@/shared/textos/modalidad';
 import { PARA_EL_PROFESOR } from '@/shared/textos/motivos-cierre';
 
@@ -130,38 +131,52 @@ export default async function PaginaMiFicha({
 
             {enElDirectorio && (
               <>
-                {/* Lo mismo que se le pregunta al aceptar, por si quiere
-                    cambiarlo en otro momento. Quien va justo sigue apareciendo,
-                    pero avisando: es lo que evita mandarle gente a alguien que
-                    no puede cogerla, sin borrarle del directorio. */}
+                {/*
+                  Cuánto hueco le queda, y son tres respuestas, no dos.
+
+                  Era un interruptor de sí o no, y no cubría el caso más común
+                  al empezar el curso: quien ya tiene todos sus alumnos. Ése no
+                  «va justo», es que no le cabe nadie, y meterlo en el mismo
+                  cajón hacía que le llegaran familias que pagaban por un
+                  contacto imposible.
+
+                  Los tres dejan su ficha publicada. Lo único que cambia es
+                  dónde sale y si se le puede escribir.
+                */}
                 <div className="mt-4 border-t border-gris-borde pt-4">
                   <p className="text-sm font-medium text-carbon">
-                    {ficha.cupo === 'busca'
-                      ? 'Ahora mismo apareces como que buscas alumnos.'
-                      : 'Ahora mismo apareces como que vas justo de sitio.'}
-                  </p>
-                  <p className="mt-1 text-sm text-gris-medio">
-                    {ficha.cupo === 'busca'
-                      ? 'Sales delante de los que van llenos. Si te llenas, dínoslo aquí y dejaremos de mandarte gente.'
-                      : 'Sigues en el directorio, pero avisamos a las familias de que ya tienes alumnos, y sales detrás de los que buscan.'}
+                    ¿Puedes coger alumnos ahora mismo?
                   </p>
                   <p className="mt-1 text-sm text-gris-medio">
                     {CUPO_SE_CAMBIA}
                   </p>
 
-                  <form action={apuntarCupo} className="mt-3">
-                    <input type="hidden" name="token" value={token} />
-                    <input
-                      type="hidden"
-                      name="cupo"
-                      value={ficha.cupo === 'busca' ? 'justo' : 'busca'}
-                    />
-                    <button className="rounded-lg border border-gris-borde px-4 py-2 text-sm font-semibold text-carbon hover:bg-gris-claro">
-                      {ficha.cupo === 'busca'
-                        ? 'Voy justo, avisadlo'
-                        : 'Ya puedo coger más alumnos'}
-                    </button>
-                  </form>
+                  <div className="mt-3 space-y-2">
+                    {OPCIONES_CUPO.map((o) => {
+                      const puesto = ficha.cupo === o.valor;
+                      return (
+                        <form key={o.valor} action={apuntarCupo}>
+                          <input type="hidden" name="token" value={token} />
+                          <input type="hidden" name="cupo" value={o.valor} />
+                          <button
+                            className={`w-full rounded-lg border p-3 text-left transition ${
+                              puesto
+                                ? 'border-verde-avanza bg-verde-avanza-claro'
+                                : 'border-gris-borde hover:bg-gris-claro'
+                            }`}
+                          >
+                            <span className="block text-sm font-semibold text-carbon">
+                              {puesto ? '✓ ' : ''}
+                              {o.titulo}
+                            </span>
+                            <span className="mt-0.5 block text-sm text-gris-medio">
+                              {o.texto}
+                            </span>
+                          </button>
+                        </form>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <p className="mt-4 border-t border-gris-borde pt-4 text-sm">

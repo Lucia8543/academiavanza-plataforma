@@ -5,6 +5,7 @@ import { cambiarCupo } from '@/backend/repositories/mi-ficha';
 import { porTokenProfesor } from '@/backend/repositories/solicitudes';
 import { decidir } from '@/backend/services/solicitud';
 import { ActivarAvisos } from '@/frontend/features/portal-profesor/activar-avisos';
+import { esCupoOPausa } from '@/shared/reglas/cupo';
 import { CUPO_SE_CAMBIA } from '@/shared/textos/modalidad';
 
 export const dynamic = 'force-dynamic';
@@ -38,7 +39,7 @@ async function apuntarCupo(formulario: FormData) {
   const token = String(formulario.get('token') ?? '');
   const cupo = String(formulario.get('cupo') ?? '');
 
-  if (cupo !== 'busca' && cupo !== 'justo' && cupo !== 'ninguno') return;
+  if (!esCupoOPausa(cupo)) return;
 
   const solicitud = await db.contactos.findUnique({
     where: { token_profesor: token },
@@ -210,9 +211,10 @@ export default async function PaginaAceptar({
             ¿Puedes coger más alumnos?
           </h2>
           <p className="mt-2 text-sm text-carbon">
-            Es para no mandarte gente si vas lleno. Si dices que vas justo,
-            sigues apareciendo en el directorio, pero avisamos a las familias
-            de que ya tienes alumnos y puedes tardar más.
+            Es para no mandarte gente si vas lleno. Si te queda poco hueco,
+            sigues en el directorio pero avisamos a las familias de que ya
+            tienes alumnos. Y si no te cabe nadie más, tu ficha se sigue viendo
+            pero nadie puede escribirte.
           </p>
           <p className="mt-2 text-sm text-gris-medio">{CUPO_SE_CAMBIA}</p>
 
@@ -230,8 +232,13 @@ export default async function PaginaAceptar({
                 },
                 {
                   valor: 'justo',
-                  etiqueta: 'Voy justo, solo si encaja mucho',
+                  etiqueta: 'Me queda poco hueco',
                   activo: !s.pausado && s.cupo === 'justo',
+                },
+                {
+                  valor: 'completo',
+                  etiqueta: 'No tengo más hueco',
+                  activo: !s.pausado && s.cupo === 'completo',
                 },
                 {
                   valor: 'ninguno',
@@ -260,9 +267,11 @@ export default async function PaginaAceptar({
           <p className="mt-3 text-sm font-medium text-carbon">
             {s.pausado
               ? 'Tu ficha está pausada: no aparece en el directorio y no te llegarán más solicitudes.'
-              : s.cupo === 'justo'
-                ? 'Apuntado: apareces avisando de que ya tienes alumnos y vas justo de tiempo.'
-                : 'Apuntado: apareces como que buscas alumnos.'}
+              : s.cupo === 'completo'
+                ? 'Apuntado: tu ficha se sigue viendo, pero nadie puede escribirte hasta que digas lo contrario.'
+                : s.cupo === 'justo'
+                  ? 'Apuntado: apareces avisando de que ya tienes alumnos y vas justo de tiempo.'
+                  : 'Apuntado: apareces como que buscas alumnos.'}
           </p>
         </section>
         </>

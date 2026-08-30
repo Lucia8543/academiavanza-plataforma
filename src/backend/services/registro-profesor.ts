@@ -100,6 +100,7 @@ export async function registrarProfesor(
 
           // Nace pendiente. Publicar es una decisión de administración.
           estado: 'pendiente',
+          cupo: datos.cupo ?? 'busca',
 
           acepta_publicacion: true,
           acepta_publicacion_en: new Date(),

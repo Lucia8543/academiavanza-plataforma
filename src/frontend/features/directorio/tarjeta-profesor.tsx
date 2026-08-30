@@ -1,8 +1,6 @@
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
-import {
-  comoDaClase,
-  ETIQUETA_CUPO_JUSTO,
-} from '@/shared/textos/modalidad';
+import { ETIQUETA_CUPO } from '@/shared/reglas/cupo';
+import { comoDaClase } from '@/shared/textos/modalidad';
 import type { ProfesorPublico } from '@/shared/types/directorio';
 
 /**
@@ -44,17 +42,43 @@ export function TarjetaProfesor({ f }: { f: ProfesorPublico }) {
   // devolución.
   const donde = comoDaClase(f.modalidad, f.zona, f.desplazamientoFlexible);
 
+  const completo = f.cupo === 'completo';
+
   return (
-    <article className="flex h-full flex-col rounded-xl border border-gris-borde bg-white p-5">
+    /*
+      Quien no tiene hueco sale igual, pero apagado.
+
+      Fondo gris en vez de blanco y el texto algo más tenue. No se difumina ni
+      se tapa: una ficha borrosa se lee como un muro de pago —«te lo enseño si
+      pagas»— y aquí el mensaje es el contrario, que esta persona existe y está
+      dando clase. Lo que se quita es el brillo, no la información.
+    */
+    <article
+      className={`flex h-full flex-col rounded-xl border p-5 ${
+        completo
+          ? 'border-gris-borde bg-gris-claro text-gris-medio'
+          : 'border-gris-borde bg-white'
+      }`}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-lg font-bold text-azul-confianza">
+        <h3
+          className={`text-lg font-bold ${
+            completo ? 'text-gris-medio' : 'text-azul-confianza'
+          }`}
+        >
           {f.nombrePublico}
         </h3>
 
         {/* Se dice, no se esconde. La familia decide a quién escribe primero. */}
-        {f.cupo === 'justo' && (
-          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
-            {ETIQUETA_CUPO_JUSTO}
+        {ETIQUETA_CUPO[f.cupo] && (
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+              completo
+                ? 'bg-gris-borde text-carbon'
+                : 'bg-amber-100 text-amber-800'
+            }`}
+          >
+            {ETIQUETA_CUPO[f.cupo]}
           </span>
         )}
       </div>

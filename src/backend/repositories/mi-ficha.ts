@@ -1,3 +1,4 @@
+import { type Cupo, normalizarCupo } from '@/shared/reglas/cupo';
 import { FRANJAS, type Franja } from '@/shared/schemas/profesor';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import {
@@ -34,7 +35,7 @@ export type MiFicha = {
   colegio: string | null;
   estado: string;
   disponible: boolean;
-  cupo: 'busca' | 'justo';
+  cupo: Cupo;
   motivoRechazo: string | null;
   asignaturas: string[];
   niveles: string[];
@@ -147,7 +148,7 @@ export async function cargarMiFicha(
       p.colegios?.nombre_corto ?? p.colegios?.nombre ?? p.colegio_otro ?? null,
     estado: String(p.estado),
     disponible: p.disponible,
-    cupo: p.cupo === 'justo' ? 'justo' : 'busca',
+    cupo: normalizarCupo(p.cupo),
     motivoRechazo: p.motivo_rechazo,
     asignaturas: p.profesor_asignaturas.map((a) => a.asignaturas.nombre),
     niveles: p.profesor_niveles.map((n) => n.niveles.nombre),
@@ -261,7 +262,7 @@ export async function cambiarDisponibilidad(
  */
 export async function cambiarCupo(
   profesorId: string,
-  cupo: 'busca' | 'justo' | 'ninguno',
+  cupo: Cupo | 'ninguno',
 ): Promise<void> {
   await db.profesores.update({
     where: { id: profesorId },

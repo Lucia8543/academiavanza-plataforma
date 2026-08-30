@@ -23,29 +23,20 @@
  * [ADR 0003](../../../docs/adr/0003-esquema-base-datos-en-espanol.md).
  */
 
-/** Los 21 distritos de Madrid capital, en el orden oficial del Ayuntamiento. */
+/**
+ * Los 21 distritos de Madrid capital, por orden alfabético.
+ *
+ * Alfabético y no el orden oficial del Ayuntamiento, que empieza por Centro y
+ * va en espiral hacia fuera. Ese orden lo entiende quien trabaja en el
+ * Ayuntamiento; una madre buscando «Tetuán» en una lista de veintiuno lo que
+ * hace es recorrerla entera y no encontrarlo donde debería estar.
+ */
 const DISTRITOS = [
-  'Centro',
-  'Arganzuela',
-  'Retiro',
-  'Salamanca',
-  'Chamartín',
-  'Tetuán',
-  'Chamberí',
-  'Fuencarral-El Pardo',
-  'Moncloa-Aravaca',
-  'Latina',
-  'Carabanchel',
-  'Usera',
-  'Puente de Vallecas',
-  'Moratalaz',
-  'Ciudad Lineal',
-  'Hortaleza',
-  'Villaverde',
-  'Villa de Vallecas',
-  'Vicálvaro',
-  'San Blas-Canillejas',
-  'Barajas',
+  'Arganzuela', 'Barajas', 'Carabanchel', 'Centro', 'Chamartín', 'Chamberí',
+  'Ciudad Lineal', 'Fuencarral-El Pardo', 'Hortaleza', 'Latina',
+  'Moncloa-Aravaca', 'Moratalaz', 'Puente de Vallecas', 'Retiro',
+  'Salamanca', 'San Blas-Canillejas', 'Tetuán', 'Usera', 'Vicálvaro',
+  'Villa de Vallecas', 'Villaverde',
 ] as const;
 
 /**
@@ -126,79 +117,86 @@ export function esZonaValida(valor: string): boolean {
  * bastante pequeña, y sus barrios no los conoce nadie más que quien vive allí.
  */
 export const BARRIOS: Record<string, readonly string[]> = {
-  Centro: ['Palacio', 'Embajadores', 'Cortes', 'Justicia', 'Universidad', 'Sol'],
-  Arganzuela: [
-    'Imperial', 'Acacias', 'Chopera', 'Legazpi', 'Delicias',
-    'Palos de Moguer', 'Atocha',
+  Centro: [
+    'Cortes', 'Embajadores', 'Justicia', 'Palacio', 'Sol', 'Universidad',
   ],
-  Retiro: ['Pacífico', 'Adelfas', 'Estrella', 'Ibiza', 'Jerónimos', 'Niño Jesús'],
+  Arganzuela: [
+    'Acacias', 'Atocha', 'Chopera', 'Delicias', 'Imperial', 'Legazpi',
+    'Palos de Moguer',
+  ],
+  Retiro: [
+    'Adelfas', 'Estrella', 'Ibiza', 'Jerónimos', 'Niño Jesús', 'Pacífico',
+  ],
   Salamanca: [
-    'Recoletos', 'Goya', 'Fuente del Berro', 'Guindalera', 'Lista', 'Castellana',
+    'Castellana', 'Fuente del Berro', 'Goya', 'Guindalera', 'Lista',
+    'Recoletos',
   ],
   Chamartín: [
-    'El Viso', 'Prosperidad', 'Ciudad Jardín', 'Hispanoamérica',
-    'Nueva España', 'Castilla',
+    'Castilla', 'Ciudad Jardín', 'El Viso', 'Hispanoamérica', 'Nueva España',
+    'Prosperidad',
   ],
   Tetuán: [
-    'Bellas Vistas', 'Cuatro Caminos', 'Castillejos', 'Almenara',
-    'Valdeacederas', 'Berruguete',
+    'Almenara', 'Bellas Vistas', 'Berruguete', 'Castillejos',
+    'Cuatro Caminos', 'Valdeacederas',
   ],
   Chamberí: [
-    'Gaztambide', 'Arapiles', 'Trafalgar', 'Almagro', 'Vallehermoso',
-    'Ríos Rosas',
+    'Almagro', 'Arapiles', 'Gaztambide', 'Ríos Rosas', 'Trafalgar',
+    'Vallehermoso',
   ],
   'Fuencarral-El Pardo': [
-    'El Pardo', 'Fuentelarreina', 'Peñagrande', 'Barrio del Pilar', 'La Paz',
-    'Valverde', 'Mirasierra', 'El Goloso',
+    'Barrio del Pilar', 'El Goloso', 'El Pardo', 'Fuentelarreina', 'La Paz',
+    'Mirasierra', 'Peñagrande', 'Valverde',
   ],
   'Moncloa-Aravaca': [
-    'Casa de Campo', 'Argüelles', 'Ciudad Universitaria', 'Valdezarza',
-    'Valdemarín', 'El Plantío', 'Aravaca',
+    'Aravaca', 'Argüelles', 'Casa de Campo', 'Ciudad Universitaria',
+    'El Plantío', 'Valdemarín', 'Valdezarza',
   ],
   Latina: [
-    'Los Cármenes', 'Puerta del Ángel', 'Lucero', 'Aluche', 'Campamento',
-    'Cuatro Vientos', 'Las Águilas',
+    'Aluche', 'Campamento', 'Cuatro Vientos', 'Las Águilas', 'Los Cármenes',
+    'Lucero', 'Puerta del Ángel',
   ],
   Carabanchel: [
-    'Comillas', 'Opañel', 'San Isidro', 'Vista Alegre', 'Puerta Bonita',
-    'Buenavista', 'Abrantes',
+    'Abrantes', 'Buenavista', 'Comillas', 'Opañel', 'Puerta Bonita',
+    'San Isidro', 'Vista Alegre',
   ],
   Usera: [
-    'Orcasitas', 'Orcasur', 'San Fermín', 'Almendrales', 'Moscardó', 'Zofío',
-    'Pradolongo',
+    'Almendrales', 'Moscardó', 'Orcasitas', 'Orcasur', 'Pradolongo',
+    'San Fermín', 'Zofío',
   ],
   'Puente de Vallecas': [
-    'Entrevías', 'San Diego', 'Palomeras Bajas', 'Palomeras Sureste',
-    'Portazgo', 'Numancia',
+    'Entrevías', 'Numancia', 'Palomeras Bajas', 'Palomeras Sureste',
+    'Portazgo', 'San Diego',
   ],
   Moratalaz: [
-    'Pavones', 'Horcajo', 'Marroquina', 'Media Legua', 'Fontarrón', 'Vinateros',
+    'Fontarrón', 'Horcajo', 'Marroquina', 'Media Legua', 'Pavones',
+    'Vinateros',
   ],
   'Ciudad Lineal': [
-    'Ventas', 'Pueblo Nuevo', 'Quintana', 'Concepción', 'San Pascual',
-    'San Juan Bautista', 'Colina', 'Atalaya', 'Costillares',
+    'Atalaya', 'Colina', 'Concepción', 'Costillares', 'Pueblo Nuevo',
+    'Quintana', 'San Juan Bautista', 'San Pascual', 'Ventas',
   ],
   Hortaleza: [
-    'Palomas', 'Piovera', 'Canillas', 'Pinar del Rey', 'Apóstol Santiago',
+    'Apóstol Santiago', 'Canillas', 'Palomas', 'Pinar del Rey', 'Piovera',
     'Valdefuentes',
   ],
   Villaverde: [
-    'Villaverde Alto', 'San Cristóbal', 'Butarque', 'Los Rosales', 'Los Ángeles',
+    'Butarque', 'Los Ángeles', 'Los Rosales', 'San Cristóbal',
+    'Villaverde Alto',
   ],
   'Villa de Vallecas': [
-    'Casco Histórico de Vallecas', 'Santa Eugenia', 'Ensanche de Vallecas',
+    'Casco Histórico de Vallecas', 'Ensanche de Vallecas', 'Santa Eugenia',
   ],
   Vicálvaro: [
-    'Casco Histórico de Vicálvaro', 'Ambroz', 'Valdebernardo', 'Valderribas',
-    'El Cañaveral',
+    'Ambroz', 'Casco Histórico de Vicálvaro', 'El Cañaveral',
+    'Valdebernardo', 'Valderribas',
   ],
   'San Blas-Canillejas': [
-    'Simancas', 'Hellín', 'Amposta', 'Arcos', 'Rosas', 'Rejas', 'Canillejas',
-    'Salvador',
+    'Amposta', 'Arcos', 'Canillejas', 'Hellín', 'Rejas', 'Rosas', 'Salvador',
+    'Simancas',
   ],
   Barajas: [
-    'Alameda de Osuna', 'Aeropuerto', 'Casco Histórico de Barajas', 'Timón',
-    'Corralejos',
+    'Aeropuerto', 'Alameda de Osuna', 'Casco Histórico de Barajas',
+    'Corralejos', 'Timón',
   ],
 };
 

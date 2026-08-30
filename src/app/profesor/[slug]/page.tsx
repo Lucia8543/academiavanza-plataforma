@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   buscarPorSlug,
@@ -11,11 +12,10 @@ import {
   LO_QUE_NO_COMPROBAMOS,
   NO_INTERVENIMOS,
 } from '@/shared/textos/descargos';
+import { aceptaSolicitudes, AVISO_CUPO, ETIQUETA_CUPO } from '@/shared/reglas/cupo';
 import {
   ANIMO_FUERA_DE_ZONA,
-  AVISO_CUPO_JUSTO,
   comoDaClase,
-  ETIQUETA_CUPO_JUSTO,
   EXPLICACION_PRESENCIAL,
 } from '@/shared/textos/modalidad';
 import { porHora, PRECIO_EXPLICACION } from '@/shared/textos/precios';
@@ -230,10 +230,24 @@ export default async function PaginaProfesor({
         )}
       </header>
 
-      {f.cupo === 'justo' && (
-        <p className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          <span className="font-medium">{ETIQUETA_CUPO_JUSTO}.</span>{' '}
-          {AVISO_CUPO_JUSTO}
+      {/*
+        El aviso de hueco, con el mismo sitio para los dos casos.
+
+        El de «sin hueco» va en gris y no en ámbar: el ámbar es un «ojo, con
+        cuidado» y aquí no hay nada que decidir, es una constatación. Y explica
+        por qué no hay formulario más abajo, que si no se lee como una página
+        rota.
+      */}
+      {AVISO_CUPO[f.cupo] && (
+        <p
+          className={`mt-6 rounded-xl border p-4 text-sm ${
+            f.cupo === 'completo'
+              ? 'border-gris-borde bg-gris-claro text-carbon'
+              : 'border-amber-300 bg-amber-50 text-amber-900'
+          }`}
+        >
+          <span className="font-medium">{ETIQUETA_CUPO[f.cupo]}.</span>{' '}
+          {AVISO_CUPO[f.cupo]}
         </p>
       )}
 
@@ -317,15 +331,47 @@ export default async function PaginaProfesor({
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      <div className="mt-12">
-        <FormularioContacto
-          slug={f.slug}
-          nombreProfesor={f.nombrePublico}
-          niveles={niveles}
-          precio={precio}
-          daPresencial={f.modalidad !== 'online'}
-        />
-      </div>
+      {/*
+        A quien no tiene hueco no se le puede escribir, y ése es el motivo de
+        que exista el tercer estado.
+
+        Cobrarle a una familia por contactar con alguien que **ya nos ha dicho
+        que no puede cogerla** sería venderle algo que sabemos que no existe.
+        Acabaría en un vale, una devolución y dos personas descontentas, que es
+        exactamente el problema que teníamos con la distancia.
+
+        Su ficha sigue publicada: quien está lleno en septiembre puede tener
+        hueco en enero, y una academia con cuarenta profesores tiene que verse
+        con cuarenta.
+      */}
+      {aceptaSolicitudes(f.cupo) ? (
+        <div className="mt-12">
+          <FormularioContacto
+            slug={f.slug}
+            nombreProfesor={f.nombrePublico}
+            niveles={niveles}
+            precio={precio}
+            daPresencial={f.modalidad !== 'online'}
+          />
+        </div>
+      ) : (
+        <div className="mt-12 rounded-xl border border-gris-borde bg-gris-claro p-6 text-center">
+          <p className="font-medium text-carbon">
+            Ahora mismo no puedes escribirle
+          </p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gris-medio">
+            {f.nombrePublico} nos ha dicho que tiene la agenda completa este
+            curso. No te dejamos escribirle para que no pagues por un contacto
+            que no iba a salir adelante.
+          </p>
+          <Link
+            href="/profesores"
+            className="mt-4 inline-block rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro"
+          >
+            Ver otros profesores
+          </Link>
+        </div>
+      )}
 
       {/*
         Aquí ya sólo queda lo que hace la plataforma. Lo que NO comprueba se ha

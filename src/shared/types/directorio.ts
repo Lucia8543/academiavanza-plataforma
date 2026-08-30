@@ -1,3 +1,4 @@
+import type { Cupo } from '@/shared/reglas/cupo';
 import type { Franja } from '@/shared/schemas/profesor';
 
 /**
@@ -53,7 +54,7 @@ export type ProfesorPublico = {
    * «busca» quiere alumnos; «justo» sigue en el directorio pero avisando de
    * que puede decir que no. Quien no puede coger a nadie pausa la ficha entera.
    */
-  cupo: 'busca' | 'justo';
+  cupo: Cupo;
   asignaturas: string[];
   niveles: string[];
   /** Ya compuestos: «Inglés C1». */

@@ -25,6 +25,7 @@ const FICHA_COMPLETA = {
   zona_otra: true,
   estado: true,
   disponible: true,
+  cupo: true,
   motivo_rechazo: true,
   creado_en: true,
   colegios: { select: { nombre: true, nombre_corto: true, municipio: true } },

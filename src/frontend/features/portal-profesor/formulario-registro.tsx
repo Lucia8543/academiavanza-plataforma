@@ -7,6 +7,11 @@ import type { Catalogos } from '@/backend/repositories/catalogos';
 import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
 import { SelectorColegio } from '@/frontend/components/shared/selector-colegio';
 import { ActivarAvisos } from '@/frontend/features/portal-profesor/activar-avisos';
+import {
+  type Cupo,
+  normalizarCupo,
+  OPCIONES_CUPO,
+} from '@/shared/reglas/cupo';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
 
 /**
@@ -43,6 +48,7 @@ type Valores = {
   modalidad: string;
   zona: string;
   disponibilidad: string[];
+  cupo: Cupo;
   puntosFuertes: string;
   aceptaPublicacion: boolean;
 };
@@ -66,6 +72,7 @@ const VACIO: Valores = {
   modalidad: 'online',
   zona: '',
   disponibilidad: [],
+  cupo: 'busca',
   puntosFuertes: '',
   aceptaPublicacion: false,
 };
@@ -103,6 +110,7 @@ function desdeRespuesta(
     modalidad: t('modalidad') || 'online',
     zona: t('zona'),
     disponibilidad: l('disponibilidad'),
+    cupo: normalizarCupo(t('cupo')),
     puntosFuertes: t('puntosFuertes'),
     aceptaPublicacion: t('aceptaPublicacion') === 'on',
   };
@@ -788,6 +796,55 @@ export function FormularioRegistro({
             <span>{v.puntosFuertes.length}/300</span>
           </div>
           <Aviso mensaje={errores.puntosFuertes} />
+        </div>
+      </Seccion>
+
+      {/* --- ¿Puedes coger a alguien ahora? ------------------------------- */}
+      {/*
+        La pregunta que faltaba, y la que decidía si media academia se apuntaba
+        o no.
+
+        Muchos profesores llegan con alumnos del curso pasado ya asignados, y
+        preguntaban lo mismo: «si estoy ocupado, ¿me registro o no?». Sin esta
+        pregunta las dos respuestas posibles eran malas. Si no se apuntaban, el
+        directorio enseñaba la mitad de la academia. Y si se apuntaban como
+        disponibles, les llegaban familias que no podían coger, con lo que se
+        quemaban ellos y la familia se quedaba esperando.
+
+        Va aquí y no en un ajuste escondido del panel porque es la única
+        pantalla por la que pasan todos. Y va al final, después de contar su
+        disponibilidad, que es cuando la pregunta encaja sola.
+      */}
+      <Seccion
+        titulo="¿Puedes coger alumnos ahora mismo?"
+        ayuda="Da igual lo que contestes: tu ficha se publica igual. Esto sólo cambia cómo apareces."
+      >
+        <div className="space-y-3">
+          {OPCIONES_CUPO.map((o) => (
+            <label
+              key={o.valor}
+              className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${
+                v.cupo === o.valor
+                  ? 'border-verde-avanza bg-verde-avanza-claro'
+                  : 'border-gris-borde hover:bg-gris-claro'
+              }`}
+            >
+              <input
+                type="radio"
+                name="cupo"
+                value={o.valor}
+                checked={v.cupo === o.valor}
+                onChange={() => cambiar('cupo', o.valor)}
+                className="mt-1 h-4 w-4 shrink-0 accent-[#2E7D5E]"
+              />
+              <span>
+                <span className="block font-medium text-carbon">{o.titulo}</span>
+                <span className="mt-0.5 block text-sm text-gris-medio">
+                  {o.texto}
+                </span>
+              </span>
+            </label>
+          ))}
         </div>
       </Seccion>
 

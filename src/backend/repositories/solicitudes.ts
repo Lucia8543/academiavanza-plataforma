@@ -1,3 +1,4 @@
+import { normalizarCupo } from '@/shared/reglas/cupo';
 import { nombrePublico } from '@/backend/repositories/directorio';
 import { PLAZOS, plazoDe, type Urgencia } from '@/shared/reglas/cobro';
 import { elProfesorVeElTelefono } from '@/shared/reglas/solicitud';
@@ -146,7 +147,7 @@ export async function porTokenProfesor(
     zona: zonaCompleta(s.zona, s.barrio),
     enviadaEn: s.enviado_en,
     avisadoPorMovil: s.profesores._count.suscripciones_push > 0,
-    cupo: s.profesores.cupo === 'justo' ? 'justo' : 'busca',
+    cupo: normalizarCupo(s.profesores.cupo),
     pausado: !s.profesores.disponible,
     ...(pagada && s.telefono_familia
       ? { telefonoFamilia: formatearTelefono(s.telefono_familia) }
