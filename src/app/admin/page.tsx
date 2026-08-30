@@ -24,11 +24,12 @@ export const dynamic = 'force-dynamic';
 export default async function PaginaAdmin({
   searchParams,
 }: {
-  searchParams: Promise<{ aviso?: string }>;
+  searchParams: Promise<{ aviso?: string; q?: string }>;
 }) {
   if (!(await haySesion())) redirect('/admin/entrar');
 
-  const { aviso } = await searchParams;
+  const { aviso, q } = await searchParams;
+  const busqueda = (q ?? '').trim();
 
   const [
     pendientes,
@@ -46,6 +47,47 @@ export default async function PaginaAdmin({
       aPuntoDeCaducar(),
       incidenciasSinResolver(),
     ]);
+
+  /*
+   * El buscador del panel.
+   *
+   * Filtra en memoria y no en la base de datos porque la lista entera son
+   * ciento y pico fichas: traerlas todas y descartar aquí cuesta menos que una
+   * consulta más, y evita tocar los repositorios.
+   *
+   * Se comparan las cadenas sin tildes y en minúsculas. Media academia se llama
+   * «Martínez» o «Peñalver», y un buscador que no encuentra a María porque
+   * escribiste «Maria» es un buscador que no se usa.
+   */
+  const sinTildes = (t: string) =>
+    t
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const coincide = (f: (typeof revisadas)[number]) => {
+    if (!busqueda) return true;
+    const donde = sinTildes(
+      [
+        f.nombre,
+        f.apellidos,
+        f.email,
+        f.telefono ?? '',
+        f.colegios?.nombre ?? '',
+        f.colegios?.nombre_corto ?? '',
+        f.colegio_otro ?? '',
+      ].join(' '),
+    );
+    // Cada palabra por separado: «maria garcia» encuentra a María de los
+    // Ángeles García, que escrito del tirón no saldría.
+    return sinTildes(busqueda)
+      .split(/\s+/)
+      .every((palabra) => donde.includes(palabra));
+  };
+
+  const pendientesVistas = pendientes.filter(coincide);
+  const revisadasVistas = revisadas.filter(coincide);
+  const encontradas = pendientesVistas.length + revisadasVistas.length;
 
   const publicadas = revisadas.filter((f) => f.estado === 'activo');
   const esperandoBizum = porEstado.aceptada ?? 0;
@@ -186,23 +228,65 @@ export default async function PaginaAdmin({
       />
 
       {/* ---------------------------------------------------------------- */}
-      <section className="mt-12">
+      {/*
+        Buscar por nombre, correo, teléfono o colegio.
+
+        Es un formulario normal que recarga la página, no un filtro que va
+        escribiendo. Con ciento y pico fichas la diferencia no se nota, y así
+        funciona igual sin JavaScript y la búsqueda queda en la dirección: se
+        puede guardar en favoritos o mandársela a alguien.
+      */}
+      <form action="/admin" className="mt-12 flex flex-wrap gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={busqueda}
+          placeholder="Buscar por nombre, correo, teléfono o colegio"
+          aria-label="Buscar una ficha"
+          className="min-w-0 flex-1 rounded-lg border border-gris-borde px-3 py-2 text-carbon focus:border-verde-avanza focus:outline-none focus:ring-1 focus:ring-verde-avanza"
+        />
+        <button className="rounded-lg bg-azul-confianza px-5 py-2 font-semibold text-white transition hover:opacity-90">
+          Buscar
+        </button>
+        {busqueda && (
+          <a
+            href="/admin"
+            className="rounded-lg border border-gris-borde px-4 py-2 text-sm font-semibold text-carbon transition hover:bg-gris-claro"
+          >
+            Quitar
+          </a>
+        )}
+      </form>
+
+      {busqueda && (
+        <p role="status" className="mt-2 text-sm text-gris-medio">
+          {encontradas === 0
+            ? `Ninguna ficha con «${busqueda}».`
+            : encontradas === 1
+              ? `1 ficha con «${busqueda}».`
+              : `${encontradas} fichas con «${busqueda}».`}
+        </p>
+      )}
+
+      <section className="mt-8">
         <h2 className="text-lg font-bold text-carbon">
           Por revisar
-          {pendientes.length > 0 && (
+          {pendientesVistas.length > 0 && (
             <span className="ml-2 rounded-full bg-aviso px-2 py-0.5 text-sm text-white">
-              {pendientes.length}
+              {pendientesVistas.length}
             </span>
           )}
         </h2>
 
-        {pendientes.length === 0 ? (
+        {pendientesVistas.length === 0 ? (
           <p className="mt-3 rounded-xl border border-dashed border-gris-borde p-6 text-center text-gris-medio">
-            Nada pendiente. Puedes cerrar el móvil.
+            {busqueda
+              ? 'Ninguna por revisar con esa búsqueda.'
+              : 'Nada pendiente. Puedes cerrar el móvil.'}
           </p>
         ) : (
           <div className="mt-4 space-y-4">
-            {pendientes.map((f) => (
+            {pendientesVistas.map((f) => (
               <TarjetaFicha key={f.id} f={f} />
             ))}
           </div>
@@ -210,11 +294,11 @@ export default async function PaginaAdmin({
       </section>
 
       {/* ---------------------------------------------------------------- */}
-      {revisadas.length > 0 && (
+      {revisadasVistas.length > 0 && (
         <section className="mt-12">
           <h2 className="text-lg font-bold text-carbon">Ya revisadas</h2>
           <div className="mt-4 space-y-4">
-            {revisadas.map((f) => (
+            {revisadasVistas.map((f) => (
               <TarjetaFicha key={f.id} f={f} />
             ))}
           </div>
