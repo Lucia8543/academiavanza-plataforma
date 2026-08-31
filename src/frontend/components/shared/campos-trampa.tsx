@@ -15,6 +15,13 @@ import { CAMPO_INICIO, CAMPO_TRAMPA } from '@/shared/schemas/trampa-bots';
  *
  * Se esconde con posición absoluta y no con `display:none` ni `hidden`: algunos
  * guiones saltan explícitamente los campos ocultos de la forma evidente.
+ *
+ * **Y lleva `autoComplete="new-password"`, que no es un descuido.** El señuelo
+ * se llamaba antes `apellido2`, y el autorrelleno del navegador lo reconocía
+ * como «segundo apellido» y lo completaba solo. A esas personas se les
+ * descartaba el alta enseñándoles «Ficha recibida», sin fila y sin correo.
+ * `off` a secas lo ignoran casi todos los navegadores; `new-password` es el
+ * único valor que respetan de verdad para no ofrecer nada guardado.
  */
 export function CamposTrampa() {
   // El momento en que se montó el formulario. Se fija una sola vez: si se
@@ -35,7 +42,7 @@ export function CamposTrampa() {
             name={CAMPO_TRAMPA}
             type="text"
             tabIndex={-1}
-            autoComplete="off"
+            autoComplete="new-password"
             defaultValue=""
           />
         </label>

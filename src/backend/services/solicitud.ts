@@ -71,7 +71,16 @@ function tokenNuevo(): string {
 
 export type ResultadoAlta =
   | { ok: true; token: string; codigo: string }
-  | { ok: false; motivo: 'no-disponible' | 'sin-hueco' | 'error' }
+  | {
+      ok: false;
+      motivo:
+        | 'no-disponible'
+        | 'sin-hueco'
+        | 'vale-no-existe'
+        | 'vale-gastado'
+        | 'vale-caducado'
+        | 'error';
+    }
   | { ok: false; motivo: 'demasiadas'; explicacion: string };
 
 /**
@@ -124,23 +133,44 @@ export async function crearSolicitud(
 
   /*
    * Un vale sólo vale una vez, sólo si es de una solicitud que se pagó, y sólo
-   * dentro de plazo.
-   *
-   * Lo del plazo es reciente y arregla un agujero de los silenciosos: sin la
+   * dentro de plazo. Lo del plazo arregla un agujero de los silenciosos: sin la
    * fecha, un vale de hace dos años seguía siendo canjeable, porque la limpieza
    * de datos anonimiza las solicitudes pagadas pero no las borra.
+   *
+   * Y si el vale no vale, hay que decir por qué **antes** de cobrar.
+   *
+   * Esto era una sola consulta que juntaba las tres condiciones. Si no casaba
+   * ninguna, el vale se quedaba en nada y la línea de abajo cobraba los diez
+   * euros enteros sin decir palabra. La familia escribía su código, veía el
+   * precio completo y no tenía forma de saber si se había equivocado al
+   * teclearlo, si ya lo había gastado o si se le había pasado el plazo.
+   *
+   * Ahora se busca primero por el código a secas y se mira qué le pasa. Los tres
+   * motivos se distinguen y se cuentan, y ninguno de los tres llega a cobrar.
    */
-  const vale = valeCodigo
+  const conEseCodigo = valeCodigo
     ? await db.contactos.findFirst({
-        where: {
-          codigo: valeCodigo.trim().toUpperCase(),
-          estado: 'pagada',
-          vale_concedido: true,
-          vale_caduca_en: { gt: new Date() },
-        },
-        select: { id: true },
+        where: { codigo: valeCodigo.trim().toUpperCase(), estado: 'pagada' },
+        select: { id: true, vale_concedido: true, vale_caduca_en: true },
       })
     : null;
+
+  if (valeCodigo && !conEseCodigo) {
+    return { ok: false, motivo: 'vale-no-existe' };
+  }
+
+  if (conEseCodigo && !conEseCodigo.vale_concedido) {
+    return { ok: false, motivo: 'vale-gastado' };
+  }
+
+  if (
+    conEseCodigo?.vale_caduca_en &&
+    conEseCodigo.vale_caduca_en <= new Date()
+  ) {
+    return { ok: false, motivo: 'vale-caducado' };
+  }
+
+  const vale = conEseCodigo;
 
   const importe = vale ? 0 : await precioVigente();
 

@@ -89,12 +89,19 @@ export async function enviarContacto(
         ? resultado.explicacion
         : resultado.motivo === 'no-disponible'
           ? 'Este profesor ya no está disponible. Prueba con otro del directorio.'
-          : resultado.motivo === 'sin-hueco'
-            ? // Pasa cuando la página se cargó antes de que él dijera que se
-              // había llenado. Se explica el motivo: «no está disponible» a
-              // secas, sobre una ficha que sí se ve, parece un fallo.
-              'Este profesor acaba de decirnos que ya no tiene hueco, así que no podemos pasarle tu mensaje. No se te ha cobrado nada. Prueba con otro del directorio.'
-            : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.';
+          : resultado.motivo === 'vale-no-existe'
+            ? 'No encontramos ese código de vale. Revísalo, y si no lo encuentras déjalo en blanco y escríbenos: no queremos cobrarte algo que ya tenías.'
+            : resultado.motivo === 'vale-gastado'
+              ? 'Ese vale ya se usó en otra solicitud. Déjalo en blanco para seguir, o escríbenos si crees que es un error.'
+              : resultado.motivo === 'vale-caducado'
+                ? 'Ese vale ya ha caducado. Déjalo en blanco para seguir, o escríbenos y lo miramos.'
+                : resultado.motivo === 'sin-hueco'
+                  ? // Pasa cuando la página se cargó antes de que él dijera
+                    // que se había llenado. Se explica el motivo, porque «no
+                    // está disponible» a secas, sobre una ficha que sí se ve,
+                    // parece un fallo.
+                    'Este profesor acaba de decirnos que ya no tiene hueco, así que no podemos pasarle tu mensaje. No se te ha cobrado nada. Prueba con otro del directorio.'
+                  : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.';
 
     return { ok: false, mensaje, valores };
   }

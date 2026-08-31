@@ -427,13 +427,29 @@ export default async function PaginaSolicitud({
       {/* ------------------------------------------------------------------ */}
       {otras.length > 0 && (
         <section className="mt-12 border-t border-gris-borde pt-8">
-          <h2 className="text-lg font-bold text-carbon">
-            Tus otras solicitudes
-          </h2>
-          <p className="mt-1 text-sm text-gris-medio">
-            Si buscas profesor para más de una asignatura o para más de un hijo,
-            aquí las tienes todas.
-          </p>
+          {/*
+            Plegado, y hay que abrirlo a propósito.
+
+            Esta dirección es la llave de la familia y se reenvía por WhatsApp
+            sin pensarlo: «mira, aquí puedes ver cómo va». Quien la recibiera se
+            encontraba, sin buscarlo, la lista entera de a qué otros profesores
+            había escrito, para qué cursos y cómo había acabado cada uno.
+
+            No es un candado —quien tiene el enlace puede desplegarlo— pero sí es
+            la diferencia entre enseñar algo y dejarlo a la vista. Un `details`
+            no necesita JavaScript y el navegador lo cierra por defecto.
+          */}
+          <details className="group">
+            <summary className="cursor-pointer list-none">
+              <span className="text-lg font-bold text-carbon underline underline-offset-4 group-open:no-underline">
+                Ver tus otras solicitudes ({otras.length})
+              </span>
+              <p className="mt-1 text-sm text-gris-medio">
+                Si buscas profesor para más de una asignatura o para más de un
+                hijo, aquí las tienes todas. Están plegadas por si le pasas este
+                enlace a alguien.
+              </p>
+            </summary>
 
           <ul className="mt-4 space-y-2">
             {otras.map((o) => (
@@ -459,6 +475,7 @@ export default async function PaginaSolicitud({
               </li>
             ))}
           </ul>
+          </details>
         </section>
       )}
     </main>

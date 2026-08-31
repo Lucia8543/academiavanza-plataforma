@@ -82,7 +82,9 @@ function enlaceWhatsAppFamilia(
   const texto = [
     `Hola ${s.nombre_familia}, somos AcademiAvanza.`,
     '',
-    'El profesor al que escribiste ha dicho que sí y está esperando. Aquí tienes lo que falta para que os paséis el teléfono, y también un botón por si al final no te hace falta:',
+    'El profesor al que escribiste ha dicho que sí y está esperando. Aquí tienes lo que falta para que pueda escribirte, y también un botón por si al final no te hace falta.',
+    '',
+    'Cuando confirmemos el pago le damos tu teléfono y te escribe él. El suyo no te lo damos: es él quien decide si te lo da cuando habléis.',
     '',
     `${base}/solicitud/${s.token_familia}`,
   ].join('\n');

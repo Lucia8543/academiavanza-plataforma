@@ -104,6 +104,10 @@ export async function registrarProfesor(
 
           acepta_publicacion: true,
           acepta_publicacion_en: new Date(),
+          // La declaración y su fecha, porque un consentimiento sin fecha no
+          // acredita nada. El esquema ya ha exigido que venga en verdadero.
+          declara_edad_minima: true,
+          declara_edad_minima_en: new Date(),
           version_privacidad: VERSION_PRIVACIDAD,
         },
         select: { id: true, slug: true },

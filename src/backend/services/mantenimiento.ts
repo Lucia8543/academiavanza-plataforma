@@ -817,6 +817,23 @@ export async function borrarContactosViejos(): Promise<number> {
       telefono_familia: null,
       email_familia: null,
       mensaje: null,
+      /*
+       * La zona y el barrio también.
+       *
+       * Se añadieron después de escribir esto y no se pensó en el borrado, así
+       * que sobrevivían a los noventa días. Lo que quedaba entonces no era «una
+       * familia pagó 10 € el 3 de marzo», que es lo que decía el comentario de
+       * arriba, sino «una familia de tal barrio de tal distrito, con un alumno
+       * de tal curso, pagó por tal profesor». Con dieciocho profesores en el
+       * directorio y un barrio de Madrid, eso ya no es anónimo.
+       *
+       * **Regla que faltaba: cada columna nueva de `app.contactos` se decide
+       * aquí antes de existir.** Si guarda algo de la familia, se vacía; si
+       * acredita el cobro, se queda. No hay tercera opción, y dejarlo para
+       * después es cómo llegamos hasta aquí.
+       */
+      zona: null,
+      barrio: null,
     },
   });
 

@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { db } from '@/backend/repositories/cliente';
 import { enviar } from '@/backend/services/correo';
 import { correoEnlacePerdido } from '@/backend/services/plantillas-correo';
@@ -23,6 +23,54 @@ import { correoEnlacePerdido } from '@/backend/services/plantillas-correo';
 
 const PROPOSITO = 'panel';
 
+/**
+ * El secreto con el que se deriva el enlace de cada profesor.
+ *
+ * Hasta ahora el enlace se generaba al azar y **se guardaba tal cual** en una
+ * columna llamada `token_hash`, que es exactamente lo que el nombre prometía que
+ * no pasaba. Cualquiera con permiso de lectura sobre la base de datos podía
+ * copiarlo y entrar en el panel de cualquier profesor: aceptar solicitudes en su
+ * nombre, pausarle la ficha y ver el teléfono de una familia que ya había
+ * pagado.
+ *
+ * La solución no puede ser simplemente cifrarlo de ida, porque el enlace tiene
+ * que poder **volver a construirse**: no caduca, va en todos los correos y el
+ * profesor lo tiene guardado. Si sólo se guardara su huella no habría forma de
+ * escribirlo otra vez en el siguiente correo.
+ *
+ * Así que se deriva. El enlace de un profesor es siempre el mismo porque sale de
+ * este secreto y de su identificador, y en la base de datos sólo queda su huella
+ * SHA-256. Quien lea la tabla ve huellas, y sin el secreto no puede llegar a
+ * ningún enlace.
+ */
+function secreto(): string {
+  const valor = process.env.ACCESO_SECRET;
+
+  // Falla en voz alta y a propósito. Un valor por defecto haría que los enlaces
+  // de producción se derivaran de algo que está escrito en el repositorio, que
+  // es peor que el problema que estamos arreglando.
+  if (!valor || valor.length < 32) {
+    throw new Error(
+      'Falta ACCESO_SECRET, o tiene menos de 32 caracteres. Es lo que deriva ' +
+        'el enlace del panel de cada profesor.',
+    );
+  }
+
+  return valor;
+}
+
+/** Lo que se guarda en la base de datos. Nunca el enlace. */
+function huella(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+/** El enlace de un profesor, que es siempre el mismo para el mismo profesor. */
+function derivar(profesorId: string): string {
+  return createHmac('sha256', secreto())
+    .update(`${PROPOSITO}:${profesorId}`)
+    .digest('base64url');
+}
+
 /** Un siglo. Prisma exige una fecha, así que se le da una que no llega. */
 function nunca(): Date {
   return new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
@@ -36,23 +84,24 @@ function nunca(): Date {
  * distinto, el profesor acabaría con seis llaves y sin saber cuál es la suya.
  */
 export async function tokenDelPanel(profesorId: string): Promise<string> {
+  const token = derivar(profesorId);
+  const suHuella = huella(token);
+
   const existente = await db.accesos.findFirst({
-    where: { profesor_id: profesorId, proposito: PROPOSITO },
-    select: { token_hash: true },
+    where: { token_hash: suHuella },
+    select: { id: true },
   });
 
-  if (existente) return existente.token_hash;
-
-  const token = randomBytes(32).toString('base64url');
-
-  await db.accesos.create({
-    data: {
-      profesor_id: profesorId,
-      token_hash: token,
-      proposito: PROPOSITO,
-      expira_en: nunca(),
-    },
-  });
+  if (!existente) {
+    await db.accesos.create({
+      data: {
+        profesor_id: profesorId,
+        token_hash: suHuella,
+        proposito: PROPOSITO,
+        expira_en: nunca(),
+      },
+    });
+  }
 
   return token;
 }
@@ -63,8 +112,23 @@ export async function profesorDelPanel(
 ): Promise<string | null> {
   if (!token) return null;
 
+  /*
+   * Se acepta la huella y, de momento, también el enlace tal cual.
+   *
+   * La segunda comparación es un puente y tiene fecha de caducidad. Existe para
+   * que el despliegue y la migración 23 puedan ocurrir en cualquier orden sin
+   * dejar a nadie fuera de su panel: mientras haya filas sin migrar, el enlace
+   * viejo sigue estando guardado en claro y hay que reconocerlo.
+   *
+   * **Se quita en cuanto la 23 esté aplicada en producción.** Comprobado con
+   * `SELECT count(*) FROM app.accesos WHERE length(token_hash) <> 64`, que tiene
+   * que dar cero.
+   */
   const acceso = await db.accesos.findFirst({
-    where: { token_hash: token, proposito: PROPOSITO },
+    where: {
+      proposito: PROPOSITO,
+      OR: [{ token_hash: huella(token) }, { token_hash: token }],
+    },
     select: { profesor_id: true },
   });
 

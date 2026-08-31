@@ -184,8 +184,20 @@ export default function PaginaPrivacidad() {
            profesores son menores de edad.
          */}
         <p>
-          <strong>Al profesor al que escribes</strong> le damos tu nombre y tu
-          teléfono, y sólo después de que él acepte y tú pagues. A nadie más.
+          <strong>Al profesor al que escribes le llegan dos cosas, y en dos
+          momentos distintos.</strong>
+        </p>
+        <p>
+          <strong>Al recibir tu solicitud</strong>, antes de aceptar y antes de
+          que nadie pague, ve el curso del alumno, la zona donde vivís y lo que
+          hayas escrito en el mensaje. Es lo que necesita para decidir si puede
+          cogeros, y por eso se le da antes: si sólo se le diera después, estaría
+          aceptando a ciegas y tú habrías pagado por un contacto que no iba a
+          salir adelante.
+        </p>
+        <p>
+          <strong>Tu nombre y tu teléfono, sólo después</strong> de que él acepte
+          y tú pagues. A nadie más, y nunca antes.
         </p>
         <p>
           <strong>

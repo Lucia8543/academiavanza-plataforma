@@ -50,6 +50,7 @@ type Valores = {
   disponibilidad: string[];
   cupo: Cupo;
   puntosFuertes: string;
+  declaraEdadMinima: boolean;
   aceptaPublicacion: boolean;
 };
 
@@ -74,6 +75,7 @@ const VACIO: Valores = {
   disponibilidad: [],
   cupo: 'busca',
   puntosFuertes: '',
+  declaraEdadMinima: false,
   aceptaPublicacion: false,
 };
 
@@ -112,6 +114,7 @@ function desdeRespuesta(
     disponibilidad: l('disponibilidad'),
     cupo: normalizarCupo(t('cupo')),
     puntosFuertes: t('puntosFuertes'),
+    declaraEdadMinima: t('declaraEdadMinima') === 'on',
     aceptaPublicacion: t('aceptaPublicacion') === 'on',
   };
 }
@@ -850,7 +853,34 @@ export function FormularioRegistro({
 
       {/* --- Consentimiento --------------------------------------------- */}
       <section className="border-t border-gris-borde pt-8">
+        {/*
+          La edad va antes que el permiso de publicación, y no es casual.
+
+          Sin catorce años cumplidos el permiso que viene debajo no vale nada,
+          porque es la edad a partir de la cual la ley española deja decidir por
+          uno mismo sobre los propios datos. Ponerla primero es el orden en que
+          se sostiene: primero puedo consentir, luego consiento.
+
+          La política lo exigía desde hacía semanas y el formulario no lo
+          preguntaba, así que había fichas publicadas sin nada que respaldara ese
+          consentimiento.
+        */}
         <label className="flex items-start gap-3 text-sm text-carbon">
+          <input
+            type="checkbox"
+            name="declaraEdadMinima"
+            className="mt-1 h-4 w-4 shrink-0 accent-[#2E7D5E]"
+            checked={v.declaraEdadMinima}
+            onChange={(e) => cambiar('declaraEdadMinima', e.target.checked)}
+          />
+          <span>
+            Tengo <strong>14 años cumplidos</strong>. Si tengo entre 14 y 18, mi
+            madre, mi padre o mi tutor saben que publico esta ficha.
+          </span>
+        </label>
+        <Aviso mensaje={errores.declaraEdadMinima} />
+
+        <label className="mt-4 flex items-start gap-3 text-sm text-carbon">
           <input
             type="checkbox"
             name="aceptaPublicacion"

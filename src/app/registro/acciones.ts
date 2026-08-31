@@ -79,6 +79,7 @@ export async function enviarRegistro(
       formulario.get('desplazamientoFlexible') === 'on',
     disponibilidad: formulario.getAll('disponibilidad').map(String),
     puntosFuertes: cadena('puntosFuertes'),
+    declaraEdadMinima: formulario.get('declaraEdadMinima') === 'on',
     aceptaPublicacion: formulario.get('aceptaPublicacion') === 'on',
   };
 

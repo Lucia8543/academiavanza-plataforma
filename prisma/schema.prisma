@@ -164,6 +164,8 @@ model profesores {
   motivo_rechazo               String?
   acepta_publicacion           Boolean                    @default(false)
   acepta_publicacion_en        DateTime?                  @db.Timestamptz(6)
+  declara_edad_minima          Boolean                    @default(false)
+  declara_edad_minima_en       DateTime?                  @db.Timestamptz(6)
   version_privacidad           String?
   creado_en                    DateTime                   @default(now()) @db.Timestamptz(6)
   actualizado_en               DateTime                   @default(now()) @db.Timestamptz(6)

@@ -23,7 +23,19 @@ const HACE_DIEZ_SEGUNDOS = String(Date.now() - 10_000);
 const HACE_UN_INSTANTE = String(Date.now() - 100);
 
 describe('el campo señuelo', () => {
-  it('salta si viene relleno', () => {
+  /*
+   * El señuelo por sí solo ya no descarta nada, y estas pruebas cambiaron con
+   * él.
+   *
+   * Antes bastaba con encontrarlo relleno. Se descubrió que quien lo rellenaba
+   * no eran guiones sino el autorrelleno del navegador —el campo se llamaba
+   * `apellido2`, y Chrome lo reconocía como «segundo apellido»— y que a esa
+   * gente se le tiraba el alta enseñándole «Ficha recibida».
+   *
+   * Ahora hacen falta las dos señales a la vez. Estas pruebas fijan justo eso,
+   * porque es la línea entre parar a un guion y perder a una persona.
+   */
+  it('con tiempo humano detrás, no descarta: casi seguro es el autorrelleno', () => {
     expect(
       oler(
         formulario({
@@ -31,15 +43,26 @@ describe('el campo señuelo', () => {
           [CAMPO_INICIO]: HACE_DIEZ_SEGUNDOS,
         }),
       ),
+    ).toBeNull();
+  });
+
+  it('relleno y enviado al instante sí es un guion', () => {
+    expect(
+      oler(
+        formulario({
+          [CAMPO_TRAMPA]: 'lo que sea',
+          [CAMPO_INICIO]: HACE_UN_INSTANTE,
+        }),
+      ),
     ).toBe('trampa');
   });
 
-  it('salta aunque sólo traiga espacios y un carácter', () => {
+  it('unos espacios y una letra tampoco bastan por sí solos', () => {
     expect(
       oler(
         formulario({ [CAMPO_TRAMPA]: '  x ', [CAMPO_INICIO]: HACE_DIEZ_SEGUNDOS }),
       ),
-    ).toBe('trampa');
+    ).toBeNull();
   });
 
   it('no salta si viene vacío, que es lo normal', () => {

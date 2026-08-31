@@ -38,6 +38,7 @@ function alta(cambios: Record<string, unknown> = {}) {
     modalidad: 'online',
     zona: '',
     puntosFuertes: 'Voy despacio y me aseguro de que se entiende',
+    declaraEdadMinima: true,
     aceptaPublicacion: true,
     ...cambios,
   };

@@ -21,6 +21,31 @@ export const metadata = {
  * detrás hay un teléfono de una persona.
  */
 
+/**
+ * El freno de la recuperación.
+ *
+ * Con el código y el teléfono se abre la página privada de una familia, y hasta
+ * ahora se podía probar sin límite. El código son cinco caracteres de un
+ * alfabeto de treinta y uno, así que fijando un teléfono y probando códigos en
+ * bucle se llega. Sin freno, ese bucle va a la velocidad de la red.
+ *
+ * Es el mismo mecanismo que ya protege el panel de administración: los primeros
+ * intentos pasan sin notarse, y a partir del tercero cada fallo espera el doble
+ * que el anterior, hasta un minuto. Una persona que se equivoca escribiendo su
+ * código no lo percibe; un programa que prueba miles se queda en unos pocos.
+ *
+ * El contador vive en memoria y se pone a cero al reiniciar el servidor. No es
+ * perfecto y no lo pretende: encarece el intento lo suficiente como para que no
+ * compense, que es todo lo que puede hacer un freno.
+ */
+const fallosPorTelefono = new Map<string, number>();
+
+function esperaTrasFallo(telefono: string): number {
+  const fallos = fallosPorTelefono.get(telefono) ?? 0;
+  if (fallos < 3) return 0;
+  return Math.min(2 ** (fallos - 2), 60) * 1000;
+}
+
 async function recuperar(formulario: FormData) {
   'use server';
 
@@ -29,12 +54,25 @@ async function recuperar(formulario: FormData) {
 
   if (!codigo || !telefono) redirect('/solicitud?error=faltan');
 
+  const espera = esperaTrasFallo(telefono);
+  if (espera > 0) await new Promise((seguir) => setTimeout(seguir, espera));
+
   const token = await recuperarToken(codigo, telefono);
 
   // El mismo mensaje tanto si el código no existe como si el teléfono no
   // corresponde. Decir «ese código existe pero el teléfono no coincide» sería
   // regalar la mitad de la respuesta a quien esté probando códigos.
-  if (!token) redirect('/solicitud?error=no-encontrada');
+  //
+  // Y el mensaje sigue siendo el mismo con freno o sin él: lo único que cambia
+  // es cuánto tarda en llegar, que es lo que no le sirve a quien prueba en
+  // bucle y no molesta a quien se ha equivocado una vez.
+  if (!token) {
+    fallosPorTelefono.set(telefono, (fallosPorTelefono.get(telefono) ?? 0) + 1);
+    redirect('/solicitud?error=no-encontrada');
+  }
+
+  // Acertar limpia la cuenta: quien entra no es quien estaba probando.
+  fallosPorTelefono.delete(telefono);
 
   redirect(`/solicitud/${token}`);
 }

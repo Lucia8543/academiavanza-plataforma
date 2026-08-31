@@ -122,6 +122,27 @@ export const esquemaRegistroProfesor = z
     ),
 
     // --- Consentimiento ------------------------------------------------------
+    /**
+     * Declara tener catorce años cumplidos.
+     *
+     * La política de privacidad lo exige desde que se reescribió el apartado de
+     * menores, y se apoya en el artículo 7 de la LOPDGDD, que es la edad a
+     * partir de la cual alguien puede consentir por sí mismo el tratamiento de
+     * sus propios datos. Pero durante un tiempo la política lo pedía y el
+     * formulario no lo preguntaba en ningún sitio, con lo que no había nada que
+     * sostuviera ese consentimiento.
+     *
+     * No es un dato de más: parte de los profesores del directorio son
+     * estudiantes de último curso de instituto, y ahí la diferencia entre trece
+     * y catorce años decide si la ficha se puede publicar.
+     *
+     * Se guarda la declaración y su fecha, igual que con el permiso de
+     * publicación, porque un consentimiento sin fecha no acredita nada.
+     */
+    declaraEdadMinima: z.boolean().refine((v) => v === true, {
+      message: 'Hay que tener al menos 14 años para publicar una ficha',
+    }),
+
     aceptaPublicacion: z.boolean().refine((v) => v === true, {
       message: 'Necesitamos tu permiso para publicar la ficha',
     }),

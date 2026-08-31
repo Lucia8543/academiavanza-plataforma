@@ -40,15 +40,24 @@ const DIAS_ENTRE_REPETICIONES = 7;
 /**
  * Altas de profesor que se aceptan al día en total.
  *
- * Cincuenta, no veinte. Este número es la última red, no la defensa: la
- * defensa son los campos trampa de `shared/schemas/trampa-bots`, que paran a un
- * guion sin que ningún profesor real se entere de nada.
+ * Empezó en veinte, subió a cincuenta y ahora está en trescientas, y cada
+ * subida ha sido por lo mismo: **el número salía de una estimación de cuánta
+ * gente se apuntaría, y esa estimación era de antes de tener una academia de
+ * ciento diecisiete profesores a los que se avisa el mismo día.**
  *
- * Un tope bajo tenía un efecto perverso: quien lo agotara con basura dejaba
- * fuera a los profesores de verdad que entraran esa tarde. El remedio del abuso
- * perjudicaba al legítimo. Con cincuenta, ni el mejor día del curso se acerca.
+ * Cincuenta era menos de la mitad de la lista. Una tarde en que contestaran la
+ * mitad de los avisados, el tope habría dejado fuera al resto enseñándoles un
+ * mensaje que además suena a que todo ha ido bien.
+ *
+ * Trescientas no es una estimación de nada: es un techo que no se alcanza sin
+ * que alguien esté atacando el formulario. **No está para regular el ritmo de
+ * altas, está para que un guion no pueda vaciar la cuota de correo ni quemar la
+ * reputación del dominio mandando mil correos en una noche**, que es el daño
+ * caro y el que no se deshace.
+ *
+ * La defensa de verdad sigue siendo la de `shared/schemas/trampa-bots`.
  */
-const ALTAS_POR_DIA = 50;
+const ALTAS_POR_DIA = 300;
 
 function haceHoras(horas: number): Date {
   return new Date(Date.now() - horas * 60 * 60 * 1000);
@@ -133,7 +142,10 @@ export async function seAceptanAltas(): Promise<Veredicto> {
     return {
       permitido: false,
       motivo:
-        'Hoy hemos recibido muchísimas altas y las estamos revisando. Vuelve mañana y podrás publicar tu ficha, o escríbenos a info@academiavanza.es.',
+        'No hemos podido guardar tu ficha. Hoy hemos recibido un número de ' +
+        'altas fuera de lo normal y hemos tenido que parar el formulario un ' +
+        'rato. Vuelve a intentarlo mañana, o escríbenos a info@academiavanza.es ' +
+        'y la damos de alta nosotros.',
     };
   }
 
