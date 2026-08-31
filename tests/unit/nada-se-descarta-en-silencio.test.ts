@@ -129,6 +129,52 @@ describe('el código y la base de datos dicen lo mismo', () => {
   });
 });
 
+describe('el panel deja separar los marcados de los demás', () => {
+  const PANEL = 'src/app/admin/page.tsx';
+
+  it('ofrece las dos casillas y las lee con el mismo nombre', () => {
+    /*
+     * El filtro va por la dirección de la página, así que el valor que escribe
+     * el enlace y el que lee la página son dos textos sueltos que tienen que
+     * coincidir. Si alguien cambiara uno y no el otro, la casilla se pulsaría,
+     * la dirección cambiaría y la lista se quedaría igual, que es de los fallos
+     * más desconcertantes que hay porque no da ningún error.
+     */
+    const panel = leer(PANEL);
+
+    for (const valor of ['solo', 'sin']) {
+      expect(panel, `el panel no ofrece el filtro «${valor}»`).toContain(
+        `destino="${valor}"`,
+      );
+      expect(panel, `el panel no lee el filtro «${valor}»`).toContain(
+        `marcados === '${valor}'`,
+      );
+    }
+
+    // El nombre del campo que viaja en la dirección tiene que ser el mismo que
+    // se lee arriba. Es el otro extremo del mismo cable.
+    expect(panel).toContain('name="marcados"');
+    expect(panel).toContain('const { aviso, q, marcados }');
+  });
+
+  it('no dice «nada pendiente» cuando lo que hay está filtrado', () => {
+    // Con un filtro puesto, «nada pendiente» es mentira: hay fichas esperando
+    // y sólo están escondidas. Quien lo lea así cierra el móvil creyendo que no
+    // le queda nada por hacer.
+    const panel = leer(PANEL);
+
+    // `lastIndexOf` y no `indexOf`: la frase aparece antes dentro del comentario
+    // que explica por qué está condicionada, y ese primer hallazgo mandaría a
+    // mirar el trozo equivocado del fichero.
+    const frase = panel.lastIndexOf('Nada pendiente');
+    expect(frase).toBeGreaterThan(0);
+
+    const antes = panel.slice(Math.max(0, frase - 400), frase);
+    expect(antes).toContain('soloMarcados');
+    expect(antes).toContain('sinMarcados');
+  });
+});
+
 describe('el señuelo no puede parecerse a un campo de verdad', () => {
   it('no lleva ninguna palabra que reconozca un autorrelleno', () => {
     /*

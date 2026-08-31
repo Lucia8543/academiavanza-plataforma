@@ -64,7 +64,10 @@ En concreto:
    que admite `trampa`, `demasiado-rapido` o nada.
 3. Esa etiqueta **sale en el panel**, en la propia tarjeta de la ficha, con la
    explicación de por qué se puso y de qué fiabilidad tiene cada motivo. Hay
-   además un filtro para verlas juntas cuando llegan varias de golpe.
+   además dos casillas, «ver sólo ésas» y «quitarlas de la lista», que cubren
+   las dos preguntas distintas que se hacen delante de esa lista: mirar lo raro
+   para decidir, o apartarlo para trabajar con el resto. Sólo aparecen cuando
+   hay alguna marcada.
 4. Quien revisa decide. En el caso de los profesores esto no añade trabajo,
    porque todas las fichas nacen `pendiente` y ya pasaban por una revisión
    humana; lo único que cambia es que ahora esa decisión se toma con un dato

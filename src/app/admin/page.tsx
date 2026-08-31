@@ -18,19 +18,99 @@ import { TarjetaFicha } from '@/frontend/features/administracion/tarjeta-ficha';
 
 export const metadata = { title: 'Panel · AcademiAvanza' };
 
+/**
+ * Una casilla que filtra la lista de un solo clic.
+ *
+ * Por dentro es un formulario diminuto con un botón, y las tres alternativas se
+ * descartaron por un motivo cada una:
+ *
+ * Una casilla de verdad, `<input type="checkbox">`, obligaría a marcarla y
+ * después pulsar «Buscar», que son dos gestos para una decisión que se toma en
+ * uno.
+ *
+ * Un enlace con `aria-pressed` es lo que había aquí primero, y ESLint lo tumbó
+ * con razón: `aria-pressed` describe algo que se queda pulsado, y un enlace no
+ * se queda pulsado, lleva a otro sitio. Un lector de pantalla habría anunciado
+ * una contradicción.
+ *
+ * Un botón con JavaScript funcionaría, y no hace falta. Así esto sigue yendo
+ * con JavaScript desactivado, que es como llega media web cuando algo falla.
+ *
+ * El cuadrito es un `span` dibujado en vez del cuadrito del navegador, para que
+ * el botón entero sea la zona pulsable y no sólo cuatro píxeles. Va marcado
+ * como decorativo, porque quien no lo ve ya tiene el estado en `aria-pressed`.
+ */
+function Casilla({
+  busqueda,
+  destino,
+  activa,
+  texto,
+}: {
+  busqueda: string;
+  destino: 'solo' | 'sin';
+  activa: boolean;
+  texto: string;
+}) {
+  return (
+    <form action="/admin">
+      {/* Filtrar no borra la búsqueda que hubiera puesta. */}
+      {busqueda && <input type="hidden" name="q" value={busqueda} />}
+
+      {/* Si ya está activa no se manda nada, y así el mismo botón la apaga y
+          devuelve la lista completa. Es lo que la hace comportarse como una
+          casilla y no como dos botones que se pisan. */}
+      {!activa && <input type="hidden" name="marcados" value={destino} />}
+
+      <button
+        type="submit"
+        aria-pressed={activa}
+        className={
+          'inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ' +
+          (activa
+            ? 'border-purple-700 bg-purple-700 text-white'
+            : 'border-purple-300 bg-white text-purple-900 hover:bg-purple-100')
+        }
+      >
+        <span
+          aria-hidden="true"
+          className={
+            'flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px] font-bold leading-none ' +
+            (activa
+              ? 'border-white bg-white text-purple-700'
+              : 'border-purple-400 bg-white text-transparent')
+          }
+        >
+          ✓
+        </span>
+        {texto}
+      </button>
+    </form>
+  );
+}
+
 // Nunca se guarda en caché: aquí se viene a ver el estado de ahora.
 export const dynamic = 'force-dynamic';
 
 export default async function PaginaAdmin({
   searchParams,
 }: {
-  searchParams: Promise<{ aviso?: string; q?: string; sospechosas?: string }>;
+  searchParams: Promise<{ aviso?: string; q?: string; marcados?: string }>;
 }) {
   if (!(await haySesion())) redirect('/admin/entrar');
 
-  const { aviso, q, sospechosas } = await searchParams;
+  const { aviso, q, marcados } = await searchParams;
   const busqueda = (q ?? '').trim();
-  const soloSospechosas = sospechosas === '1';
+
+  /*
+   * Qué hacer con las fichas que el detector antibots marcó.
+   *
+   * Tres estados y no dos, porque las dos preguntas que se hacen delante de
+   * esta lista son distintas. Una es «enséñame lo raro para mirarlo»; la otra
+   * es «quítame lo raro de en medio para trabajar tranquila». Con un solo
+   * interruptor sólo se puede contestar a una de las dos.
+   */
+  const soloMarcados = marcados === 'solo';
+  const sinMarcados = marcados === 'sin';
 
   const [
     pendientes,
@@ -87,23 +167,27 @@ export default async function PaginaAdmin({
   };
 
   /*
-   * El filtro de sospechosas, que se suma al buscador en vez de sustituirlo.
+   * El filtro de marcados, que se suma al buscador en vez de sustituirlo.
    *
-   * Existe porque el detector antibots ya no descarta nada: lo marca y lo deja
-   * pasar. Sin una forma de verlas juntas, esa marca sería una etiqueta
-   * escondida en medio de ciento y pico fichas, que es casi lo mismo que no
-   * ponerla.
+   * Existe porque el detector antibots ya no descarta nada, sino que marca y
+   * deja pasar (ADR 0009). Sin una forma de separarlas, esa marca sería una
+   * etiqueta escondida en medio de ciento y pico fichas, que es casi lo mismo
+   * que no ponerla.
    */
-  const marcada = (f: { sospecha_bot: string | null }) =>
-    !soloSospechosas || f.sospecha_bot !== null;
+  const pasaElFiltro = (f: { sospecha_bot: string | null }) => {
+    if (soloMarcados) return f.sospecha_bot !== null;
+    if (sinMarcados) return f.sospecha_bot === null;
+    return true;
+  };
 
-  const pendientesVistas = pendientes.filter(coincide).filter(marcada);
-  const revisadasVistas = revisadas.filter(coincide).filter(marcada);
+  const pendientesVistas = pendientes.filter(coincide).filter(pasaElFiltro);
+  const revisadasVistas = revisadas.filter(coincide).filter(pasaElFiltro);
   const encontradas = pendientesVistas.length + revisadasVistas.length;
 
-  // Sobre el total, no sobre lo filtrado: es el número que decide si el aviso
-  // llega a enseñarse, y tiene que contar también las que la búsqueda esconde.
-  const cuantasMarcadas =
+  // Sobre el total y no sobre lo filtrado. Es el número que decide si el
+  // control llega a enseñarse, así que tiene que contar también las que la
+  // búsqueda de ese momento esté escondiendo.
+  const cuantosMarcados =
     pendientes.filter((f) => f.sospecha_bot !== null).length +
     revisadas.filter((f) => f.sospecha_bot !== null).length;
 
@@ -255,6 +339,11 @@ export default async function PaginaAdmin({
         puede guardar en favoritos o mandársela a alguien.
       */}
       <form action="/admin" className="mt-12 flex flex-wrap gap-2">
+        {/* Buscar no deshace el filtro de marcados. Sin esta línea, escribir un
+            nombre devolvería la lista completa y parecería que la casilla se
+            había desmarcado sola. */}
+        {marcados && <input type="hidden" name="marcados" value={marcados} />}
+
         <input
           type="search"
           name="q"
@@ -266,7 +355,7 @@ export default async function PaginaAdmin({
         <button className="rounded-lg bg-azul-confianza px-5 py-2 font-semibold text-white transition hover:opacity-90">
           Buscar
         </button>
-        {(busqueda || soloSospechosas) && (
+        {(busqueda || soloMarcados || sinMarcados) && (
           <a
             href="/admin"
             className="rounded-lg border border-gris-borde px-4 py-2 text-sm font-semibold text-carbon transition hover:bg-gris-claro"
@@ -277,35 +366,46 @@ export default async function PaginaAdmin({
       </form>
 
       {/*
-        Ver juntas las que el detector antibots marcó.
+        Las dos casillas de los marcados como posible robot.
 
-        Sólo aparece si hay alguna. Un enlace permanente que casi siempre lleva
-        a una lista vacía se convierte en parte del decorado y deja de leerse,
-        y el día que haya algo tampoco se leerá.
+        Son enlaces con aspecto de casilla, no casillas de un formulario, y es a
+        propósito: una casilla de verdad obligaría a pulsarla y después pulsar
+        «Buscar», que son dos gestos para una decisión que se toma en uno. Así
+        cada clic aplica el filtro y además funciona sin JavaScript.
 
-        No hace falta que mires esto cada día. Todas las fichas pasan por tu
-        revisión de todas formas y la marca sale en cada tarjeta; esto es sólo
-        el atajo para cuando llegan varias de golpe.
+        Sólo aparecen si hay alguna marcada. Un control permanente que casi
+        siempre lleva a una lista vacía acaba formando parte del decorado, y el
+        día que haya algo tampoco se leerá.
       */}
-      {cuantasMarcadas > 0 && (
-        <p className="mt-2 text-sm">
-          {soloSospechosas ? (
-            <a
-              href="/admin"
-              className="text-purple-800 underline underline-offset-4"
-            >
-              Ver todas las fichas otra vez
-            </a>
-          ) : (
-            <a
-              href="/admin?sospechosas=1"
-              className="text-purple-800 underline underline-offset-4"
-            >
-              Ver las {cuantasMarcadas} que llegaron con pinta de envío
-              automático
-            </a>
-          )}
-        </p>
+      {cuantosMarcados > 0 && (
+        <fieldset className="mt-3 rounded-xl border border-purple-200 bg-purple-50 p-3">
+          <legend className="px-1 text-sm font-medium text-purple-900">
+            {cuantosMarcados === 1
+              ? '1 ficha llegó con pinta de envío automático'
+              : `${cuantosMarcados} fichas llegaron con pinta de envío automático`}
+          </legend>
+
+          <div className="flex flex-wrap gap-2">
+            <Casilla
+              busqueda={busqueda}
+              destino="solo"
+              activa={soloMarcados}
+              texto="Ver sólo ésas"
+            />
+            <Casilla
+              busqueda={busqueda}
+              destino="sin"
+              activa={sinMarcados}
+              texto="Quitarlas de la lista"
+            />
+          </div>
+
+          <p className="mt-2 text-xs leading-relaxed text-purple-900">
+            Están publicadas o pendientes como cualquier otra. La marca es sólo
+            un aviso, y vuelve a pulsar la misma casilla para verlas todas otra
+            vez.
+          </p>
+        </fieldset>
       )}
 
       {busqueda && (
@@ -330,9 +430,16 @@ export default async function PaginaAdmin({
 
         {pendientesVistas.length === 0 ? (
           <p className="mt-3 rounded-xl border border-dashed border-gris-borde p-6 text-center text-gris-medio">
-            {busqueda
-              ? 'Ninguna por revisar con esa búsqueda.'
-              : 'Nada pendiente. Puedes cerrar el móvil.'}
+            {/* «Nada pendiente» a secas, con un filtro puesto, es mentira: hay
+                fichas esperando y lo que pasa es que están escondidas. Quien lo
+                lea así cerrará el móvil creyendo que no hay nada que hacer. */}
+            {soloMarcados
+              ? 'Ninguna por revisar de las marcadas.'
+              : sinMarcados
+                ? 'Ninguna por revisar, quitando las marcadas.'
+                : busqueda
+                  ? 'Ninguna por revisar con esa búsqueda.'
+                  : 'Nada pendiente. Puedes cerrar el móvil.'}
           </p>
         ) : (
           <div className="mt-4 space-y-4">

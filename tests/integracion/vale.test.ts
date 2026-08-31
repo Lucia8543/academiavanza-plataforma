@@ -169,6 +169,24 @@ describe('gastar el vale', () => {
     expect(JSON.stringify(vista)).not.toContain('600000001');
   });
 
+  /*
+   * Los tres vales que no valen, y por qué ninguno de ellos cobra.
+   *
+   * Estas tres pruebas decían lo contrario hasta hoy: que un código malo se
+   * ignoraba, la solicitud salía adelante y se cobraban los diez euros. Ése era
+   * el comportamiento antiguo, y llevaban meses sin ejecutarse por un fallo del
+   * CI, así que nadie vio que el servicio había cambiado debajo.
+   *
+   * Ahora ninguno de los tres llega a crear nada, y cada uno devuelve su propio
+   * motivo. La razón es la que explica el servicio: una familia que teclea un
+   * código y ve el precio entero no puede saber si se equivocó al escribirlo,
+   * si ya lo había gastado o si se le pasó el plazo. Cobrarle diez euros sin
+   * decir cuál de las tres cosas ha pasado es cobrar por un malentendido.
+   *
+   * No se pierde nada por el camino. El formulario vuelve con todo lo que había
+   * escrito y un mensaje que dice qué le pasa a ese código, así que puede
+   * corregirlo o dejarlo en blanco y seguir.
+   */
   it('el mismo vale no se gasta dos veces', async () => {
     const primera = await unaPagada();
     await pedirVale(primera.token, 'no-funciono', 'horarios');
@@ -183,9 +201,9 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       primera.codigo,
     );
-    if (!tercera.ok) throw new Error(`no creada: ${tercera.motivo}`);
 
-    expect(Number((await porCodigo(tercera.codigo)).importe)).toBe(10);
+    expect(tercera.ok).toBe(false);
+    if (!tercera.ok) expect(tercera.motivo).toBe('vale-gastado');
   });
 
   it('un vale caducado no se aplica', async () => {
@@ -200,12 +218,12 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       primera.codigo,
     );
-    if (!segunda.ok) throw new Error(`no creada: ${segunda.motivo}`);
 
-    expect(Number((await porCodigo(segunda.codigo)).importe)).toBe(10);
+    expect(segunda.ok).toBe(false);
+    if (!segunda.ok) expect(segunda.motivo).toBe('vale-caducado');
   });
 
-  it('un código inventado se ignora y se cobra lo normal', async () => {
+  it('un código inventado no cuela, y se dice cuál es el problema', async () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(
@@ -213,6 +231,17 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       'XXXXX',
     );
+
+    expect(alta.ok).toBe(false);
+    if (!alta.ok) expect(alta.motivo).toBe('vale-no-existe');
+  });
+
+  it('sin vale se cobra lo normal, que es el caso de casi todo el mundo', async () => {
+    // La contrapartida de las tres de arriba. Sin ella, un servicio que
+    // rechazara cualquier solicitud las pasaría las tres y nadie lo notaría.
+    const profesor = await crearProfesor();
+    const nivelId = await unNivel();
+    const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
     if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
 
     expect(Number((await porCodigo(alta.codigo)).importe)).toBe(10);

@@ -136,10 +136,20 @@ export const esquemaContacto = z.object({
   /**
    * Código de un vale, si la familia tiene uno.
    *
-   * Se comprueba en el servidor: aquí sólo se limpia. Un código inventado no
-   * hace fallar el formulario, simplemente no descuenta nada, porque rechazar
-   * el envío entero por un vale mal escrito sería castigar a quien ya tuvo una
-   * mala experiencia.
+   * Aquí sólo se limpia. Si el código existe, si ya se gastó o si caducó lo
+   * decide el servidor, porque es lo único que puede mirarlo contra la base de
+   * datos.
+   *
+   * **Un código que no vale sí frena el envío**, y este comentario decía lo
+   * contrario hasta que se corrigió. Antes se ignoraba y se cobraban los diez
+   * euros, y el resultado era una familia que tecleaba su código, veía el
+   * precio entero y no tenía forma de saber si se había equivocado al
+   * escribirlo, si ya lo había gastado o si se le había pasado el plazo.
+   *
+   * Frenar aquí no le cuesta nada: el formulario vuelve con todo lo que había
+   * escrito y un mensaje que dice cuál de las tres cosas ha pasado, así que lo
+   * corrige o lo deja en blanco y sigue. Lo que sí costaría es lo otro, porque
+   * un cobro nacido de un malentendido se descubre cuando ya toca pagar.
    */
   vale: z
     .string()
