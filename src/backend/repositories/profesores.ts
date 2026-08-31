@@ -27,6 +27,10 @@ const FICHA_COMPLETA = {
   disponible: true,
   cupo: true,
   motivo_rechazo: true,
+  // Lo que vio el detector antibots al llegar la ficha. Se trae siempre, no
+  // sólo en las pendientes: si una sospechosa se llegó a publicar, quien la
+  // mire después tiene que poder verlo igual.
+  sospecha_bot: true,
   creado_en: true,
   colegios: { select: { nombre: true, nombre_corto: true, municipio: true } },
   profesor_asignaturas: { select: { asignaturas: { select: { nombre: true } } } },

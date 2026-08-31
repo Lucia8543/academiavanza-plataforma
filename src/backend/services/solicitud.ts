@@ -13,6 +13,7 @@ import {
 } from '@/shared/reglas/cobro';
 import { zonaCompleta } from '@/shared/datos/zonas';
 import { aceptaSolicitudes, normalizarCupo } from '@/shared/reglas/cupo';
+import type { Sospecha } from '@/shared/schemas/trampa-bots';
 import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
 import {
   correoContactoAbierto,
@@ -95,6 +96,14 @@ export async function crearSolicitud(
   slug: string,
   datos: DatosContacto,
   valeCodigo?: string,
+  /**
+   * Si el detector antibots vio algo raro en el envío.
+   *
+   * Se guarda y no hace nada más. Rechazar una solicitud por sospecha dejaría a
+   * una familia sin profesor por una decisión automática que nadie revisa, y
+   * eso es exactamente lo que ya pasó una vez con las fichas de profesores.
+   */
+  sospecha: Sospecha = null,
 ): Promise<ResultadoAlta> {
   const profesor = await db.profesores.findFirst({
     where: { slug, estado: 'activo', disponible: true },
@@ -192,6 +201,9 @@ export async function crearSolicitud(
         urgencia: datos.urgencia ?? URGENCIA_POR_DEFECTO,
         es_tutor_legal: datos.esTutorLegal,
         acepta_privacidad: datos.aceptaPrivacidad,
+        // Lo que vio el detector antibots, si vio algo. No cambia nada del
+        // recorrido de la solicitud: está para poder mirar atrás.
+        sospecha_bot: sospecha,
 
         estado: 'pendiente_profesor',
         codigo: await codigoLibre(),

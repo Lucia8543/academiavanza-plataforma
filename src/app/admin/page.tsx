@@ -24,12 +24,13 @@ export const dynamic = 'force-dynamic';
 export default async function PaginaAdmin({
   searchParams,
 }: {
-  searchParams: Promise<{ aviso?: string; q?: string }>;
+  searchParams: Promise<{ aviso?: string; q?: string; sospechosas?: string }>;
 }) {
   if (!(await haySesion())) redirect('/admin/entrar');
 
-  const { aviso, q } = await searchParams;
+  const { aviso, q, sospechosas } = await searchParams;
   const busqueda = (q ?? '').trim();
+  const soloSospechosas = sospechosas === '1';
 
   const [
     pendientes,
@@ -85,9 +86,26 @@ export default async function PaginaAdmin({
       .every((palabra) => donde.includes(palabra));
   };
 
-  const pendientesVistas = pendientes.filter(coincide);
-  const revisadasVistas = revisadas.filter(coincide);
+  /*
+   * El filtro de sospechosas, que se suma al buscador en vez de sustituirlo.
+   *
+   * Existe porque el detector antibots ya no descarta nada: lo marca y lo deja
+   * pasar. Sin una forma de verlas juntas, esa marca sería una etiqueta
+   * escondida en medio de ciento y pico fichas, que es casi lo mismo que no
+   * ponerla.
+   */
+  const marcada = (f: { sospecha_bot: string | null }) =>
+    !soloSospechosas || f.sospecha_bot !== null;
+
+  const pendientesVistas = pendientes.filter(coincide).filter(marcada);
+  const revisadasVistas = revisadas.filter(coincide).filter(marcada);
   const encontradas = pendientesVistas.length + revisadasVistas.length;
+
+  // Sobre el total, no sobre lo filtrado: es el número que decide si el aviso
+  // llega a enseñarse, y tiene que contar también las que la búsqueda esconde.
+  const cuantasMarcadas =
+    pendientes.filter((f) => f.sospecha_bot !== null).length +
+    revisadas.filter((f) => f.sospecha_bot !== null).length;
 
   const publicadas = revisadas.filter((f) => f.estado === 'activo');
   const esperandoBizum = porEstado.aceptada ?? 0;
@@ -248,7 +266,7 @@ export default async function PaginaAdmin({
         <button className="rounded-lg bg-azul-confianza px-5 py-2 font-semibold text-white transition hover:opacity-90">
           Buscar
         </button>
-        {busqueda && (
+        {(busqueda || soloSospechosas) && (
           <a
             href="/admin"
             className="rounded-lg border border-gris-borde px-4 py-2 text-sm font-semibold text-carbon transition hover:bg-gris-claro"
@@ -257,6 +275,38 @@ export default async function PaginaAdmin({
           </a>
         )}
       </form>
+
+      {/*
+        Ver juntas las que el detector antibots marcó.
+
+        Sólo aparece si hay alguna. Un enlace permanente que casi siempre lleva
+        a una lista vacía se convierte en parte del decorado y deja de leerse,
+        y el día que haya algo tampoco se leerá.
+
+        No hace falta que mires esto cada día. Todas las fichas pasan por tu
+        revisión de todas formas y la marca sale en cada tarjeta; esto es sólo
+        el atajo para cuando llegan varias de golpe.
+      */}
+      {cuantasMarcadas > 0 && (
+        <p className="mt-2 text-sm">
+          {soloSospechosas ? (
+            <a
+              href="/admin"
+              className="text-purple-800 underline underline-offset-4"
+            >
+              Ver todas las fichas otra vez
+            </a>
+          ) : (
+            <a
+              href="/admin?sospechosas=1"
+              className="text-purple-800 underline underline-offset-4"
+            >
+              Ver las {cuantasMarcadas} que llegaron con pinta de envío
+              automático
+            </a>
+          )}
+        </p>
+      )}
 
       {busqueda && (
         <p role="status" className="mt-2 text-sm text-gris-medio">

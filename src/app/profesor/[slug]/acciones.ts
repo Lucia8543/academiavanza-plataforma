@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { crearSolicitud } from '@/backend/services/solicitud';
 import { esquemaContacto } from '@/shared/schemas/contacto';
-import { oler } from '@/shared/schemas/trampa-bots';
+import { etiquetaDeSospecha } from '@/shared/schemas/trampa-bots';
 
 /**
  * Recibe el formulario con el que una familia escribe a un profesor.
@@ -25,12 +25,23 @@ export async function enviarContacto(
   _previo: EstadoContacto,
   formulario: FormData,
 ): Promise<EstadoContacto> {
-  // Igual que en el alta: al guion se le contesta que todo ha ido bien y se
-  // descarta en silencio.
-  const sospecha = oler(formulario);
+  /*
+   * Si el envío tiene pinta de automático. **La solicitud se tramita igual.**
+   *
+   * Aquí antes había un `redirect` al directorio que tiraba la solicitud sin
+   * guardar nada, y a la familia la dejaba en una página que no era la suya
+   * pensando que algo había ido mal. Una familia perdida por una sospecha
+   * nuestra es un hijo sin profesor y una persona que no vuelve.
+   *
+   * Y hay una diferencia importante con el alta del profesor: aquí no hay
+   * nadie revisando antes de que las cosas pasen. La solicitud sigue su curso
+   * normal, le llega al profesor y se cobra si él acepta. La etiqueta sólo
+   * queda guardada por si más adelante hay que entender de dónde salió algo
+   * raro.
+   */
+  const sospecha = etiquetaDeSospecha(formulario);
   if (sospecha) {
-    console.warn(`[contacto] solicitud descartada por ${sospecha}`);
-    redirect('/profesores');
+    console.warn(`[contacto] solicitud marcada como sospechosa por ${sospecha}`);
   }
 
   const cadena = (campo: string) => String(formulario.get(campo) ?? '');
@@ -81,6 +92,7 @@ export async function enviarContacto(
     slug,
     validado.data,
     validado.data.vale || undefined,
+    sospecha,
   );
 
   if (!resultado.ok) {

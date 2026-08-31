@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { reenviarEnlaceDelPanel } from '@/backend/services/acceso-profesor';
 import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
-import { oler } from '@/shared/schemas/trampa-bots';
 
 /**
  * «He perdido el enlace de mi ficha», para profesores.
@@ -40,13 +39,19 @@ async function reenviar(formulario: FormData) {
   }
 
   /*
-   * Si huele a guion, se enseña la misma pantalla de siempre y no se manda
-   * nada. Decirle «te hemos pillado» sólo sirve para que el siguiente venga
-   * mejor preparado.
+   * Aquí ya no se mira si huele a guion, y es a propósito.
+   *
+   * Esta pantalla es la que usa una profesora que ha perdido su enlace, o sea
+   * alguien que ya está en la base de datos y que ahora mismo no puede entrar a
+   * su ficha. Negarle el correo por una sospecha la deja fuera sin explicación
+   * y sin nadie a quien preguntar.
+   *
+   * Y no hace falta ninguna trampa, porque este formulario no crea nada. Lo
+   * único que puede hacer es mandarle a una dirección ya registrada un enlace
+   * que esa misma dirección ya recibió en su día, y como mucho una vez cada
+   * diez minutos. Un guion que lo aporree no consigue nada que no tuviera.
    */
-  if (!oler(formulario)) {
-    await reenviarEnlaceDelPanel(email);
-  }
+  await reenviarEnlaceDelPanel(email);
 
   redirect('/mi-ficha?enviado=1');
 }

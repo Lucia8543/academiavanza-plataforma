@@ -9,6 +9,10 @@ import {
 import type { Ficha } from '@/backend/repositories/profesores';
 import { ETIQUETA_CUPO, normalizarCupo, OPCIONES_CUPO } from '@/shared/reglas/cupo';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
+import {
+  esSospechaConocida,
+  EXPLICACION_SOSPECHA,
+} from '@/shared/schemas/trampa-bots';
 
 /**
  * Una ficha vista desde el panel. Pensada para leerse en un móvil de un
@@ -43,6 +47,13 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
 
   const cupo = normalizarCupo(f.cupo);
 
+  // Lo que vio el detector antibots, si vio algo. `esSospechaConocida` filtra
+  // cualquier valor raro que hubiera podido quedar guardado, para que un texto
+  // inesperado no reviente la pantalla entera del panel.
+  const avisoSospecha = esSospechaConocida(f.sospecha_bot)
+    ? EXPLICACION_SOSPECHA[f.sospecha_bot]
+    : null;
+
   return (
     <article className="rounded-xl border border-gris-borde bg-white p-5">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -58,6 +69,25 @@ export function TarjetaFicha({ f }: { f: Ficha }) {
         {f.email}
         {f.telefono ? ` · ${f.telefono}` : ''}
       </p>
+
+      {/*
+        El aviso del detector antibots.
+
+        Va arriba del todo, justo debajo del nombre, porque es lo que cambia
+        cómo se lee todo lo demás. Y va en morado y no en rojo a propósito: no
+        es un error de la ficha ni algo que haya hecho mal quien la envió, es
+        una duda nuestra sobre cómo llegó.
+
+        Antes de esto, un envío marcado se borraba solo y no llegaba a esta
+        pantalla. Aquí está la diferencia entera del cambio: la decisión la
+        toma quien lee, con el motivo delante.
+      */}
+      {avisoSospecha && (
+        <p className="mt-3 rounded-lg border border-purple-300 bg-purple-50 p-3 text-sm text-purple-900">
+          <span className="font-medium">{avisoSospecha.titulo}.</span>{' '}
+          {avisoSospecha.texto}
+        </p>
+      )}
 
       {/* Sin teléfono la ficha no puede publicarse: es lo que recibe la familia
           al final del recorrido, y la base de datos lo exige para estar activa.

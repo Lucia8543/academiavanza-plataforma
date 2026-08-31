@@ -1,6 +1,7 @@
 import { db } from '@/backend/repositories/cliente';
 import { quienEscribe, rutaSegura } from '@/shared/reglas/incidencias';
 import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
+import type { Sospecha } from '@/shared/schemas/trampa-bots';
 
 /**
  * El buzón de «algo no funciona».
@@ -37,6 +38,11 @@ export async function guardarIncidencia(datos: {
   texto: string;
   pagina?: string | null;
   email?: string | null;
+  /**
+   * Lo que vio el detector antibots, si vio algo. Sólo se guarda. Un buzón de
+   * fallos que descarta mensajes por sospecha es un buzón que oculta fallos.
+   */
+  sospecha?: Sospecha;
 }): Promise<ResultadoIncidencia> {
   const texto = datos.texto.trim();
 
@@ -68,6 +74,7 @@ export async function guardarIncidencia(datos: {
         pagina: rutaSegura(datos.pagina),
         quien: quienEscribe(datos.pagina),
         email,
+        sospecha_bot: datos.sospecha ?? null,
       },
     });
     return { ok: true };

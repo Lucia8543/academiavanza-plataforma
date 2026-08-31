@@ -8,6 +8,7 @@ import {
   interpretarFranja,
   type RegistroProfesor,
 } from '@/shared/schemas/profesor';
+import type { Sospecha } from '@/shared/schemas/trampa-bots';
 import { slugDeProfesor } from '@/shared/utils/slug';
 
 /**
@@ -34,6 +35,14 @@ export type ResultadoRegistro =
 
 export async function registrarProfesor(
   datos: RegistroProfesor,
+  /**
+   * Si el detector antibots vio algo raro en el envío.
+   *
+   * Es un dato, no una condición. Se guarda con la ficha y sale en el panel,
+   * y no impide el alta ni cambia nada de lo que pasa después. Quien decide es
+   * quien revisa, que ya tenía que aprobar la ficha de todas formas.
+   */
+  sospecha: Sospecha = null,
 ): Promise<ResultadoRegistro> {
   // Tope global de altas al día. Es diez veces más de lo que esperamos en el
   // mejor día del curso, así que un profesor real no se lo va a encontrar
@@ -101,6 +110,10 @@ export async function registrarProfesor(
           // Nace pendiente. Publicar es una decisión de administración.
           estado: 'pendiente',
           cupo: datos.cupo ?? 'busca',
+          // Lo que el detector antibots vio, si vio algo. Va aquí dentro y no
+          // en una tabla aparte porque su sitio es al lado de la ficha que
+          // describe: quien la revisa lo tiene que ver sin buscarlo.
+          sospecha_bot: sospecha,
 
           acepta_publicacion: true,
           acepta_publicacion_en: new Date(),

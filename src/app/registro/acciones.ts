@@ -2,7 +2,7 @@
 
 import { registrarProfesor } from '@/backend/services/registro-profesor';
 import { esquemaRegistroProfesor } from '@/shared/schemas/profesor';
-import { oler } from '@/shared/schemas/trampa-bots';
+import { etiquetaDeSospecha } from '@/shared/schemas/trampa-bots';
 
 /**
  * Recibe el formulario de alta.
@@ -31,21 +31,29 @@ export async function enviarRegistro(
   _estadoPrevio: EstadoFormulario,
   formulario: FormData,
 ): Promise<EstadoFormulario> {
+  /*
+   * Si el envío tiene pinta de automático. **No se descarta nada.**
+   *
+   * Aquí antes había un `return { ok: true }` que tiraba el formulario a la
+   * basura enseñando «Ficha recibida». Cazaba guiones y también, sin que se
+   * notara, a profesoras reales cuyo navegador rellenaba el campo señuelo por
+   * ellas. Ni fila, ni correo, ni rastro.
+   *
+   * Ahora la sospecha viaja como un campo más hasta la base de datos y sale en
+   * el panel. Todas las fichas nacen pendientes de revisión de todas formas, así
+   * que esto no añade trabajo: añade un dato a una decisión que ya se tomaba a
+   * mano. Y si la sospecha se equivoca, el peor caso es una ficha con un aviso
+   * al lado, no una persona que se cree apuntada y no lo está.
+   */
+  const sospecha = etiquetaDeSospecha(formulario);
+  if (sospecha) {
+    console.warn(`[registro] alta marcada como sospechosa por ${sospecha}`);
+  }
+
   // Un campo oculto no se envía, y el formulario esconde «colegioOtro» cuando
   // se elige colegio de la lista, y «zona» cuando la modalidad es sólo online.
   // En esos casos llega `null`, que no es lo mismo que una cadena vacía: hay
   // que traducirlo o la validación lo rechaza por «entrada no válida».
-  // Guiones automáticos, antes de tocar la base de datos.
-  //
-  // Se contesta que todo ha ido bien. Decirle a un guion «te he pillado» es
-  // decirle exactamente qué tiene que cambiar para colarse a la siguiente; que
-  // se crea que ha funcionado hace que se vaya tan tranquilo.
-  const sospecha = oler(formulario);
-  if (sospecha) {
-    console.warn(`[registro] alta descartada por ${sospecha}`);
-    return { ok: true, mensaje: 'Ficha recibida.' };
-  }
-
   const cadena = (campo: string) => String(formulario.get(campo) ?? '');
 
   // El desplegable de colegios tiene una opción «otro» que no es un colegio
@@ -126,7 +134,7 @@ export async function enviarRegistro(
     };
   }
 
-  const resultado = await registrarProfesor(validado.data);
+  const resultado = await registrarProfesor(validado.data, sospecha);
 
   if (!resultado.ok) {
     if (resultado.motivo === 'demasiadas') {

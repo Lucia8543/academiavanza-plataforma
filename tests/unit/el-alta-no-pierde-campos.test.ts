@@ -42,7 +42,7 @@ const ACCION = readFileSync(join(RAIZ, 'src/app/registro/acciones.ts'), 'utf8');
  * motivo. Cualquier otro que aparezca es un descuido.
  */
 const NO_SE_COPIAN: Record<string, string> = {
-  // Trampa para robots. La comprueba `oler()` antes de nada y no es un dato del
+  // Señuelo para robots. Lo mira `etiquetaDeSospecha()` y no es un dato del
   // profesor, así que no forma parte del objeto que se valida.
   empresa: 'campo trampa',
   web: 'campo trampa',
