@@ -39,7 +39,7 @@ async function unaAceptada() {
   const profesor = await crearProfesor();
   const nivelId = await unNivel();
   const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-  if (!alta.ok) throw new Error('no creada');
+  if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
 
   const s = await porCodigo(alta.codigo);
   await decidir(s.token_profesor, 'aceptar');
@@ -58,7 +58,7 @@ describe('caducar lo que nadie contesta', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
     await envejecer(alta.codigo, { enviado_en: 6 });
     // Caducar exige que al profesor le llegara el aviso. Sin correo en las
     // pruebas, se marca a mano: lo contrario se comprueba más abajo.
@@ -76,7 +76,7 @@ describe('caducar lo que nadie contesta', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
     await envejecer(alta.codigo, { enviado_en: 4 });
 
     await caducarSolicitudes();
@@ -207,7 +207,7 @@ describe('el borrado a los noventa días', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
     await envejecer(alta.codigo, { enviado_en: 91 });
 
     await borrarContactosViejos();
@@ -238,7 +238,7 @@ describe('el borrado a los noventa días', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
     await envejecer(alta.codigo, { enviado_en: 80 });
 
     await borrarContactosViejos();
@@ -265,7 +265,7 @@ describe('⭐ al profesor se le recuerda antes de cerrarle nada', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
     await envejecer(alta.codigo, { enviado_en: dias });
 
     // Simula que el aviso inicial sí llegó, que es lo que pasa en producción
@@ -387,7 +387,7 @@ describe('⭐ no se cierra lo que el profesor nunca supo', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
     await envejecer(alta.codigo, { enviado_en: dias });
     await db.contactos.update({
       where: { codigo: alta.codigo },

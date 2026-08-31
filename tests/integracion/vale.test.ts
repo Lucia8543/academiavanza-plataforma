@@ -115,7 +115,7 @@ describe('conceder el vale', () => {
     const profesor = await crearProfesor();
     const nivelId = await unNivel();
     const alta = await crearSolicitud(profesor.slug, datosDeFamilia({ nivelId }));
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
 
     const r = await pedirVale(alta.token, 'no-funciono', 'horarios');
 
@@ -137,7 +137,7 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       primera.codigo,
     );
-    if (!segunda.ok) throw new Error('no creada');
+    if (!segunda.ok) throw new Error(`no creada: ${segunda.motivo}`);
 
     const s = await porCodigo(segunda.codigo);
     expect(Number(s.importe)).toBe(0);
@@ -157,7 +157,7 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       primera.codigo,
     );
-    if (!segunda.ok) throw new Error('no creada');
+    if (!segunda.ok) throw new Error(`no creada: ${segunda.motivo}`);
 
     const s = await porCodigo(segunda.codigo);
     await decidir(s.token_profesor, 'aceptar');
@@ -183,7 +183,7 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       primera.codigo,
     );
-    if (!tercera.ok) throw new Error('no creada');
+    if (!tercera.ok) throw new Error(`no creada: ${tercera.motivo}`);
 
     expect(Number((await porCodigo(tercera.codigo)).importe)).toBe(10);
   });
@@ -200,7 +200,7 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       primera.codigo,
     );
-    if (!segunda.ok) throw new Error('no creada');
+    if (!segunda.ok) throw new Error(`no creada: ${segunda.motivo}`);
 
     expect(Number((await porCodigo(segunda.codigo)).importe)).toBe(10);
   });
@@ -213,7 +213,7 @@ describe('gastar el vale', () => {
       datosDeFamilia({ nivelId }),
       'XXXXX',
     );
-    if (!alta.ok) throw new Error('no creada');
+    if (!alta.ok) throw new Error(`no creada: ${alta.motivo}`);
 
     expect(Number((await porCodigo(alta.codigo)).importe)).toBe(10);
   });

@@ -36,6 +36,19 @@ env:
   # Base de datos de mentira, creada y destruida en cada ejecución.
   BD_PRUEBAS: postgresql://postgres:postgres@localhost:5432/academiavanza_test
 
+  # El secreto con el que se derivan los enlaces del panel del profesor.
+  #
+  # Está escrito aquí a la vista y no en los secretos de GitHub, y es
+  # deliberado: sólo deriva enlaces de una base de datos de usar y tirar que se
+  # destruye al acabar la ejecución. Un secreto de verdad en un fichero del
+  # repositorio sería el problema; éste no abre nada.
+  #
+  # Tiene que estar, aunque su valor dé igual, porque el código se niega a
+  # arrancar sin él antes que generar enlaces a partir de algo por defecto. Sin
+  # esta línea, cualquier prueba que mande un correo al profesor falla con un
+  # «no se ha podido crear» que no explica nada.
+  ACCESO_SECRET: secreto-de-pruebas-que-no-abre-nada-de-produccion-0123456789
+
 jobs:
   calidad:
     name: Estilo y tipos
