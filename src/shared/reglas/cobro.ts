@@ -199,4 +199,34 @@ export const RECORDATORIO_MAS_TEMPRANO = Math.min(
  */
 export const DIAS_PARA_RECLAMAR = 3;
 
+/**
+ * Hasta cuándo se puede pedir el vale.
+ *
+ * El otro extremo del plazo de arriba. Aquél dice cuánto hay que esperar antes
+ * de reclamar; éste, hasta cuándo tiene sentido hacerlo.
+ *
+ * **De dónde sale.** La plataforma no sabe nada de las clases. No hay
+ * calendario, no hay asistencia y el dinero de las clases no pasa por aquí, así
+ * que no existe ningún dato que distinga una familia que dio una clase de otra
+ * que dio treinta. Sin este plazo, alguien que estuvo tres meses con un profesor
+ * y se quedó sin él podía marcar «no acabamos de encajar» y llevarse el
+ * siguiente contacto gratis, y por dentro se vería exactamente igual que quien
+ * lo dejó a la primera semana.
+ *
+ * No hacía falta saber cuántas clases hubo para resolverlo. Basta con mirar
+ * cuánto tiempo ha pasado: quien pagó en junio y reclama en septiembre no está
+ * diciendo «esto no funcionó», está diciendo «funcionó y se acabó». Son dos
+ * cosas distintas y sólo la primera es lo que este vale viene a cubrir.
+ *
+ * **Treinta días y no quince**, porque el caso normal se estira más de lo que
+ * parece. Se acuerda una primera clase para la semana siguiente, se cae por un
+ * examen, se hacen dos de prueba y se decide. Quince días dejarían fuera a
+ * familias que tienen toda la razón, y equivocarse hacia ese lado es peor:
+ * cuesta una familia entera por ahorrar diez euros.
+ *
+ * Se cuenta desde que se pagó, no desde que se envió la solicitud, porque el
+ * profesor pudo tardar en aceptar y ese tiempo no es de la familia.
+ */
+export const DIAS_LIMITE_PARA_RECLAMAR = 30;
+
 export const CADUCADAS_PARA_PAUSAR = 5;

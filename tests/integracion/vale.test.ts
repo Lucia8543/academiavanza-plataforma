@@ -101,6 +101,63 @@ describe('conceder el vale', () => {
     expect((await porCodigo(codigo)).motivo_cierre).toBe('sin-contacto');
   });
 
+  /*
+   * El plazo máximo, que es lo único que separa «no funcionó» de «se acabó».
+   *
+   * La plataforma no sabe cuántas clases hubo, porque no hay calendario ni
+   * asistencia ni pagos de clases: por dentro, una familia que dio una clase y
+   * otra que dio treinta se ven exactamente igual. Sin este límite, quien
+   * estuvo tres meses con un profesor y se quedó sin él podía marcar «no
+   * acabamos de encajar» y llevarse el siguiente contacto gratis.
+   *
+   * Se prueban los dos lados del filo, porque un plazo mal puesto por un día
+   * deja fuera a gente con toda la razón y eso no se ve hasta que alguien se
+   * queja.
+   */
+  it('a los 29 días todavía se puede reclamar', async () => {
+    const { token, codigo } = await unaPagada();
+    await envejecer(codigo, { pagada_en: 29 });
+
+    const r = await pedirVale(token, 'no-funciono', 'horarios');
+
+    expect(r.ok).toBe(true);
+  });
+
+  it('pasado el mes ya no, aunque el motivo sea válido', async () => {
+    const { token, codigo } = await unaPagada();
+    await envejecer(codigo, { pagada_en: 45 });
+
+    const r = await pedirVale(token, 'no-funciono', 'no-encajamos');
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.motivo).toBe('fuera-de-plazo');
+  });
+
+  it('tampoco por «no conseguí hablar», que sería la vía de escape', async () => {
+    // Si el límite sólo mirara un motivo, bastaría con elegir el otro. A los
+    // tres meses, además, «no conseguí hablar con él» ya no es creíble.
+    const { token, codigo } = await unaPagada();
+    await envejecer(codigo, { pagada_en: 90 });
+
+    const r = await pedirVale(token, 'sin-contacto');
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.motivo).toBe('fuera-de-plazo');
+  });
+
+  it('fuera de plazo no deja rastro en la solicitud', async () => {
+    // Un rechazo no puede escribir el motivo de cierre: si lo hiciera, la
+    // solicitud quedaría marcada como cerrada por algo que nunca se concedió.
+    const { token, codigo } = await unaPagada();
+    await envejecer(codigo, { pagada_en: 45 });
+
+    await pedirVale(token, 'no-funciono', 'horarios');
+
+    const s = await porCodigo(codigo);
+    expect(s.vale_concedido).toBe(false);
+    expect(s.motivo_cierre).toBeNull();
+  });
+
   it('no se conceden dos vales sobre la misma solicitud', async () => {
     const { token } = await unaPagada();
     await pedirVale(token, 'no-funciono', 'distancia');

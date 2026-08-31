@@ -25,6 +25,17 @@ const EXPLICACION: Record<string, string> = {
   'no-pagada': 'Todavía no has pagado este contacto, así que no hay nada que devolverte.',
   'demasiado-pronto':
     'Espera tres días desde que pagaste. Muchos profesores tardan un día o dos en llamar, y no queremos darte por perdido antes de tiempo.',
+  /*
+   * El mensaje de fuera de plazo no acusa a nadie, y es deliberado.
+   *
+   * Quien lo lea puede ser perfectamente una familia que estuvo dos meses con
+   * un profesor y ahora se ha quedado sin él, que es una situación fastidiosa y
+   * no una trampa. Lo que ha pasado es que el contacto sí funcionó, y este vale
+   * cubre otra cosa. Decirlo así, y darle a la vez la salida de escribirnos,
+   * cuesta lo mismo que decirlo seco.
+   */
+  'fuera-de-plazo':
+    'El contacto gratis se puede pedir durante el primer mes desde el pago, y en éste ya ha pasado ese plazo. Si tu caso tiene algo especial, cuéntanoslo en info@academiavanza.es y lo vemos contigo.',
   'ya-lo-tiene': 'Ya tienes un contacto gratis pendiente de usar.',
   'falta-motivo': 'Marca antes qué es lo que no ha encajado.',
 };

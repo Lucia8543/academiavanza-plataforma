@@ -6,6 +6,7 @@ import { avisar } from '@/backend/services/avisos';
 import { enviar } from '@/backend/services/correo';
 import { puedeEscribir } from '@/backend/services/limites';
 import {
+  DIAS_LIMITE_PARA_RECLAMAR,
   DIAS_PARA_RECLAMAR,
   plazoDe,
   seAbreSinPagar,
@@ -716,7 +717,7 @@ export async function registrarDevolucion(
  * aquí porque media aplicación lo importaba de este fichero. Reexportarlo evita
  * tocar diez sitios para mover una constante.
  */
-export { DIAS_PARA_RECLAMAR };
+export { DIAS_LIMITE_PARA_RECLAMAR, DIAS_PARA_RECLAMAR };
 
 /** Vales que ha provocado un profesor antes de que su ficha se pause sola. */
 const VALES_PARA_PAUSAR = 2;
@@ -750,6 +751,7 @@ export type ResultadoVale =
         | 'no-existe'
         | 'no-pagada'
         | 'demasiado-pronto'
+        | 'fuera-de-plazo'
         | 'ya-lo-tiene'
         | 'falta-motivo';
     };
@@ -858,6 +860,20 @@ export async function pedirVale(
   // dice que no funcionó no tiene por qué esperar a nada.
   if (motivo === 'sin-contacto' && dias < DIAS_PARA_RECLAMAR) {
     return { ok: false, motivo: 'demasiado-pronto' };
+  }
+
+  /*
+   * Y el otro extremo: pasados treinta días ya no se reclama.
+   *
+   * Es lo único que separa «esto no funcionó» de «funcionó y se acabó», porque
+   * la plataforma no sabe cuántas clases hubo ni puede saberlo. El razonamiento
+   * completo está junto a la constante, en `reglas/cobro.ts`.
+   *
+   * Se comprueba aquí y no sólo en la pantalla porque la pantalla se puede
+   * saltar: quien tenga el enlace puede llamar a esta acción directamente.
+   */
+  if (dias > DIAS_LIMITE_PARA_RECLAMAR) {
+    return { ok: false, motivo: 'fuera-de-plazo' };
   }
 
   const caduca = caducidadDelVale();

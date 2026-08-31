@@ -3,7 +3,10 @@ import {
   otrasDeLaMismaFamilia,
   porTokenFamilia,
 } from '@/backend/repositories/solicitudes';
-import { DIAS_PARA_RECLAMAR } from '@/backend/services/solicitud';
+import {
+  DIAS_LIMITE_PARA_RECLAMAR,
+  DIAS_PARA_RECLAMAR,
+} from '@/backend/services/solicitud';
 import { hePagado } from '@/app/solicitud/[token]/acciones';
 import { CorreoFamilia } from '@/frontend/features/directorio/correo-familia';
 import { Dejarlo } from '@/frontend/features/directorio/dejarlo';
@@ -405,6 +408,46 @@ export default async function PaginaSolicitud({
                 >
                   Buscar otro profesor
                 </a>
+              </div>
+            ) : (s.diasDesdePago ?? 0) > DIAS_LIMITE_PARA_RECLAMAR ? (
+              /*
+                Pasado el mes, el formulario desaparece en vez de quedarse ahí
+                para rechazar a quien lo rellene.
+
+                Un botón que se puede pulsar es una promesa. Dejarlo puesto para
+                contestar «fuera de plazo» después de que alguien haya elegido
+                un motivo es peor que no ofrecerlo, porque le hace contar su
+                problema para nada.
+
+                Y se explica por qué, sin acusar de nada: quien lea esto puede
+                ser perfectamente una familia que estuvo dos meses con un
+                profesor y se ha quedado sin él, que es un fastidio y no una
+                trampa.
+              */
+              <div className="mt-4 rounded-xl border border-gris-borde bg-gris-claro p-4 text-sm leading-relaxed text-gris-medio">
+                <p>
+                  El contacto gratis está pensado para los primeros días después
+                  de pagar, por si la cosa no llega a arrancar. En éste ya ha
+                  pasado más de un mes, así que ese plazo se ha cerrado.
+                </p>
+                <p className="mt-2">
+                  Si necesitas otro profesor,{' '}
+                  <a
+                    href="/profesores"
+                    className="text-carbon underline underline-offset-4"
+                  >
+                    en el directorio está todo el equipo
+                  </a>{' '}
+                  y puedes escribir a quien mejor os encaje. Y si tu caso tiene
+                  algo especial, cuéntanoslo en{' '}
+                  <a
+                    href="mailto:info@academiavanza.es"
+                    className="text-carbon underline underline-offset-4"
+                  >
+                    info@academiavanza.es
+                  </a>{' '}
+                  y lo vemos contigo.
+                </p>
               </div>
             ) : (
               <ReclamarVale

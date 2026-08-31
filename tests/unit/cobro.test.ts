@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DIAS_LIMITE_PARA_RECLAMAR,
+  DIAS_PARA_RECLAMAR,
   PLAZOS_DE_CIERRE,
   precioAplicable,
   seAbreSinPagar,
@@ -116,5 +118,32 @@ describe('los plazos que cierran una solicitud aceptada', () => {
       expect(dias, nombre).toBeGreaterThan(0);
       expect(dias, nombre).toBeLessThanOrEqual(90);
     }
+  });
+});
+
+describe('la ventana para pedir el contacto gratis', () => {
+  /*
+   * Son dos números que se leen por separado y sólo tienen sentido juntos. Uno
+   * dice cuánto hay que esperar antes de reclamar y el otro hasta cuándo se
+   * puede, así que si alguien tocara cualquiera de los dos sin mirar el otro
+   * podría dejar una ventana vacía: un vale que no se puede pedir nunca, sin
+   * ningún error por ningún sitio.
+   */
+  it('se puede reclamar en algún momento', () => {
+    expect(DIAS_LIMITE_PARA_RECLAMAR).toBeGreaterThan(DIAS_PARA_RECLAMAR);
+  });
+
+  it('la ventana es lo bastante ancha para una familia de verdad', () => {
+    // Dos semanas es el mínimo razonable: una primera clase que se retrasa, un
+    // par de clases de prueba y una decisión. Por debajo de eso, el plazo
+    // dejaría fuera a gente que tiene toda la razón.
+    expect(DIAS_LIMITE_PARA_RECLAMAR - DIAS_PARA_RECLAMAR).toBeGreaterThanOrEqual(14);
+  });
+
+  it('y no tan ancha que deje de distinguir lo que distingue', () => {
+    // Si el límite se acercara a los 90 días de caducidad de la solicitud,
+    // volvería a colar el caso que vino a resolver: tres meses de clases y
+    // luego «no acabamos de encajar».
+    expect(DIAS_LIMITE_PARA_RECLAMAR).toBeLessThan(60);
   });
 });
