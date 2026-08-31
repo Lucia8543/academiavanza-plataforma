@@ -123,7 +123,12 @@ export const esquemaRegistroProfesor = z
 
     // --- Consentimiento ------------------------------------------------------
     /**
-     * Declara tener catorce años cumplidos.
+     * Declara tener catorce años o más.
+     *
+     * La casilla dice «14 años o más» y no «mayor de 14 años» a propósito. Lo
+     * segundo, en sentido estricto, deja fuera a quien tiene catorce, que es la
+     * edad exacta donde está la frontera. Aquí la precisión no es puntillosa,
+     * es lo único que hay.
      *
      * La política de privacidad lo exige desde que se reescribió el apartado de
      * menores, y se apoya en el artículo 7 de la LOPDGDD, que es la edad a

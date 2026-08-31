@@ -873,9 +873,18 @@ export function FormularioRegistro({
             checked={v.declaraEdadMinima}
             onChange={(e) => cambiar('declaraEdadMinima', e.target.checked)}
           />
+          {/*
+            «14 años o más» y no «mayor de 14 años», aunque suene peor.
+
+            Lo segundo, leído en sentido estricto, deja fuera precisamente a
+            quien tiene catorce, que es la edad exacta en la que la ley empieza
+            a permitir decidir sobre los propios datos. Es la frontera entera de
+            esta casilla, así que la frase tiene que incluirla sin margen de
+            duda.
+          */}
           <span>
-            Tengo <strong>14 años cumplidos</strong>. Si tengo entre 14 y 18, mi
-            madre, mi padre o mi tutor saben que publico esta ficha.
+            Tengo <strong>14 años o más</strong>. Si todavía no he cumplido los
+            18, mi madre, mi padre o mi tutor saben que publico esta ficha.
           </span>
         </label>
         <Aviso mensaje={errores.declaraEdadMinima} />
