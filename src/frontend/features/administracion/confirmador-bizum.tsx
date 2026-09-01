@@ -6,6 +6,7 @@ import {
   confirmar,
   type EstadoCobro,
 } from '@/app/admin/cobros/acciones';
+import { euros } from '@/shared/textos/precios';
 
 /**
  * Donde Lucía convierte un Bizum recibido en dos teléfonos abiertos.
@@ -18,11 +19,6 @@ import {
  */
 
 const INICIAL: EstadoCobro = { paso: 'inicio' };
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 export function ConfirmadorBizum() {
   const [buscado, buscar, buscando] = useActionState(comprobarCodigo, INICIAL);

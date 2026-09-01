@@ -10,7 +10,7 @@ import {
 } from '@/shared/reglas/cobro';
 import { BARRIOS, GRUPOS_DE_ZONAS } from '@/shared/datos/zonas';
 import { EXPLICACION_PRESENCIAL } from '@/shared/textos/modalidad';
-import { porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
+import { euros, porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 import { sugerirCorreo } from '@/shared/schemas/correo-erratas';
 import {
   detectarDatosSensibles,
@@ -66,11 +66,6 @@ const VACIO: Valores = {
   mensaje: '',
   vale: '',
 };
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 export function FormularioContacto({
   slug,

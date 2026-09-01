@@ -10,6 +10,7 @@ import {
 } from '@/frontend/features/guia/piezas';
 import { DIAS_PARA_RECLAMAR } from '@/backend/services/solicitud';
 import { PLAZOS } from '@/shared/reglas/cobro';
+import { euros } from '@/shared/textos/precios';
 
 /**
  * Cómo funciona esto, para una familia.
@@ -30,11 +31,6 @@ export const metadata = {
   description:
     'Buscar profesor, escribirle y qué pasa con el dinero. Paso a paso.',
 };
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 export default async function GuiaFamilia() {
   const precio = await precioVigente();
@@ -183,7 +179,8 @@ export default async function GuiaFamilia() {
           </p>
           <Ojo>
             <strong>
-              ¿Y si no te escribe en {DIAS_PARA_RECLAMAR} días?
+              ¿Y si pasan {DIAS_PARA_RECLAMAR} días desde que pagas y no te
+              escribe?
             </strong>{' '}
             Entras en tu página y te damos otro contacto sin volver a pagar.
             Eliges tú a quién. No tienes que dar explicaciones ni discutir con

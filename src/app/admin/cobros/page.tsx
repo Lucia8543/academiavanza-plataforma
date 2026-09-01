@@ -19,14 +19,10 @@ import {
   esMotivoCierre,
   PARA_EL_PROFESOR,
 } from '@/shared/textos/motivos-cierre';
+import { euros } from '@/shared/textos/precios';
 
 export const metadata = { title: 'Cobros · AcademiAvanza' };
 export const dynamic = 'force-dynamic';
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 /** «hace 3 h», «hace 2 días». Recibe las horas ya contadas, no mira el reloj. */
 function haceCuanto(horas: number): string {

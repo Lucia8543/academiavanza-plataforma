@@ -13,7 +13,7 @@ import { Dejarlo } from '@/frontend/features/directorio/dejarlo';
 import { GuardarEnlace } from '@/frontend/features/directorio/guardar-enlace';
 import { ReclamarVale } from '@/frontend/features/directorio/reclamar-vale';
 import { formatearTelefono } from '@/shared/schemas/telefono';
-import { porHora } from '@/shared/textos/precios';
+import { euros, porHora } from '@/shared/textos/precios';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,11 +37,6 @@ const ETIQUETA: Record<string, { texto: string; clase: string }> = {
   rechazada: { texto: 'no pudo', clase: 'bg-gris-claro text-gris-medio' },
   caducada: { texto: 'sin respuesta', clase: 'bg-gris-claro text-gris-medio' },
 };
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 function Paso({
   numero,
@@ -384,7 +379,8 @@ export default async function PaginaSolicitud({
                 hace no es esperar: es arrepentirse de haber pagado. */}
             <p className="mt-4 rounded-lg border-l-4 border-aviso bg-gris-claro px-4 py-3 text-sm leading-relaxed text-carbon">
               <strong>
-                ¿Y si no te escribe en {DIAS_PARA_RECLAMAR} días?
+                ¿Y si pasan {DIAS_PARA_RECLAMAR} días desde el pago y no te
+                escribe?
               </strong>{' '}
               Pídenos otro contacto aquí abajo y no vuelves a pagar. Eliges tú a
               quién.

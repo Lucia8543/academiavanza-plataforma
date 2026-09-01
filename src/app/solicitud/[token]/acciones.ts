@@ -9,6 +9,7 @@ import {
   type MotivoVale,
 } from '@/backend/services/solicitud';
 import { esMotivoCierre } from '@/shared/textos/motivos-cierre';
+import { DIAS_PARA_RECLAMAR } from '@/shared/reglas/cobro';
 
 /**
  * La familia reclama su contacto gratis.
@@ -23,8 +24,12 @@ export type EstadoVale = { ok?: boolean; error?: string };
 const EXPLICACION: Record<string, string> = {
   'no-existe': 'No encontramos tu solicitud.',
   'no-pagada': 'Todavía no has pagado este contacto, así que no hay nada que devolverte.',
-  'demasiado-pronto':
-    'Espera tres días desde que pagaste. Muchos profesores tardan un día o dos en llamar, y no queremos darte por perdido antes de tiempo.',
+  /*
+   * El número no se escribe a mano. Estaba puesto como «tres» en letra, y
+   * cambiar `DIAS_PARA_RECLAMAR` desde su fichero habría dejado esta frase
+   * prometiendo otra cosa sin que fallara ninguna prueba.
+   */
+  'demasiado-pronto': `Espera ${DIAS_PARA_RECLAMAR} días desde que pagaste. Muchos profesores tardan un día o dos en llamar, y no queremos darte por perdido antes de tiempo.`,
   /*
    * El mensaje de fuera de plazo no acusa a nadie, y es deliberado.
    *

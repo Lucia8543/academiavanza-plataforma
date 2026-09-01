@@ -128,12 +128,23 @@ export function TarjetaProfesor({ f }: { f: ProfesorPublico }) {
         </div>
       </dl>
 
+      {/*
+        El botón dice lo que va a pasar, y con el cupo lleno no va a pasar lo
+        mismo: quien entra no se va a poder poner en contacto. Prometerlo en la
+        etiqueta y encontrarse el formulario cerrado dentro es el tipo de
+        pequeña mentira que gasta la confianza de una web entera.
+
+        Lo que no se hace es deshabilitarlo. La ficha sigue mereciendo la pena
+        —dice quién es, de qué colegio viene y qué da—, y un botón muerto
+        contradice la razón por la que estas fichas se enseñan apagadas en vez
+        de esconderse.
+      */}
       <div className="mt-5">
         <a
           href={`/profesor/${f.slug}`}
           className="inline-block rounded-lg bg-verde-avanza px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-verde-avanza-oscuro"
         >
-          Ver ficha y escribirle
+          {completo ? 'Ver ficha' : 'Ver ficha y escribirle'}
         </a>
       </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { cargarCatalogos } from '@/backend/repositories/catalogos';
 import { precioVigente } from '@/backend/repositories/tarifas';
 import { FormularioRegistro } from '@/frontend/features/portal-profesor/formulario-registro';
+import { euros } from '@/shared/textos/precios';
 
 export const metadata: Metadata = {
   title: 'Da clases con AcademiAvanza',
@@ -31,10 +32,7 @@ export default async function PaginaRegistro() {
     <main className="mx-auto max-w-3xl px-6 py-12">
       <FormularioRegistro
         catalogos={catalogos}
-        precioTexto={new Intl.NumberFormat('es-ES', {
-          style: 'currency',
-          currency: 'EUR',
-        }).format(precio)}
+        precioTexto={euros(precio)}
       />
     </main>
   );

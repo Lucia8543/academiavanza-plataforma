@@ -7,13 +7,10 @@ import { precioVigente } from '@/backend/repositories/tarifas';
 import { GUIAS_DE_CLASE } from '@/shared/datos/guias-de-clase';
 import { HISTORICO, NOTA_HISTORICO } from '@/shared/datos/historico';
 import { DIAS_PARA_RECLAMAR } from '@/backend/services/solicitud';
+import { PLAZOS } from '@/shared/reglas/cobro';
+import { euros } from '@/shared/textos/precios';
 
 export const dynamic = 'force-dynamic';
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 const miles = (n: number) => new Intl.NumberFormat('es-ES').format(n);
 
@@ -350,11 +347,19 @@ export default async function Portada() {
       <section className="mt-16 border-t border-gris-borde pt-10">
         <h2 className="text-xl font-bold text-azul-confianza">Cómo funciona</h2>
 
+        {/* Aquí conviven dos relojes distintos, y hasta ahora ninguno de los dos
+            decía de quién era. Uno es el que tiene el profesor para contestar a
+            la propuesta —lo elige la familia según la prisa que tenga— y el otro
+            es el que espera la familia, ya con el contacto pagado, a que él la
+            llame. Puestos uno debajo del otro y a secas, «cinco días» y «tres
+            días» se leen como una contradicción; con el sujeto delante se leen
+            como lo que son, dos momentos seguidos. Lo cazó el padre de Lucía
+            leyendo la web por primera vez, que es exactamente el público. */}
         <ol className="mt-6 space-y-6">
           <Paso
             numero={1}
             titulo="Escribes al profesor que te encaje"
-            texto="Le contamos el curso, lo que necesitas y para cuándo lo necesitas, sin darle todavía ningún dato tuyo. Si corre prisa, le damos cinco días para contestar."
+            texto={`Le contamos el curso, lo que necesitas y para cuándo lo necesitas, sin darle todavía ningún dato tuyo. Tú decides cuánto puedes esperar: si te corre prisa, él tiene ${PLAZOS.ya.dias} días para contestarte.`}
           />
           <Paso
             numero={2}
@@ -369,7 +374,7 @@ export default async function Portada() {
           <Paso
             numero={4}
             titulo="Él te escribe"
-            texto={`Le damos tu teléfono y te escribe o te llama él, porque por protección de datos no facilitamos el teléfono de nuestros profesores. Si en ${DIAS_PARA_RECLAMAR} días no te ha escrito, te damos otro contacto sin volver a pagar.`}
+            texto={`Le damos tu teléfono y te escribe o te llama él, porque por protección de datos no facilitamos el teléfono de nuestros profesores. Si pasan ${DIAS_PARA_RECLAMAR} días desde que pagas y no te ha escrito, te damos otro contacto sin volver a pagar.`}
           />
         </ol>
 

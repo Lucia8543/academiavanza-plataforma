@@ -308,6 +308,11 @@ export async function nivelesDe(profesorId: string) {
     .map((n) => ({
       id: n.id,
       nombre: n.nombre,
+      // El orden del catálogo entero, no la posición en esta lista. La ficha lo
+      // usa para saber si dos cursos son realmente seguidos: quien da 1.º y 4.º
+      // de Primaria no da «de 1.º a 4.º», y sin este número no hay forma de
+      // distinguirlo.
+      orden: n.orden_visual,
       // Orientativo: lo que se ha venido cobrando. Null cuando no hay
       // referencia, como en universidad, donde poner un número sería
       // inventárselo.

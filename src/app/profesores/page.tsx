@@ -6,12 +6,8 @@ import {
 import { precioVigente } from '@/backend/repositories/tarifas';
 import { Filtrado } from '@/frontend/features/directorio/filtros';
 import { TarjetaProfesor } from '@/frontend/features/directorio/tarjeta-profesor';
+import { euros, PRECIO_EXPLICACION } from '@/shared/textos/precios';
 import type { Filtros } from '@/shared/types/directorio';
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 export const metadata = {
   title: 'Profesores · AcademiAvanza',
@@ -67,6 +63,15 @@ export default async function PaginaProfesores({
           Escribir es gratis. Solo pagas {euros(precio)} si el profesor acepta
           darte clase, y entonces le damos tu teléfono para que te escriba. Lo que
           cueste la clase lo acordáis vosotros.
+        </p>
+
+        {/* La explicación de los precios de referencia, aquí y sólo aquí.
+            Antes se repetía dentro de cada una de las cuarenta y seis fichas,
+            palabra por palabra, ocupando el sitio de lo que sí distingue a un
+            profesor de otro. En la ficha queda ahora la frase corta junto a los
+            números, que es lo único que tiene que viajar pegado a ellos. */}
+        <p className="mt-3 max-w-2xl text-sm text-gris-medio">
+          {PRECIO_EXPLICACION}
         </p>
       </header>
 

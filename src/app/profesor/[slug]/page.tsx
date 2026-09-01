@@ -18,7 +18,11 @@ import {
   comoDaClase,
   EXPLICACION_PRESENCIAL,
 } from '@/shared/textos/modalidad';
-import { porHora, PRECIO_EXPLICACION } from '@/shared/textos/precios';
+import {
+  agruparPorPrecio,
+  porHora,
+  PRECIO_ES_ORIENTATIVO,
+} from '@/shared/textos/precios';
 
 export const dynamic = 'force-dynamic';
 
@@ -269,22 +273,31 @@ export default async function PaginaProfesor({
         {/* Los cursos con su precio de referencia al lado.
             Es el hueco más caro que quedaba: una familia pagaba el contacto,
             llamaba, y descubría una tarifa que no podía permitirse. Ahora lo
-            sabe antes de escribir. */}
+            sabe antes de escribir.
+
+            Van agrupados por tramos de precio, no curso a curso: seis líneas
+            seguidas repitiendo «15 €/h» hacen parecer complicado algo que no lo
+            es. Y la explicación larga de qué son estos precios ya no está aquí,
+            porque era idéntica en las cuarenta y seis fichas y no dice nada del
+            profesor; vive una sola vez en el directorio. Aquí queda la frase
+            corta, que sí tiene que ir pegada a los números. */}
         <Bloque titulo="Cursos y precio de referencia">
           <ul className="divide-y divide-gris-borde">
-            {niveles.map((n) => (
+            {agruparPorPrecio(niveles).map((t) => (
               <li
-                key={n.id}
+                key={t.clave}
                 className="flex items-baseline justify-between gap-3 py-2"
               >
-                <span className="text-carbon">{n.nombre}</span>
+                <span className="text-carbon">{t.etiqueta}</span>
                 <span className="font-semibold text-carbon">
-                  {n.precio === null ? 'A convenir' : porHora(n.precio)}
+                  {t.precio === null ? 'A convenir' : porHora(t.precio)}
                 </span>
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-sm text-gris-medio">{PRECIO_EXPLICACION}</p>
+          <p className="mt-3 text-sm text-gris-medio">
+            {PRECIO_ES_ORIENTATIVO}
+          </p>
         </Bloque>
 
         <Bloque titulo="Cómo da clase">

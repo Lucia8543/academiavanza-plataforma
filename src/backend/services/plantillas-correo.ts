@@ -3,6 +3,7 @@ import {
   CADUCADAS_PARA_PAUSAR,
   DIAS_PARA_RECLAMAR,
 } from '@/shared/reglas/cobro';
+import { euros } from '@/shared/textos/precios';
 
 /**
  * Los correos que manda la plataforma.
@@ -1050,13 +1051,6 @@ export function correoDevolucion(datos: {
     html,
     responderA: 'info@academiavanza.es',
   };
-}
-
-function euros(n: number): string {
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(n);
 }
 
 // -----------------------------------------------------------------------------

@@ -13,6 +13,7 @@ import {
   DIAS_PARA_RECLAMAR,
   PLAZOS,
 } from '@/shared/reglas/cobro';
+import { euros } from '@/shared/textos/precios';
 
 /**
  * Cómo funciona esto, para un profesor.
@@ -39,11 +40,6 @@ export const metadata = {
   description:
     'Publicar tu ficha, recibir propuestas de familias y aceptarlas. Paso a paso.',
 };
-
-const euros = (n: number) =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-    n,
-  );
 
 export default async function GuiaProfesor() {
   const precio = await precioVigente();
