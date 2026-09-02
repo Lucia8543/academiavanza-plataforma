@@ -285,6 +285,27 @@ export function FormularioRegistro({
             dentro va tu enlace para editarla. Puede tardar unos minutos; si
             pasado un rato no lo ves, mira en la carpeta de spam.
           </p>
+
+          {/*
+            El correo es el acuse de recibo de verdad, y hay que decirlo aquí.
+
+            Esta pantalla la pinta el navegador, así que también sale cuando el
+            envío se ha quedado a medias por nuestra parte: si desplegamos una
+            versión nueva mientras alguien rellena el formulario, la petición
+            apunta a algo que ya no existe y la ficha no se guarda. Pasó, y la
+            profesora se enteró semanas después de que su ficha nunca había
+            existido.
+
+            El correo no puede mentir: si sale, la ficha está escrita. Por eso
+            se le da un plazo concreto y una salida concreta, en vez de dejarle
+            un «recibida» que no siempre es cierto.
+          */}
+          <p className="mx-auto mt-4 max-w-md border-t border-verde-avanza pt-4 text-sm font-medium text-verde-avanza-oscuro">
+            Si en cinco minutos no ha llegado nada, ni a tu bandeja ni al spam,
+            es que se ha quedado a medias por nuestra parte. Vuelve a
+            rellenarla sin miedo: si resulta que sí había entrado, te lo
+            diremos al enviar y no se duplica nada.
+          </p>
         </div>
 
         {/* Lo primero que va a pasarle de verdad, dicho antes de que pase. Un
