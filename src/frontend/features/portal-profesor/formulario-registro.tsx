@@ -221,6 +221,17 @@ export function FormularioRegistro({
    * del servidor, así que también se sube si el segundo intento falla por otra
    * cosa.
    */
+  /*
+   * El instante en que esta persona abrió el formulario, vivo aquí fuera.
+   *
+   * El `<form>` de abajo cambia de `key` con cada respuesta y se vuelve a
+   * montar entero, así que nada de lo que viva dentro sobrevive: el reloj
+   * antibots incluido. Aquí arriba no se desmonta nada, y el reloj mide lo que
+   * tiene que medir, que es cuánto lleva ella con esta página abierta, no
+   * cuánto lleva el formulario repintado.
+   */
+  const [abiertoEn] = useState(() => Date.now());
+
   const avisoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -357,7 +368,7 @@ export function FormularioRegistro({
       className="relative space-y-8"
       noValidate
     >
-      <CamposTrampa />
+      <CamposTrampa inicio={abiertoEn} />
 
       {/* El encabezado vive dentro del formulario para que desaparezca cuando
           la ficha ya se ha enviado. Un texto que invita a rellenar algo que ya

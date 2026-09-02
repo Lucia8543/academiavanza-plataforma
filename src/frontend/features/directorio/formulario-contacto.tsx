@@ -107,6 +107,17 @@ export function FormularioContacto({
   const [respuestaVista, setRespuestaVista] = useState(estado);
   const [intento, setIntento] = useState(0);
 
+  /*
+   * El instante en que esta familia abrió el formulario, fuera del `<form>`.
+   *
+   * Mismo motivo que en el alta del profesor: el formulario se vuelve a montar
+   * con cada respuesta, y el reloj antibots que vive dentro volvía a cero. Una
+   * madre a la que le faltaba un campo, lo corregía y reenviaba deprisa,
+   * quedaba marcada como guion automático. En los registros hay tres
+   * solicitudes de familias descartadas así, cuando eso todavía descartaba.
+   */
+  const [abiertoEn] = useState(() => Date.now());
+
   if (respuestaVista !== estado) {
     setRespuestaVista(estado);
     setIntento((n) => n + 1);
@@ -140,7 +151,7 @@ export function FormularioContacto({
       className="relative rounded-xl border border-gris-borde bg-white p-6"
       noValidate
     >
-      <CamposTrampa />
+      <CamposTrampa inicio={abiertoEn} />
       <input type="hidden" name="slug" value={slug} />
 
       <h3 className="text-lg font-bold text-azul-confianza">

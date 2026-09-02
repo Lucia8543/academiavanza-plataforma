@@ -23,11 +23,31 @@ import { CAMPO_INICIO, CAMPO_TRAMPA } from '@/shared/schemas/trampa-bots';
  * `off` a secas lo ignoran casi todos los navegadores; `new-password` es el
  * único valor que respetan de verdad para no ofrecer nada guardado.
  */
-export function CamposTrampa() {
-  // El momento en que se montó el formulario. Se fija una sola vez: si se
-  // recalculara en cada pintado, el reloj se reiniciaría al escribir y el
-  // formulario parecería siempre recién abierto.
-  const [inicio] = useState(() => Date.now());
+export function CamposTrampa({ inicio: dado }: { inicio?: number } = {}) {
+  /*
+   * El momento en que se abrió el formulario.
+   *
+   * Se fija una sola vez: si se recalculara en cada pintado, el reloj se
+   * reiniciaría al escribir y el formulario parecería siempre recién abierto.
+   *
+   * **Y por eso admite que se lo den desde fuera.** Los formularios largos se
+   * vuelven a montar enteros tras cada respuesta del servidor —cambian su
+   * `key` para no perder las casillas marcadas—, y al montarse otra vez este
+   * componente volvía a poner el reloj a cero. El resultado era que quien
+   * enviaba, recibía un aviso de que le faltaba un campo, lo corregía y volvía
+   * a enviar en dos segundos, salía marcado como envío automático. Una persona
+   * que llevaba diez minutos rellenando.
+   *
+   * Y durante un tiempo eso no era una etiqueta, era la papelera: al detector
+   * le bastaba para descartar el alta enseñando «Ficha recibida». En los
+   * registros del servidor hay once altas y tres solicitudes de familias que se
+   * fueron así.
+   *
+   * Quien tenga ese remontaje pasa el instante desde fuera, donde vive lo que
+   * no se desmonta. Quien no lo tenga, no pasa nada y funciona como siempre.
+   */
+  const [propio] = useState(() => Date.now());
+  const inicio = dado ?? propio;
 
   return (
     <>
