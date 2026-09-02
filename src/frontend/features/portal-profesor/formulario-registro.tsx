@@ -48,6 +48,7 @@ type Valores = {
   modalidad: string;
   zona: string;
   disponibilidad: string[];
+  notaDisponibilidad: string;
   cupo: Cupo;
   puntosFuertes: string;
   declaraEdadMinima: boolean;
@@ -73,6 +74,7 @@ const VACIO: Valores = {
   modalidad: 'online',
   zona: '',
   disponibilidad: [],
+  notaDisponibilidad: '',
   cupo: 'busca',
   puntosFuertes: '',
   declaraEdadMinima: false,
@@ -112,6 +114,7 @@ function desdeRespuesta(
     modalidad: t('modalidad') || 'online',
     zona: t('zona'),
     disponibilidad: l('disponibilidad'),
+    notaDisponibilidad: t('notaDisponibilidad'),
     cupo: normalizarCupo(t('cupo')),
     puntosFuertes: t('puntosFuertes'),
     declaraEdadMinima: t('declaraEdadMinima') === 'on',
@@ -217,6 +220,7 @@ export function FormularioRegistro({
     asignaturas: 'Asignaturas',
     niveles: 'Cursos',
     zona: 'Zona',
+    notaDisponibilidad: 'Cambios de horario',
     puntosFuertes: 'Algo que te distinga',
     aceptaPublicacion: 'Autorización para publicar',
   };
@@ -753,6 +757,39 @@ export function FormularioRegistro({
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/*
+          La rejilla va por franjas de varias horas. Quien dentro de «tarde»
+          sólo puede un rato concreto, o quien sabe que en octubre le cambia
+          todo, necesita una línea para decirlo. Sin ella lo descubre la
+          familia a mitad de conversación.
+        */}
+        <div className="mt-4">
+          <label className={claseEtiqueta} htmlFor="notaDisponibilidad">
+            ¿Tu horario cambia durante el curso? (opcional)
+          </label>
+          <input
+            id="notaDisponibilidad"
+            name="notaDisponibilidad"
+            type="text"
+            maxLength={120}
+            className={claseCampo}
+            placeholder="Desde octubre sólo de 17:30 a 19:00"
+            value={v.notaDisponibilidad}
+            onChange={(e) => cambiar('notaDisponibilidad', e.target.value)}
+          />
+          <p className="mt-1 text-sm text-gris-medio">
+            Por ejemplo: «en septiembre puedo a cualquier hora, pero desde
+            octubre empiezo prácticas y solo puedo de 17:30 a 19:00». También
+            sirve si dentro de una franja solo puedes un rato concreto. Se ve en
+            tu ficha, debajo del horario. No pongas aquí tu teléfono ni tu
+            correo.
+          </p>
+          <p className="mt-1 text-right text-sm text-gris-medio">
+            {v.notaDisponibilidad.length}/120
+          </p>
+          <Aviso mensaje={errores.notaDisponibilidad} />
         </div>
       </Seccion>
 

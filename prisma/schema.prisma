@@ -157,6 +157,7 @@ model profesores {
   zona_otra                    String?
   estado                       estado_profesor            @default(pendiente)
   disponible                   Boolean                    @default(true)
+  nota_disponibilidad          String?
   disponibilidad_confirmada_en DateTime                   @default(now()) @db.Timestamptz(6)
   ultimo_recordatorio_en       DateTime?                  @db.Timestamptz(6)
   enlace_reenviado_en          DateTime?                  @db.Timestamptz(6)

@@ -33,61 +33,6 @@ function haceCuanto(horas: number): string {
   return `hace ${dias} día${dias === 1 ? '' : 's'}`;
 }
 
-/**
- * El mensaje que se manda por WhatsApp.
- *
- * Está escrito para alguien que abre el móvil en la cola del súper. Dice quién
- * escribe, qué quiere y qué tiene que hacer, en ese orden y en cuatro líneas.
- * El enlace va al final: un mensaje que empieza por un enlace parece una
- * estafa, y se borra sin leer.
- *
- * Va en primera persona del plural, como el resto de los textos, para que suene
- * a la plataforma y no a un mensaje personal de Lucía. Es lo que hace que el
- * profesor entienda que esto es un servicio y no un favor entre conocidos.
- */
-function mensajeWhatsApp(datos: {
-  nombre: string;
-  nivel: string | null;
-  enlace: string;
-}): string {
-  return [
-    `Hola ${datos.nombre}, somos AcademiAvanza.`,
-    '',
-    `Una familia ha visto tu ficha y quiere clases${datos.nivel ? ` de ${datos.nivel}` : ''} contigo.`,
-    '',
-    'Aquí puedes ver lo que pide y decirnos si puedes cogerla o no. Si dices que sí, la familia paga el contacto y te damos su teléfono para que le escribas tú. Si no puedes, no pasa nada y nadie paga nada.',
-    '',
-    datos.enlace,
-  ].join('\n');
-}
-
-/**
- * El WhatsApp a la familia cuando el correo no ha servido.
- *
- * Se le manda el enlace de su propia página, no el código suelto: ahí tiene las
- * instrucciones del Bizum y el botón para decir que lo deja.
- */
-function enlaceWhatsAppFamilia(
-  s: {
-    nombre_familia: string;
-    telefono_familia: string | null;
-    token_familia: string;
-  },
-  base: string,
-): string {
-  const texto = [
-    `Hola ${s.nombre_familia}, somos AcademiAvanza.`,
-    '',
-    'El profesor al que escribiste ha dicho que sí y está esperando. Aquí tienes lo que falta para que pueda escribirte, y también un botón por si al final no te hace falta.',
-    '',
-    'Cuando confirmemos el pago le damos tu teléfono y te escribe él. El suyo no te lo damos: es él quien decide si te lo da cuando habléis.',
-    '',
-    `${base}/solicitud/${s.token_familia}`,
-  ].join('\n');
-
-  return `https://wa.me/34${(s.telefono_familia ?? '').replace(/\D/g, '')}?text=${encodeURIComponent(texto)}`;
-}
-
 const ETIQUETA: Record<string, { texto: string; clase: string }> = {
   pendiente_profesor: {
     texto: 'esperando al profesor',
@@ -225,7 +170,7 @@ export default async function PaginaCobros() {
           </p>
           <p className="mt-1">
             El correo está apagado, así que el aviso no ha salido. Cópiale el
-            enlace de abajo y mándaselo tú por WhatsApp.
+            enlace de abajo y mándaselo tú.
           </p>
         </div>
       )}
@@ -320,50 +265,40 @@ export default async function PaginaCobros() {
                             : 'No hemos podido avisarle. Dale un toque tú:'}
                         </p>
 
-                        {/* Un solo botón. Abre WhatsApp con el mensaje escrito
-                            y sólo hay que darle a enviar. No es automático
-                            —para eso haría falta la API de Meta, que exige
-                            verificar empresa y se lleva por delante el número—
-                            pero es un toque y el profesor recibe algo con
-                            sentido en vez de un enlace suelto. */}
-                        <a
-                          href={`https://wa.me/34${(s.profesores.telefono ?? '').replace(/\D/g, '')}?text=${encodeURIComponent(
-                            mensajeWhatsApp({
-                              nombre: s.profesores.nombre,
-                              nivel: s.niveles?.nombre ?? null,
-                              enlace: `${base}/aceptar/${s.token_profesor}`,
-                            }),
-                          )}`}
-                          target="_blank"
-                          rel="noopener"
-                          className="mt-3 inline-block rounded-lg bg-[#25D366] px-5 py-2.5 font-semibold text-white"
-                        >
-                          Avisar por WhatsApp
-                        </a>
-
                         {/*
-                          El enlace, a la vista y no sólo dentro del mensaje de
-                          WhatsApp. Hace falta más de lo que parece: para probar
-                          el recorrido entero sin tener un profesor de verdad al
-                          otro lado, y sobre todo para el día que alguien diga
-                          «no me ha llegado nada» y haya que mandárselo por
-                          donde sea. Tenerlo escondido obligaba a abrir WhatsApp
-                          y sacarlo del texto a mano.
+                          El enlace de su página, a la vista. Hace falta para
+                          probar el recorrido entero sin un profesor de verdad
+                          al otro lado, y sobre todo para el día que alguien
+                          diga «no me ha llegado nada» y haya que mandárselo
+                          por donde sea.
                         */}
                         <a
                           href={`${base}/aceptar/${s.token_profesor}`}
                           target="_blank"
                           rel="noopener"
-                          className="ml-3 text-sm text-gris-medio underline underline-offset-4"
+                          className="mt-3 inline-block text-sm text-gris-medio underline underline-offset-4"
                         >
                           Abrir su página
                         </a>
 
-                        <p className="mt-3 text-xs text-gris-medio">
-                          {s.profesores.email}
-                          {s.profesores.telefono
-                            ? ` · ${formatearTelefono(s.profesores.telefono)}`
-                            : ' · sin teléfono'}
+                        {/*
+                          Texto plano y `select-all`: un clic selecciona el
+                          valor entero y se pega donde haga falta. Antes esto
+                          era un botón de WhatsApp, que decidía por quien lo
+                          usaba el canal por el que escribir.
+                        */}
+                        <p className="mt-3 text-sm text-gris-medio">
+                          <span className="select-all">{s.profesores.email}</span>
+                          {s.profesores.telefono ? (
+                            <>
+                              {' · '}
+                              <span className="select-all">
+                                {formatearTelefono(s.profesores.telefono)}
+                              </span>
+                            </>
+                          ) : (
+                            ' · sin teléfono'
+                          )}
                         </p>
                       </div>
                     )}
@@ -404,15 +339,33 @@ export default async function PaginaCobros() {
                         </p>
 
                         {/* El mismo recurso que con el profesor: si los avisos
-                            automáticos no llegan, su teléfono lo tienes. */}
+                            automáticos no llegan, su contacto lo tienes. */}
                         <a
-                          href={enlaceWhatsAppFamilia(s, base)}
+                          href={`${base}/solicitud/${s.token_familia}`}
                           target="_blank"
                           rel="noopener"
-                          className="mt-3 inline-block rounded-lg bg-[#25D366] px-5 py-2.5 font-semibold text-white"
+                          className="mt-3 inline-block text-sm text-gris-medio underline underline-offset-4"
                         >
-                          Escribir a la familia
+                          Abrir su página
                         </a>
+
+                        <p className="mt-3 text-sm text-gris-medio">
+                          {s.email_familia ? (
+                            <span className="select-all">{s.email_familia}</span>
+                          ) : (
+                            'sin correo'
+                          )}
+                          {s.telefono_familia ? (
+                            <>
+                              {' · '}
+                              <span className="select-all">
+                                {formatearTelefono(s.telefono_familia)}
+                              </span>
+                            </>
+                          ) : (
+                            ' · sin teléfono'
+                          )}
+                        </p>
                       </div>
                     )}
 

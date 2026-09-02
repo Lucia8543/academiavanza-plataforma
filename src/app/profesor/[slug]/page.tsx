@@ -336,9 +336,21 @@ export default async function PaginaProfesor({
           </Bloque>
         )}
 
-        {f.disponibilidad.length > 0 && (
+        {(f.disponibilidad.length > 0 || f.notaDisponibilidad) && (
           <Bloque titulo="Cuándo suele poder">
-            <Rejilla disponibilidad={f.disponibilidad} />
+            {f.disponibilidad.length > 0 && (
+              <Rejilla disponibilidad={f.disponibilidad} />
+            )}
+            {/*
+              La rejilla va por franjas de varias horas, así que dice menos de
+              lo que el profesor sabe. Esta línea es donde cabe el matiz: la
+              hora exacta dentro de la franja, o lo que le cambia en octubre.
+            */}
+            {f.notaDisponibilidad && (
+              <p className="mt-3 text-sm text-gris-medio">
+                {f.notaDisponibilidad}
+              </p>
+            )}
           </Bloque>
         )}
       </div>

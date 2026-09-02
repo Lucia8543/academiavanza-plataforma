@@ -37,6 +37,10 @@ next-env.d.ts
 # existe: la exclusión no estaba surtiendo efecto sobre nada).
 # ---------------------------------------------------------------------------
 database/etl/datos/
+# Y el mismo contenido comprimido, se llame como se llame. Las reglas por
+# extensión de más abajo lo cubren hoy, pero dependen de que nadie renombre el
+# fichero: `datos.7z.bak` o `datos_copia` no las activan. Esta va por ruta.
+database/etl/datos.*
 database/etl/analisis/salida/
 *.xlsx
 *.xls

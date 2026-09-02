@@ -38,6 +38,8 @@ export type ProfesorPublico = {
   /** Años dando clases particulares, declarados por él. Null si no lo dijo. */
   anosExperiencia: number | null;
   puntosFuertes: string | null;
+  /** Matiz de horario escrito por el profesor. Complementa la rejilla. */
+  notaDisponibilidad: string | null;
   modalidad: Modalidad;
   /** Zona donde suele dar clase presencial. Null si sólo da online. */
   zona: string | null;

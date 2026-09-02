@@ -239,6 +239,7 @@ export async function listarSolicitudes(limite = 60) {
       estado: true,
       nombre_familia: true,
       telefono_familia: true,
+      email_familia: true,
       mensaje: true,
       importe: true,
       enviado_en: true,
@@ -255,8 +256,8 @@ export async function listarSolicitudes(limite = 60) {
       devuelta_en: true,
       importe_devuelto: true,
       motivo_devolucion: true,
-      // Por dónde se le avisó. El panel lo enseña para que Lucía no escriba
-      // por WhatsApp a alguien que ya tiene el aviso en el móvil.
+      // Por dónde se le avisó. El panel lo enseña para no volver a escribir a
+      // alguien que ya tiene el aviso en el móvil o en el correo.
       avisado_push: true,
       avisado_correo: true,
       niveles: { select: { nombre: true } },

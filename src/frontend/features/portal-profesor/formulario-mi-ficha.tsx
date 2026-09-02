@@ -45,6 +45,7 @@ export function FormularioMiFicha({
   telefono,
   email,
   puntosFuertes,
+  notaDisponibilidad,
   anosExperiencia,
   modalidad,
   zona,
@@ -56,6 +57,7 @@ export function FormularioMiFicha({
   telefono: string;
   email: string;
   puntosFuertes: string;
+  notaDisponibilidad: string;
   anosExperiencia: string;
   modalidad: string;
   zona: string;
@@ -68,6 +70,7 @@ export function FormularioMiFicha({
     telefono,
     email,
     puntosFuertes,
+    notaDisponibilidad,
     anosExperiencia,
     modalidad,
     zona,
@@ -281,6 +284,36 @@ export function FormularioMiFicha({
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/*
+          La rejilla dice «tarde» y tarde son cuatro horas. Quien sólo puede de
+          17:30 a 19:00 no tenía dónde decirlo, y la familia se enteraba ya
+          hablando con él. Aquí cabe eso y lo que cambia con el curso.
+        */}
+        <div className="mt-4">
+          <label className={claseEtiqueta} htmlFor="notaDisponibilidad">
+            ¿Tu horario cambia durante el curso? (opcional)
+          </label>
+          <input
+            id="notaDisponibilidad"
+            name="notaDisponibilidad"
+            type="text"
+            maxLength={120}
+            className={claseCampo}
+            placeholder="Desde octubre sólo de 17:30 a 19:00"
+            value={v.notaDisponibilidad}
+            onChange={(e) =>
+              setV((a) => ({ ...a, notaDisponibilidad: e.target.value }))
+            }
+          />
+          <p className="mt-1 text-sm text-gris-medio">
+            Por ejemplo: «en septiembre puedo a cualquier hora, pero desde
+            octubre empiezo prácticas y solo puedo de 17:30 a 19:00». También
+            sirve si dentro de una franja solo puedes un rato concreto. Se ve en
+            tu ficha, debajo del horario. No pongas aquí tu teléfono ni tu
+            correo.
+          </p>
         </div>
       </fieldset>
 

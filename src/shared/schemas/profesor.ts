@@ -115,6 +115,25 @@ export const esquemaRegistroProfesor = z
     // Se recibe como 'dia-franja', por ejemplo '2-tarde'.
     disponibilidad: z.array(z.string()).default([]),
 
+    /**
+     * El matiz que la rejilla no puede decir.
+     *
+     * «Tarde» son cuatro horas y hay quien dentro de esa franja sólo tiene
+     * hora y media. La rejilla vale para descartar —quien no puede por la
+     * tarde no aparece— pero deja a la familia leyendo 16:00-20:00 cuando la
+     * verdad es 17:30-19:00, y ese desajuste se descubre tarde, ya con las dos
+     * partes hablando.
+     *
+     * También es donde cabe lo que cambia con el curso: prácticas que empiezan
+     * en octubre, un trabajo que aparece en enero. La rejilla es un patrón
+     * semanal sin fechas, y forzarle fechas la convertiría en un calendario,
+     * que está fuera de alcance a propósito.
+     *
+     * Lo escribe y lo mantiene el profesor. Se publica, así que pasa por el
+     * filtro de datos sensibles de más abajo.
+     */
+    notaDisponibilidad: texto(120).optional().default(''),
+
     // --- Presentación --------------------------------------------------------
     puntosFuertes: texto(300).min(
       10,
@@ -177,6 +196,7 @@ export const esquemaRegistroProfesor = z
     const campos = [
       ['puntosFuertes', datos.puntosFuertes],
       ['colegioOtro', datos.colegioOtro],
+      ['notaDisponibilidad', datos.notaDisponibilidad],
     ] as const;
 
     for (const [campo, valor] of campos) {

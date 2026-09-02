@@ -102,6 +102,7 @@ export async function registrarProfesor(
           anos_experiencia: datos.anosExperiencia ?? null,
 
           puntos_fuertes: datos.puntosFuertes,
+          nota_disponibilidad: datos.notaDisponibilidad || null,
           modalidad: datos.modalidad,
           zona_otra: datos.modalidad === 'online' ? null : datos.zona || null,
           desplazamiento_flexible:

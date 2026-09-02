@@ -336,6 +336,7 @@ export default async function PaginaMiFicha({
           telefono={ficha.telefono}
           email={ficha.email}
           puntosFuertes={ficha.puntosFuertes ?? ''}
+          notaDisponibilidad={ficha.notaDisponibilidad ?? ''}
           anosExperiencia={
             ficha.anosExperiencia === null ? '' : String(ficha.anosExperiencia)
           }

@@ -41,6 +41,8 @@ export type MiFicha = {
   niveles: string[];
   idiomas: string[];
   disponibilidad: { dia: number; franja: Franja }[];
+  /** El matiz que la rejilla no puede decir. Null si no escribió nada. */
+  notaDisponibilidad: string | null;
   puntosFuertes: string | null;
   anosExperiencia: number | null;
   modalidad: string;
@@ -99,6 +101,7 @@ export async function cargarMiFicha(
       cupo: true,
       motivo_rechazo: true,
       puntos_fuertes: true,
+      nota_disponibilidad: true,
       anos_experiencia: true,
       modalidad: true,
       zona_otra: true,
@@ -160,6 +163,7 @@ export async function cargarMiFicha(
       return franja ? [{ dia: d.dia_semana, franja }] : [];
     }),
     puntosFuertes: p.puntos_fuertes,
+    notaDisponibilidad: p.nota_disponibilidad,
     anosExperiencia: p.anos_experiencia,
     modalidad: String(p.modalidad),
     zona: p.zona_otra,
@@ -311,6 +315,8 @@ export async function actualizarOferta(
     niveles: string[];
     certificaciones: string[];
     disponibilidad: { dia: number; inicio: string; fin: string }[];
+    /** El matiz que la rejilla no dice. Vacío se guarda como null. */
+    notaDisponibilidad: string;
     puntosFuertes: string;
     anosExperiencia: number | null;
     telefono: string;
@@ -343,6 +349,7 @@ export async function actualizarOferta(
       where: { id: profesorId },
       data: {
         puntos_fuertes: datos.puntosFuertes,
+        nota_disponibilidad: datos.notaDisponibilidad || null,
         anos_experiencia: datos.anosExperiencia,
         telefono: datos.telefono,
         email: datos.email,

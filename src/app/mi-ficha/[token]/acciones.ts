@@ -119,6 +119,9 @@ export async function guardarCambios(
   const asignaturas = formulario.getAll('asignaturas').map(String);
   const niveles = formulario.getAll('niveles').map(String);
   const puntosFuertes = String(formulario.get('puntosFuertes') ?? '').trim();
+  const notaDisponibilidad = String(
+    formulario.get('notaDisponibilidad') ?? '',
+  ).trim();
   const modalidad = String(formulario.get('modalidad') ?? 'online');
   const zona = String(formulario.get('zona') ?? '').trim();
 
@@ -132,14 +135,24 @@ export async function guardarCambios(
     return { error: 'Escribe algo que te distinga, aunque sea una frase.' };
   }
 
+  if (notaDisponibilidad.length > 120) {
+    return { error: 'La nota de horario no puede pasar de 120 caracteres.' };
+  }
+
   /*
-   * El mismo filtro que en el alta, porque ésta es la otra puerta al mismo
-   * campo. Aquí no pasa por `esquemaRegistroProfesor`: el panel valida a mano,
-   * así que sin esta línea bastaba con darse de alta limpio y editar después.
+   * El mismo filtro que en el alta, porque ésta es la otra puerta a los mismos
+   * campos. Aquí no pasa por `esquemaRegistroProfesor`: el panel valida a mano,
+   * así que sin estas líneas bastaba con darse de alta limpio y editar después.
+   *
+   * La nota de horario entra en la lista por el mismo motivo que los puntos
+   * fuertes: se publica. Y tiene un riesgo propio, porque invita a concretar
+   * («llámame y lo vemos») justo donde el teléfono no puede aparecer.
    */
-  const sensible = detectarDatosSensibles(puntosFuertes);
-  if (sensible) {
-    return { error: mensajeDeAvisoProfesor(sensible) };
+  for (const texto of [puntosFuertes, notaDisponibilidad]) {
+    const sensible = detectarDatosSensibles(texto);
+    if (sensible) {
+      return { error: mensajeDeAvisoProfesor(sensible) };
+    }
   }
   if (modalidad !== 'online' && !zona) {
     return { error: 'Si das clase presencial, dinos en qué zona.' };
@@ -176,6 +189,7 @@ export async function guardarCambios(
     niveles,
     certificaciones: formulario.getAll('certificaciones').map(String),
     disponibilidad,
+    notaDisponibilidad,
     puntosFuertes,
     anosExperiencia: anos,
     telefono: normalizarTelefono(telefono.data),

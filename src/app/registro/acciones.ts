@@ -86,6 +86,7 @@ export async function enviarRegistro(
     desplazamientoFlexible:
       formulario.get('desplazamientoFlexible') === 'on',
     disponibilidad: formulario.getAll('disponibilidad').map(String),
+    notaDisponibilidad: cadena('notaDisponibilidad'),
     puntosFuertes: cadena('puntosFuertes'),
     declaraEdadMinima: formulario.get('declaraEdadMinima') === 'on',
     aceptaPublicacion: formulario.get('aceptaPublicacion') === 'on',
@@ -108,6 +109,7 @@ export async function enviarRegistro(
     modalidad: String(datos.modalidad ?? 'online'),
     zona: String(datos.zona ?? ''),
     desplazamientoFlexible: datos.desplazamientoFlexible ? 'on' : '',
+    notaDisponibilidad: String(datos.notaDisponibilidad ?? ''),
     puntosFuertes: String(datos.puntosFuertes ?? ''),
     aceptaPublicacion: datos.aceptaPublicacion ? 'on' : '',
     asignaturas: datos.asignaturas,
