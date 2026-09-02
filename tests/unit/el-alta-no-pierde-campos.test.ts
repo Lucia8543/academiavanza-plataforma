@@ -37,6 +37,30 @@ const FORMULARIO = readFileSync(
 
 const ACCION = readFileSync(join(RAIZ, 'src/app/registro/acciones.ts'), 'utf8');
 
+/*
+ * El mismo par, para el formulario con el que una familia escribe a un
+ * profesor.
+ *
+ * Se añade porque el fallo volvió a pasar, en el otro formulario y sin que
+ * esta prueba lo viera. `zona` y `barrio` se preguntaban, se enviaban, se
+ * validaban y se guardaban... salvo que la acción no los copiaba. Resultado:
+ * meses de solicitudes con la zona a NULL, profesores aceptando a ciegas y uno
+ * de ellos pidiendo el teléfono de la familia antes de decidir, que es
+ * justamente lo que la plataforma cobra.
+ *
+ * Que la prueba existiera y no cubriera este formulario es lo que hay que
+ * evitar: si mañana aparece un tercer formulario, va aquí también.
+ */
+const FORMULARIO_CONTACTO = readFileSync(
+  join(RAIZ, 'src/frontend/features/directorio/formulario-contacto.tsx'),
+  'utf8',
+);
+
+const ACCION_CONTACTO = readFileSync(
+  join(RAIZ, 'src/app/profesor/[slug]/acciones.ts'),
+  'utf8',
+);
+
 /**
  * Campos que el formulario manda y la acción no tiene por qué copiar, con su
  * motivo. Cualquier otro que aparezca es un descuido.
@@ -74,4 +98,33 @@ describe('⭐ el alta copia todos los campos del formulario', () => {
         `entera hasta que alguien lo nota por su cuenta.`,
     ).toBe(true);
   });
+});
+
+const enviadosContacto = [
+  ...new Set(
+    [...FORMULARIO_CONTACTO.matchAll(/name="([a-zA-Z]+)"/g)].map((m) => m[1]),
+  ),
+].filter((c) => !(c in NO_SE_COPIAN));
+
+describe('⭐ el contacto de la familia copia todos los campos', () => {
+  it('el formulario envía los campos que esperamos', () => {
+    expect(enviadosContacto.length).toBeGreaterThan(8);
+    // Las dos que se perdían. Si alguien las quita del formulario, que sea a
+    // propósito y no de rebote.
+    expect(enviadosContacto).toContain('zona');
+    expect(enviadosContacto).toContain('barrio');
+  });
+
+  it.each(enviadosContacto)(
+    '«%s» se copia en profesor/[slug]/acciones.ts',
+    (campo) => {
+      expect(
+        new RegExp(`\\b${campo}\\b`).test(ACCION_CONTACTO),
+        `El formulario de contacto envía «${campo}», pero ese campo no ` +
+          `aparece en src/app/profesor/[slug]/acciones.ts. Si no se copia ` +
+          `ahí, se pierde en silencio: no da error, se queda con el valor ` +
+          `por defecto, y nadie se entera hasta que un profesor lo nota.`,
+      ).toBe(true);
+    },
+  );
 });

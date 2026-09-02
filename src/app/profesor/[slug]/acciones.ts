@@ -52,6 +52,22 @@ export async function enviarContacto(
     telefono: cadena('telefono'),
     email: cadena('email'),
     nivelId: cadena('nivelId'),
+    /*
+     * Dónde vive la familia, y sólo se pregunta si el profesor se desplaza.
+     *
+     * Estas dos líneas faltaban, y es exactamente el mismo fallo silencioso
+     * que se documenta en `tests/unit/el-alta-no-pierde-campos.test.ts`: el
+     * navegador enviaba la zona, aquí no se copiaba, el esquema la tiene con
+     * valor por defecto vacío y el servicio guardaba NULL. Ni error, ni aviso,
+     * ni nada rojo en ninguna pantalla.
+     *
+     * Lo que se veía por fuera era un profesor recibiendo propuestas sin saber
+     * dónde vive nadie, y pidiendo el teléfono antes de aceptar para poder
+     * preguntarlo. O sea, saltándose lo único que cobra la plataforma, y por
+     * un motivo razonable.
+     */
+    zona: cadena('zona'),
+    barrio: cadena('barrio'),
     // Para cuándo lo necesita. Sin esta línea el formulario pintaba las tres
     // opciones, el navegador las enviaba y aquí se tiraban: como el esquema
     // tiene valor por defecto, todo el mundo acababa con cinco días y nadie se
@@ -73,6 +89,8 @@ export async function enviarContacto(
     telefono: enviado.telefono,
     email: enviado.email,
     nivelId: enviado.nivelId,
+    zona: enviado.zona,
+    barrio: enviado.barrio,
     mensaje: enviado.mensaje,
     vale: enviado.vale,
   };
