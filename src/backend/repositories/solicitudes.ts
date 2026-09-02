@@ -120,7 +120,7 @@ export async function porTokenProfesor(
       zona: true,
       barrio: true,
       enviado_en: true,
-      niveles: { select: { nombre: true } },
+      niveles: { select: { nombre: true, precio_referencia: true } },
       profesores: {
         select: {
           cupo: true,
@@ -142,6 +142,10 @@ export async function porTokenProfesor(
     estado: s.estado as EstadoSolicitud,
     nombreFamilia: s.nombre_familia,
     nivel: s.niveles?.nombre ?? null,
+    precioNivel:
+      s.niveles?.precio_referencia == null
+        ? null
+        : Number(s.niveles.precio_referencia),
     mensaje: s.mensaje,
     // Al profesor se le da ya montado: «Ríos Rosas (Chamberí)».
     zona: zonaCompleta(s.zona, s.barrio),

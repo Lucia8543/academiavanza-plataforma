@@ -6,6 +6,7 @@ import {
   seLeCuentaAlProfesor,
   type MotivoCierre,
 } from '@/shared/textos/motivos-cierre';
+import type { NivelConPrecio } from '@/shared/textos/precios';
 import { db } from './cliente';
 
 /**
@@ -39,6 +40,8 @@ export type MiFicha = {
   motivoRechazo: string | null;
   asignaturas: string[];
   niveles: string[];
+  /** Sus cursos con el precio de referencia de cada uno, ya ordenados. */
+  misPrecios: NivelConPrecio[];
   idiomas: string[];
   disponibilidad: { dia: number; franja: Franja }[];
   /** El matiz que la rejilla no puede decir. Null si no escribió nada. */
@@ -112,7 +115,18 @@ export async function cargarMiFicha(
       profesor_asignaturas: {
         select: { asignaturas: { select: { nombre: true } } },
       },
-      profesor_niveles: { select: { niveles: { select: { nombre: true } } } },
+      profesor_niveles: {
+        select: {
+          niveles: {
+            select: {
+              id: true,
+              nombre: true,
+              orden_visual: true,
+              precio_referencia: true,
+            },
+          },
+        },
+      },
       profesor_certificaciones: {
         select: {
           certificaciones_idioma: { select: { idioma: true, nivel_mcer: true } },
@@ -155,6 +169,21 @@ export async function cargarMiFicha(
     motivoRechazo: p.motivo_rechazo,
     asignaturas: p.profesor_asignaturas.map((a) => a.asignaturas.nombre),
     niveles: p.profesor_niveles.map((n) => n.niveles.nombre),
+    /*
+      Los mismos cursos, con lo que se ha venido cobrando por cada uno. El
+      orden es el del catálogo entero, no la posición en esta lista: es lo que
+      permite saber si dos cursos son realmente seguidos al agruparlos.
+    */
+    misPrecios: p.profesor_niveles
+      .map((n) => n.niveles)
+      .sort((a, b) => a.orden_visual - b.orden_visual)
+      .map((n) => ({
+        id: n.id,
+        nombre: n.nombre,
+        orden: n.orden_visual,
+        precio:
+          n.precio_referencia === null ? null : Number(n.precio_referencia),
+      })),
     idiomas: p.profesor_certificaciones.map((c) =>
       `${c.certificaciones_idioma.idioma} ${c.certificaciones_idioma.nivel_mcer ?? ''}`.trim(),
     ),

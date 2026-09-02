@@ -96,6 +96,15 @@ export type SolicitudProfesor = {
   estado: EstadoSolicitud;
   nombreFamilia: string;
   nivel: string | null;
+  /**
+   * Lo que se ha venido cobrando por una hora de ese curso.
+   *
+   * Va aquí porque es la pregunta que se hace el profesor justo en esta
+   * pantalla, y hasta ahora no tenía dónde mirarlo: el precio sólo salía en su
+   * ficha pública y en el formulario de la familia, dos sitios que él no
+   * visita. Null en los cursos sin referencia, como universidad.
+   */
+  precioNivel: number | null;
   mensaje: string | null;
   /**
    * Distrito o municipio donde vive la familia, para decidir si compensa ir.

@@ -6,6 +6,7 @@ import { porTokenProfesor } from '@/backend/repositories/solicitudes';
 import { decidir } from '@/backend/services/solicitud';
 import { ActivarAvisos } from '@/frontend/features/portal-profesor/activar-avisos';
 import { esCupoOPausa } from '@/shared/reglas/cupo';
+import { PRECIO_ES_ORIENTATIVO, porHora } from '@/shared/textos/precios';
 import { CUPO_SE_CAMBIA } from '@/shared/textos/modalidad';
 
 export const dynamic = 'force-dynamic';
@@ -90,6 +91,28 @@ export default async function PaginaAceptar({
           <dt className="inline font-medium text-carbon">Curso: </dt>
           <dd className="inline text-carbon">{s.nivel ?? '—'}</dd>
         </div>
+        {/*
+          Cuánto se cobra por ese curso, aquí y no sólo en la ficha pública.
+
+          Es la primera pregunta que hace un profesor al recibir una propuesta,
+          y hasta ahora la respuesta estaba en dos sitios que él no visita: su
+          propia ficha, que es para las familias, y el formulario de contacto.
+          Preguntaban por WhatsApp uno a uno.
+
+          Va con la aclaración pegada, como en todas las pantallas donde
+          aparece un importe: la plataforma no cobra ni impone este precio.
+        */}
+        {s.precioNivel !== null && (
+          <div>
+            <dt className="inline font-medium text-carbon">
+              Precio de referencia:{' '}
+            </dt>
+            <dd className="inline text-carbon">
+              {porHora(s.precioNivel)}{' '}
+              <span className="text-gris-medio">{PRECIO_ES_ORIENTATIVO}</span>
+            </dd>
+          </div>
+        )}
         {/*
           Dónde vive, justo debajo del curso.
 

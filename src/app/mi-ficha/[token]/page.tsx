@@ -15,6 +15,11 @@ import { profesorDelPanel } from '@/backend/services/acceso-profesor';
 import { DarseDeBaja } from '@/frontend/features/portal-profesor/darse-de-baja';
 import { SinContestar } from '@/frontend/features/portal-profesor/sin-contestar';
 import { FormularioMiFicha } from '@/frontend/features/portal-profesor/formulario-mi-ficha';
+import {
+  agruparPorPrecio,
+  PRECIO_ES_ORIENTATIVO,
+  porHora,
+} from '@/shared/textos/precios';
 import { DIAS, FRANJAS } from '@/shared/schemas/profesor';
 import { OPCIONES_CUPO } from '@/shared/reglas/cupo';
 import { CUPO_SE_CAMBIA } from '@/shared/textos/modalidad';
@@ -285,6 +290,43 @@ export default async function PaginaMiFicha({
           info@academiavanza.es.
         </p>
       </section>
+
+      {/*
+        Lo que se cobra por cada curso, en su panel y no sólo en su ficha
+        pública.
+
+        La ficha pública está escrita para las familias, y un profesor no entra
+        ahí; el resultado era que preguntaban el precio por WhatsApp uno a uno,
+        habiendo un número en la web. Van agrupados por tramos, como en la
+        ficha, porque seis líneas repitiendo «15 €/h» hacen parecer complicado
+        algo que no lo es.
+      */}
+      {ficha.misPrecios.length > 0 && (
+        <section className="mt-10 border-t border-gris-borde pt-8">
+          <h2 className="text-lg font-bold text-carbon">
+            Lo que se cobra por tus cursos
+          </h2>
+          <ul className="mt-3 divide-y divide-gris-borde rounded-xl border border-gris-borde bg-white px-5">
+            {agruparPorPrecio(ficha.misPrecios).map((tramo) => (
+              <li
+                key={tramo.clave}
+                className="flex items-baseline justify-between gap-3 py-2 text-sm"
+              >
+                <span className="text-carbon">{tramo.etiqueta}</span>
+                <span className="font-semibold text-carbon">
+                  {tramo.precio === null
+                    ? 'A convenir'
+                    : porHora(tramo.precio)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-gris-medio">
+            {PRECIO_ES_ORIENTATIVO} No lo cobramos nosotros: lo acuerdas
+            directamente con la familia y es íntegro para ti.
+          </p>
+        </section>
+      )}
 
       {/* --- Por qué no siguieron ----------------------------------------- */}
       {ficha.motivosCierre.length > 0 && (
