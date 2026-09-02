@@ -81,6 +81,7 @@ export type ResultadoAlta =
         | 'vale-no-existe'
         | 'vale-gastado'
         | 'vale-caducado'
+        | 'sin-zona'
         | 'error';
     }
   | { ok: false; motivo: 'demasiadas'; explicacion: string };
@@ -114,6 +115,7 @@ export async function crearSolicitud(
       apellidos: true,
       email: true,
       cupo: true,
+      modalidad: true,
     },
   });
 
@@ -133,6 +135,23 @@ export async function crearSolicitud(
    */
   if (!aceptaSolicitudes(normalizarCupo(profesor.cupo))) {
     return { ok: false, motivo: 'sin-hueco' };
+  }
+
+  /*
+   * Si el profesor se desplaza, la zona no es opcional.
+   *
+   * El formulario ya la marca como obligatoria, pero eso es una cortesía del
+   * navegador: se salta con las herramientas de desarrollo, con un cliente que
+   * no ejecute JavaScript o con un fallo nuestro en el paso de en medio. De
+   * hecho fue un fallo nuestro: durante un tiempo la acción no copiaba el
+   * campo, y las solicitudes entraron con la zona vacía sin que nada chillara.
+   *
+   * Se comprueba aquí y no en el esquema de validación porque el esquema no
+   * sabe a quién se escribe, y la regla depende justo de eso: a quien sólo da
+   * clase online no se le pregunta, y exigírsela sería rechazar envíos buenos.
+   */
+  if (profesor.modalidad !== 'online' && !datos.zona) {
+    return { ok: false, motivo: 'sin-zona' };
   }
 
   // Antes de guardar nada: ¿este teléfono está escribiendo a medio directorio?
@@ -1036,7 +1055,7 @@ async function avisarAlProfesor(
 ): Promise<void> {
   const nivel = await db.niveles.findUnique({
     where: { id: datos.nivelId },
-    select: { nombre: true },
+    select: { nombre: true, precio_referencia: true },
   });
 
   const ruta = `/aceptar/${tokenProfesor}`;
@@ -1053,6 +1072,12 @@ async function avisarAlProfesor(
       para: profesor.email,
       nombreProfesor: profesor.nombre,
       nivel: nivel?.nombre ?? 'sin especificar',
+      // `Decimal` de Prisma, no un número. Sin el `Number` acabaría en el
+      // correo como un objeto en vez de como «16 €/h».
+      precioNivel:
+        nivel?.precio_referencia == null
+          ? null
+          : Number(nivel.precio_referencia),
       zona: zonaCompleta(datos.zona || null, datos.barrio || null),
       mensaje: datos.mensaje || null,
       tokenProfesor,

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { enviarRegistro, type EstadoFormulario } from '@/app/registro/acciones';
 import type { Catalogos } from '@/backend/repositories/catalogos';
 import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
@@ -202,6 +202,32 @@ export function FormularioRegistro({
     setIntento((n) => n + 1);
   }
 
+  /*
+   * Llevar la vista al aviso cuando el envío falla.
+   *
+   * El aviso vive arriba del todo y el botón de enviar abajo del todo, con
+   * siete secciones en medio. Quien envía con un campo mal se queda mirando un
+   * botón que no hace nada visible, porque la única respuesta está a dos
+   * pantallas de distancia. Cierra la página convencida de haberla mandado, y
+   * nosotros no nos enteramos porque no hay error que registrar: el servidor
+   * hizo su trabajo y contestó.
+   *
+   * No es hipotético. Una profesora escribió preguntando por qué no le llegaba
+   * el enlace de su ficha, y la ficha no existía: se le quedó aquí.
+   *
+   * Éste sí es un `useEffect`, a diferencia del ajuste de `intento` de arriba,
+   * y es la excepción correcta: mover el scroll es tocar el navegador, y eso
+   * sólo puede hacerse después de pintar. `intento` cambia con cada respuesta
+   * del servidor, así que también se sube si el segundo intento falla por otra
+   * cosa.
+   */
+  const avisoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!estado.mensaje) return;
+    avisoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [intento, estado.mensaje]);
+
   const errores = estado.errores ?? {};
 
   // Nombres legibles de los campos, para el resumen de arriba. En un formulario
@@ -374,6 +400,7 @@ export function FormularioRegistro({
       </header>
       {estado.mensaje && (
         <div
+          ref={avisoRef}
           role="alert"
           className="rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
         >

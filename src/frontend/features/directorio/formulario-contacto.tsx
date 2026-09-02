@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { enviarContacto, type EstadoContacto } from '@/app/profesor/[slug]/acciones';
 import { CamposTrampa } from '@/frontend/components/shared/campos-trampa';
 import {
@@ -83,6 +83,22 @@ export function FormularioContacto({
 }) {
   const [estado, accion, enviando] = useActionState(enviarContacto, INICIAL);
 
+  /*
+   * Lo mismo que en el alta del profesor: si el envío falla, la vista sube al
+   * aviso.
+   *
+   * Aquí importa incluso más. Quien rellena esto es una madre buscando profesor
+   * para su hijo, no alguien con motivos para insistir en una página que no le
+   * contesta. Un envío que aparenta no hacer nada es una familia perdida, y
+   * encima invisible: por nuestra parte no hay error ninguno que mirar.
+   */
+  const avisoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!estado.mensaje) return;
+    avisoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [estado]);
+
   const [v, setV] = useState<Valores>(() => ({
     ...VACIO,
     ...(estado.valores ?? {}),
@@ -147,6 +163,7 @@ export function FormularioContacto({
 
       {estado.mensaje && (
         <div
+          ref={avisoRef}
           role="alert"
           className="mt-4 rounded-lg border border-error bg-red-50 px-4 py-3 text-sm text-error"
         >

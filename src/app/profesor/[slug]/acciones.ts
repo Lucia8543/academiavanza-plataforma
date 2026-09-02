@@ -131,6 +131,12 @@ export async function enviarContacto(
                     // está disponible» a secas, sobre una ficha que sí se ve,
                     // parece un fallo.
                     'Este profesor acaba de decirnos que ya no tiene hueco, así que no podemos pasarle tu mensaje. No se te ha cobrado nada. Prueba con otro del directorio.'
+                  : resultado.motivo === 'sin-zona'
+                    ? // No debería verse nunca: el desplegable es obligatorio.
+                      // Si aparece, es que el campo se ha perdido por el camino
+                      // otra vez, y es mejor decirlo que guardar la solicitud a
+                      // medias y que el profesor decida a ciegas.
+                      'Nos falta la zona donde vivís, y el profesor la necesita para saber si le viene bien desplazarse. Elígela en el desplegable y vuelve a enviarlo.'
                   : 'Algo ha fallado por nuestra parte. Inténtalo de nuevo en un rato.';
 
     return { ok: false, mensaje, valores };

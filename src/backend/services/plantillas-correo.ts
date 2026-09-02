@@ -3,7 +3,7 @@ import {
   CADUCADAS_PARA_PAUSAR,
   DIAS_PARA_RECLAMAR,
 } from '@/shared/reglas/cobro';
-import { euros } from '@/shared/textos/precios';
+import { euros, porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 
 /**
  * Los correos que manda la plataforma.
@@ -138,6 +138,18 @@ export function correoSolicitud(datos: {
   para: string;
   nombreProfesor: string;
   nivel: string;
+  /**
+   * Lo que se ha venido cobrando por una hora de ese curso.
+   *
+   * Va en el correo y no sólo en la web porque el correo es lo que se abre. La
+   * web decía la cifra y el correo decía «el precio lo acordáis vosotros», así
+   * que quien no pinchaba el enlace se quedaba sin saber de qué se hablaba y lo
+   * preguntaba por mensaje, uno a uno.
+   *
+   * Null en los cursos sin referencia. Entonces no se pinta la línea: un guión
+   * al lado de un importe se lee como que no se cobra nada.
+   */
+  precioNivel: number | null;
   /** Dónde vive la familia. Vacío si el profesor sólo da clase online. */
   zona: string | null;
   mensaje: string | null;
@@ -159,9 +171,13 @@ export function correoSolicitud(datos: {
     'Antes de darte ningún dato suyo necesitamos saber si te viene bien.',
     '',
     `Curso: ${datos.nivel}`,
+    ...(datos.precioNivel === null
+      ? []
+      : [`Precio de referencia: ${porHora(datos.precioNivel)}`]),
     // La zona va junto al curso y no al final: son las dos cosas que decide
     // cualquiera antes de contestar, y aquí es donde se contesta.
     ...(datos.zona ? [`Zona: ${datos.zona}`] : []),
+    ...(datos.precioNivel === null ? [] : ['', PRECIO_ES_ORIENTATIVO]),
     ...(datos.mensaje ? ['', 'Lo que te cuenta:', datos.mensaje] : []),
     '',
     'Dinos si puedes cogerla:',
@@ -185,8 +201,14 @@ export function correoSolicitud(datos: {
     <p style="margin:0 0 16px;">Una familia ha visto tu ficha y <strong>quiere clases contigo</strong>. Antes de darte ningún dato suyo necesitamos saber si te viene bien.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px;">
       ${dato('Curso', datos.nivel)}
+      ${datos.precioNivel === null ? '' : dato('Precio de referencia', porHora(datos.precioNivel))}
       ${datos.zona ? dato('Zona', datos.zona) : ''}
     </table>
+    ${
+      datos.precioNivel === null
+        ? ''
+        : `<p style="margin:0 0 16px;color:${GRIS};font-size:14px;">${PRECIO_ES_ORIENTATIVO}</p>`
+    }
     ${datos.mensaje ? cita(datos.mensaje) : ''}
     ${boton('Ver y contestar', enlace)}
     <p style="margin:0 0 12px;color:${GRIS};font-size:14px;">
