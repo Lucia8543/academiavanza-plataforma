@@ -3,6 +3,7 @@ import {
   CADUCADAS_PARA_PAUSAR,
   DIAS_PARA_RECLAMAR,
 } from '@/shared/reglas/cobro';
+import { formatearTelefono } from '@/shared/schemas/telefono';
 import { euros, porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 
 /**
@@ -669,6 +670,23 @@ export function correoProfesorAcepta(datos: {
   const seguimiento = `${baseUrl()}/solicitud/${datos.tokenFamilia}`;
   const precio = euros(datos.importe);
 
+  /*
+   * El número del Bizum, aquí y no sólo en la página.
+   *
+   * Antes este correo decía cuánto pagar y con qué concepto, pero para saber a
+   * dónde mandarlo había que abrir la página. Son dos pantallas para un dato
+   * que cabe en una línea, y quien lee el correo en el móvil con la aplicación
+   * del banco ya abierta se encuentra con que le falta justo lo único que
+   * necesita.
+   *
+   * Sale de la misma variable que usa la página, para que no puedan
+   * contradecirse. Si no está puesta, la frase se queda como estaba y remite a
+   * la página: preferible que falte a que aparezca un hueco donde debería ir un
+   * número de teléfono.
+   */
+  const bizum = process.env.BIZUM_TELEFONO;
+  const alNumero = bizum ? ` al ${formatearTelefono(bizum)}` : '';
+
   const cuerpo = [
     `Hola ${datos.nombreFamilia}:`,
     '',
@@ -676,7 +694,8 @@ export function correoProfesorAcepta(datos: {
     '',
     `Para que pueda escribirte quedan dos cosas, y las dos son rápidas.`,
     '',
-    `1. Haz un Bizum de ${precio} poniendo ${datos.codigo} en el concepto.`,
+    `1. Haz un Bizum de ${precio}${alNumero} poniendo ${datos.codigo} en el`,
+    '   concepto.',
     '',
     '2. Vuelve a tu página y pulsa el botón «Ya he hecho el Bizum». Sin ese',
     '   aviso no sabemos que tu pago está esperando, y te seguiremos',
@@ -701,7 +720,11 @@ export function correoProfesorAcepta(datos: {
       Para que pueda escribirte quedan <strong>dos cosas</strong>, y las dos son rápidas.
     </p>
 
-    <p style="margin:0 0 4px;"><strong>1.</strong> Haz un Bizum de <strong>${precio}</strong> poniendo este código en el concepto:</p>
+    <p style="margin:0 0 4px;"><strong>1.</strong> Haz un Bizum de <strong>${precio}</strong>${
+      bizum
+        ? ` al <strong>${escapar(formatearTelefono(bizum))}</strong>`
+        : ''
+    } poniendo este código en el concepto:</p>
     <p style="margin:0 0 20px;text-align:center;font-family:monospace;font-size:26px;font-weight:bold;letter-spacing:4px;color:${VERDE};">
       ${escapar(datos.codigo)}
     </p>
