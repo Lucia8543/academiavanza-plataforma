@@ -15,7 +15,7 @@ import {
  * explicaciones o que le insinúe que se lo está inventando.
  *
  * Son dos caminos y no uno porque significan cosas distintas. «No conseguí
- * hablar con él» dice algo del profesor y cuenta para pausarle la ficha. «Ya
+ * no me ha escrito» dice algo del profesor y cuenta para pausarle la ficha. «Ya
  * hablamos» no dice nada malo de nadie, no cuenta para nada, y es el único que
  * lleva pregunta detrás.
  *
@@ -65,7 +65,7 @@ export function ReclamarVale({
                 disabled={enviando || !puedeDecirSinContacto}
                 className="w-full rounded-lg border border-gris-borde px-4 py-3 text-sm font-semibold text-carbon transition hover:bg-gris-claro disabled:opacity-50"
               >
-                No he conseguido hablar con él
+                No he conseguido que me escriba
               </button>
             </form>
 
@@ -85,7 +85,7 @@ export function ReclamarVale({
 
           {!puedeDecirSinContacto && (
             <p className="mt-3 text-sm text-gris-medio">
-              Para decir que no has conseguido hablar con él hay que esperar{' '}
+              Para decir que no te ha escrito hay que esperar{' '}
               {diasQueFaltan === 1 ? 'un día más' : `${diasQueFaltan} días más`}.
               Muchos profesores tardan un día o dos en llamar.
             </p>

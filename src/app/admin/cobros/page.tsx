@@ -391,7 +391,7 @@ export default async function PaginaCobros() {
                                 al profesor y cuenta para pausarle la ficha;
                                 «no funcionó» no dice nada malo de nadie. */}
                             {s.motivo_vale === 'sin-contacto'
-                              ? 'vale · no consiguió hablar con él'
+                              ? 'vale · no consiguió que le escribieran'
                               : s.motivo_vale === 'no-funciono'
                                 ? 'vale · hablaron y no funcionó'
                                 : 'vale concedido a mano'}

@@ -373,7 +373,7 @@ export default async function Portada() {
           />
           <Paso
             numero={4}
-            titulo="Él te escribe"
+            titulo="Te escribe"
             texto={`Le damos tu teléfono y te escribe o te llama él, porque por protección de datos no facilitamos el teléfono de nuestros profesores. Si pasan ${DIAS_PARA_RECLAMAR} días desde que pagas y no te ha escrito, te damos otro contacto sin volver a pagar.`}
           />
         </ol>

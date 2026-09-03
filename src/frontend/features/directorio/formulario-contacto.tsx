@@ -160,10 +160,10 @@ export function FormularioContacto({
       <p className="mt-1 text-sm text-gris-medio">
         Escribir es gratis. Le preguntamos si puede cogerte y te lo decimos.
         Solo si acepta pagarás {euros(precio)} por el contacto, y entonces os
-        damos tu teléfono para que te escriba él.
+        damos tu teléfono para que te escriba.
       </p>
 
-      {/* Presencial significa que él va a casa del alumno, y la gente lo da
+      {/* Presencial significa que el profesor va a casa del alumno, y la gente lo da
           por supuesto en las dos direcciones. Enterarse en la primera llamada,
           después de haber pagado, es de las cosas que acaban en devolución. */}
       {daPresencial && (
@@ -237,7 +237,7 @@ export function FormularioContacto({
             Es para avisarte de lo que pasa, cuando el profesor conteste y
             cuando podáis hablar.{' '}
             <span className="font-medium text-carbon">
-              A él no se lo damos.
+              Al profesor no se lo damos.
             </span>
           </p>
 

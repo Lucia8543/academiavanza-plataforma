@@ -175,7 +175,8 @@ export default async function GuiaFamilia() {
               No te damos el número del profesor, y es a propósito:
             </strong>{' '}
             por protección de datos no facilitamos el teléfono de nuestros
-            profesores. Es él quien decide si te lo da cuando habléis.
+            profesores. Es quien te dé clase quien decide si te lo da cuando
+            habléis.
           </p>
           <Ojo>
             <strong>

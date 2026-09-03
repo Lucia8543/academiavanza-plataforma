@@ -187,7 +187,7 @@ export default async function PaginaSolicitud({
                 <strong>Nos has dicho que ya has hecho el Bizum.</strong> Lo
                 comprobamos a mano, así que puede tardar un rato, y más si es de
                 noche o fin de semana. En cuanto lo veamos le damos tu teléfono
-                al profesor y te escribe él.
+                al profesor y te escribe.
               </p>
               <p className="mt-3 text-sm text-gris-medio">
                 No tienes que hacer nada más, y no vamos a volver a pedírtelo. Si
@@ -326,7 +326,7 @@ export default async function PaginaSolicitud({
         {s.estado === 'devuelta' && (
           <Paso numero={3} titulo="Te devolvimos el dinero" estado="hecho">
             <p className="text-sm text-gris-medio">
-              Si queréis retomarlo, él sigue teniendo tu teléfono.
+              Si queréis retomarlo, sigue teniendo tu teléfono.
             </p>
           </Paso>
         )}
@@ -344,9 +344,15 @@ export default async function PaginaSolicitud({
             {/*
               Aquí estaba el teléfono del profesor y ya no está.
 
-              El contacto va en un solo sentido: él tiene el de la familia y
-              decide si llama, si escribe o si le da su número. El motivo es que
-              parte de los profesores es menor de edad.
+              El contacto va en un solo sentido: el profesor tiene el de la
+              familia y decide si llama, si escribe o si le da su número. El
+              motivo es que parte de los profesores es menor de edad.
+
+              Y en el texto de cara a la familia no se usa «él» en ninguna
+              parte. Más de la mitad del directorio son chicas, y a quien le
+              acaba de escribir Alba leer «él te escribirá» le hace dudar de si
+              le han dado el contacto correcto. Se dice el nombre, que además
+              es más claro que cualquier pronombre.
 
               Lo que hay que resolver en esta pantalla es la consecuencia: la
               familia ha pagado y ahora depende de que alguien le escriba. Por
@@ -356,8 +362,9 @@ export default async function PaginaSolicitud({
             <div className="rounded-xl border-2 border-verde-avanza bg-white p-5">
               <p className="text-carbon">
                 Ya le hemos dado tu teléfono a{' '}
-                <strong>{s.profesor}</strong>. Él te escribirá o te llamará;
-                dale un poco de margen, porque puede tardar unas horas en verlo.
+                <strong>{s.profesor}</strong>, que te escribirá o te llamará.
+                Dale un poco de margen, porque puede tardar unas horas en
+                verlo.
               </p>
               <p className="mt-3 text-sm text-gris-medio">
                 No te damos su número, y no es un descuido:{' '}
@@ -365,7 +372,8 @@ export default async function PaginaSolicitud({
                   por protección de datos no facilitamos el teléfono de nuestros
                   profesores
                 </strong>
-                . Es él quien decide si te lo da cuando habléis.
+                . Es quien te dé clase quien decide si te lo da cuando
+                habléis.
               </p>
               <p className="mt-3 text-sm text-carbon">
                 El precio de las clases y los horarios los acordáis entre
@@ -417,7 +425,7 @@ export default async function PaginaSolicitud({
 
                 Y se explica por qué, sin acusar de nada: quien lea esto puede
                 ser perfectamente una familia que estuvo dos meses con un
-                profesor y se ha quedado sin él, que es un fastidio y no una
+                profesor y se ha quedado sin clase, que es un fastidio y no una
                 trampa.
               */
               <div className="mt-4 rounded-xl border border-gris-borde bg-gris-claro p-4 text-sm leading-relaxed text-gris-medio">

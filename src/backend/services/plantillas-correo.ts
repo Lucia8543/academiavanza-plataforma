@@ -331,7 +331,7 @@ export function correoFichaPublicada(datos: {
     '  3. Un WhatsApp, sólo si las dos anteriores no te han llegado.',
     '',
     'Verás el curso y lo que te cuenta, y un enlace para decir si puedes',
-    'cogerla. Tu teléfono no se lo damos a nadie, nunca, ni siquiera a ella:',
+    'cogerla. Tu teléfono no se lo damos a nadie, nunca, ni a la familia:',
     'cuando aceptes y pague, te damos el suyo y le escribes tú.',
     '',
     'Desde aquí puedes cambiar lo que quieras, decir que vas justo de sitio o',
@@ -373,7 +373,7 @@ export function correoFichaPublicada(datos: {
     </ol>
     <p style="margin:0 0 16px;color:${GRIS};">
       Verás el curso y lo que te cuenta, y un enlace para decir si puedes cogerla.
-      <strong>Tu teléfono no se lo damos a nadie, nunca</strong>, ni siquiera a ella:
+      <strong>Tu teléfono no se lo damos a nadie, nunca</strong>, ni a la familia:
       cuando aceptes y pague, te damos el suyo y le escribes tú.
     </p>
     <p style="margin:0 0 8px;">Desde aquí puedes cambiar lo que quieras, decir que vas justo de sitio o pausar la ficha del todo:</p>
@@ -705,7 +705,7 @@ export function correoProfesorAcepta(datos: {
     seguimiento,
     '',
     'Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté,',
-    'le damos tu teléfono y te escribe él. Lo que cueste la clase lo acordáis',
+    'le damos tu teléfono y te escriben. Lo que cueste la clase lo acordáis',
     'vosotros.',
     '',
     'AcademiAvanza',
@@ -741,7 +741,7 @@ export function correoProfesorAcepta(datos: {
 
     <p style="margin:0;color:${GRIS};font-size:14px;">
       Comprobamos los pagos a mano, así que puede tardar un rato. En cuanto esté, le damos
-      tu teléfono y te escribe él. Lo que cueste la clase lo acordáis vosotros.
+      tu teléfono y te escriben. Lo que cueste la clase lo acordáis vosotros.
     </p>
   `);
 
@@ -828,8 +828,8 @@ export function correoPagoConfirmado(datos: {
     'margen: puede tardar unas horas en verlo.',
     '',
     'No te damos su numero, y no es ningun descuido. Por proteccion de datos no',
-    'facilitamos el telefono de nuestros profesores. Es el quien decide si te lo',
-    'da cuando hableis.',
+    'facilitamos el telefono de nuestros profesores. Es quien te de clase quien',
+    'decide si te lo da cuando hableis.',
     '',
     `Si pasan ${DIAS_PARA_RECLAMAR} dias y no te ha escrito, entra aqui y te damos otro`,
     'contacto sin volver a pagar:',
@@ -848,13 +848,13 @@ export function correoPagoConfirmado(datos: {
       ${escapar(datos.nombreProfesor)}.
     </p>
     <p style="margin:0 0 16px;">
-      <strong>Él te escribirá o te llamará.</strong> Dale un poco de margen, que puede
-      tardar unas horas en verlo.
+      <strong>${escapar(datos.nombreProfesor)} te escribirá o te llamará.</strong> Dale un
+      poco de margen, que puede tardar unas horas en verlo.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};font-size:14px;">
       No te damos su número, y no es un descuido: <strong>por protección de datos no
-      facilitamos el teléfono de nuestros profesores</strong>. Es él quien decide si te lo
-      da cuando habléis.
+      facilitamos el teléfono de nuestros profesores</strong>. Es quien te dé clase quien
+      decide si te lo da cuando habléis.
     </p>
     <p style="margin:0 0 4px;">
       <strong>¿Y si no te escribe?</strong> Si pasan ${DIAS_PARA_RECLAMAR} días sin
@@ -908,8 +908,8 @@ export function correoRecordatorioPago(datos: {
     'Si ya lo hiciste y se te pasó avisarnos, entra y pulsa «Ya he hecho el',
     'Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.',
     '',
-    'Y si ya no te hace falta, dínoslo también. Es otro botón, y así él deja de',
-    'esperar. No pasa nada.',
+    'Y si ya no te hace falta, dínoslo también. Es otro botón, y así dejamos de',
+    'tener a alguien esperando. No pasa nada.',
     '',
     seguimiento,
     '',
@@ -933,7 +933,7 @@ export function correoRecordatorioPago(datos: {
       Entra y pulsa «Ya he hecho el Bizum». Con eso dejamos de darte la lata mientras lo comprobamos.
     </p>
     <p style="margin:0 0 16px;color:${GRIS};">
-      Y si ya no te hace falta, dínoslo también. Es otro botón, y así él deja de esperar. No pasa nada.
+      Y si ya no te hace falta, dínoslo también. Es otro botón, y así dejamos de tener a alguien esperando. No pasa nada.
     </p>
     ${boton('Ir a mi página', seguimiento)}
     <p style="margin:0;color:${GRIS};font-size:14px;">

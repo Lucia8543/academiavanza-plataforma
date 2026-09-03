@@ -203,7 +203,7 @@ export default function PaginaPrivacidad() {
           <strong>
             A ti no te damos el teléfono del profesor en ningún caso.
           </strong>{' '}
-          Es él quien te escribe o te llama, y quien decide si te da su número
+          Es el profesor quien te escribe o te llama, y quien decide si te da su número
           cuando habléis. Es una medida de protección de datos, porque minimizamos lo
           que se comparte, y el teléfono de un profesor no hace falta para que
           podáis hablar.
