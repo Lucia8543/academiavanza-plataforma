@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import {
+  detectarDatosDeContacto,
+  mensajeDeAvisoContactoProfesor,
+} from '@/shared/schemas/datos-de-contacto';
+import {
   detectarDatosSensibles,
   mensajeDeAvisoProfesor,
 } from '@/shared/schemas/datos-sensibles';
@@ -207,6 +211,38 @@ export const esquemaRegistroProfesor = z
         code: 'custom',
         path: [campo],
         message: mensajeDeAvisoProfesor(deteccion),
+      });
+    }
+  })
+  /*
+   * Y los mismos tres campos, ahora contra teléfonos y correos.
+   *
+   * Es la otra mitad de la fuga que se cerró en el formulario de la familia, y
+   * de las dos ésta es la peor. Lo que escribe una familia acaba en el correo
+   * de un profesor; lo que escribe un profesor **se publica en una página web**
+   * que cualquiera puede abrir y cualquier robot puede recorrer. Un móvil
+   * puesto ahí no se salta el cobro una vez, se lo salta siempre y para todo el
+   * mundo, y encima le deja al profesor un número suelto por internet que ya no
+   * hay forma de recoger.
+   *
+   * Su teléfono y su correo de verdad se piden arriba, en sus campos, y ésos no
+   * pasan por aquí.
+   */
+  .superRefine((datos, ctx) => {
+    const campos = [
+      ['puntosFuertes', datos.puntosFuertes],
+      ['colegioOtro', datos.colegioOtro],
+      ['notaDisponibilidad', datos.notaDisponibilidad],
+    ] as const;
+
+    for (const [campo, valor] of campos) {
+      const deteccion = detectarDatosDeContacto(valor ?? '');
+      if (!deteccion) continue;
+
+      ctx.addIssue({
+        code: 'custom',
+        path: [campo],
+        message: mensajeDeAvisoContactoProfesor(deteccion),
       });
     }
   });

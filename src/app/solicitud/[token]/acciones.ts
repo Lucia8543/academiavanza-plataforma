@@ -6,6 +6,7 @@ import {
   familiaDiceQueHaPagado,
   pedirVale,
   responderAlRecordatorio,
+  retirarSolicitud,
   type MotivoVale,
 } from '@/backend/services/solicitud';
 import { esMotivoCierre } from '@/shared/textos/motivos-cierre';
@@ -86,6 +87,26 @@ export async function contestarRecordatorio(formulario: FormData) {
     va,
     esMotivoCierre(crudo) ? crudo : undefined,
   );
+  revalidatePath(`/solicitud/${token}`);
+}
+
+/**
+ * «Ya no me hace falta»: retirar una solicitud que nadie ha contestado.
+ *
+ * No pide motivo obligatorio ni confirma nada por aquí. Quien pulsa esto ya ha
+ * resuelto su problema por otro lado y lo que quiere es quitárselo de encima;
+ * ponerle una pantalla intermedia haría que la mitad se fuera sin retirarla, y
+ * una solicitud viva que su dueña no quiere es justo lo que estamos evitando.
+ *
+ * La confirmación la pone el propio botón en el navegador. Es reversible en el
+ * único sentido que importa: puede volver a escribir a ese profesor cuando
+ * quiera.
+ */
+export async function retirar(formulario: FormData) {
+  const token = String(formulario.get('token') ?? '');
+  const crudo = String(formulario.get('motivo') ?? '');
+
+  await retirarSolicitud(token, esMotivoCierre(crudo) ? crudo : undefined);
   revalidatePath(`/solicitud/${token}`);
 }
 

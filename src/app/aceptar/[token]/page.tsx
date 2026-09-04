@@ -6,6 +6,7 @@ import { porTokenProfesor } from '@/backend/repositories/solicitudes';
 import { decidir } from '@/backend/services/solicitud';
 import { ActivarAvisos } from '@/frontend/features/portal-profesor/activar-avisos';
 import { esCupoOPausa } from '@/shared/reglas/cupo';
+import { cuantosEnPalabras } from '@/shared/textos/hermanos';
 import { PRECIO_ES_ORIENTATIVO, porHora } from '@/shared/textos/precios';
 import { CUPO_SE_CAMBIA } from '@/shared/textos/modalidad';
 
@@ -58,7 +59,16 @@ async function apuntarCupo(formulario: FormData) {
 async function aceptar(formulario: FormData) {
   'use server';
   const token = String(formulario.get('token') ?? '');
-  await decidir(token, 'aceptar');
+  /*
+   * A qué alumnos dice que sí.
+   *
+   * Vacío significa «a todos», que es el caso normal y el único que existía
+   * antes de que hubiera hermanos. Sólo llega relleno cuando la familia ha
+   * dicho que le vale con que coja a alguno y él ha pulsado uno de los botones
+   * concretos.
+   */
+  const alumnos = formulario.getAll('alumno').map(String);
+  await decidir(token, 'aceptar', undefined, alumnos);
   redirect(`/aceptar/${token}`);
 }
 
@@ -87,10 +97,42 @@ export default async function PaginaAceptar({
       </h1>
 
       <dl className="mt-6 space-y-2 rounded-xl border border-gris-borde bg-white p-5 text-sm">
-        <div>
-          <dt className="inline font-medium text-carbon">Curso: </dt>
-          <dd className="inline text-carbon">{s.nivel ?? '—'}</dd>
-        </div>
+        {/*
+          Los alumnos.
+
+          Con uno, la línea de siempre. Con hermanos, uno por línea con sus
+          horas al lado, porque quien puede coger sólo a uno necesita saber
+          cuántas horas son **de cada uno** y no el total. Las solicitudes
+          anteriores a que esto existiera no traen la lista, y entonces se
+          enseña el curso suelto, que es exactamente lo que son.
+        */}
+        {s.alumnos.length > 1 ? (
+          <div>
+            <dt className="font-medium text-carbon">
+              {cuantosEnPalabras(s.alumnos.length)}:
+            </dt>
+            <dd className="mt-1">
+              <ul className="space-y-1">
+                {s.alumnos.map((a) => (
+                  <li key={a.id} className="text-carbon">
+                    {a.nivel ?? '—'}
+                    {a.horasSemana && (
+                      <span className="text-gris-medio">
+                        {' '}
+                        · {a.horasSemana} a la semana
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+        ) : (
+          <div>
+            <dt className="inline font-medium text-carbon">Curso: </dt>
+            <dd className="inline text-carbon">{s.nivel ?? '—'}</dd>
+          </div>
+        )}
         {/*
           Cuánto se cobra por ese curso, aquí y no sólo en la ficha pública.
 
@@ -130,6 +172,35 @@ export default async function PaginaAceptar({
             <dd className="inline text-carbon">{s.zona}</dd>
           </div>
         )}
+        {/*
+          Y con la zona, las horas y los días.
+
+          Lo pidió una profesora que no podía saber si le cabía en el horario
+          antes de aceptar. Es el mismo problema que resolvió la zona y tiene
+          la misma consecuencia si falta: o dice que no a algo que le venía
+          bien, o le pide el teléfono a la familia antes de aceptar para
+          preguntárselo, saltándose lo único que cobra la plataforma.
+
+          Las dos son opcionales para la familia, así que la línea se omite
+          entera cuando no hay nada que decir.
+        */}
+        {/* Con hermanos, las horas ya van en la línea de cada uno. */}
+        {s.alumnos.length <= 1 && s.horasSemana && (
+          <div>
+            <dt className="inline font-medium text-carbon">
+              Horas por semana:{' '}
+            </dt>
+            <dd className="inline text-carbon">{s.horasSemana}</dd>
+          </div>
+        )}
+        {s.diasPreferidos && (
+          <div>
+            <dt className="inline font-medium text-carbon">
+              Días que le vienen bien:{' '}
+            </dt>
+            <dd className="inline text-carbon">{s.diasPreferidos}</dd>
+          </div>
+        )}
         <div>
           <dt className="inline font-medium text-carbon">Recibida: </dt>
           <dd className="inline text-carbon">
@@ -157,12 +228,62 @@ export default async function PaginaAceptar({
             de un profesor.
           </p>
 
-          <form action={aceptar} className="mt-5">
-            <input type="hidden" name="token" value={token} />
-            <button className="w-full rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro">
-              Sí, puedo cogerla
-            </button>
-          </form>
+          {/*
+            Un botón, o uno por combinación.
+            ------------------------------------------------------------------
+
+            Cuando la familia ha dicho que le vale con que coja a alguno, el
+            botón único deja de servir: obliga a decir que sí a todo o que no a
+            todo, y quien sólo tiene hueco para uno acaba diciendo que no,
+            dejando a esa familia sin nadie con media solución delante.
+
+            Son formularios separados y no casillas con un botón al final a
+            propósito. Un profesor abre esto en el móvil, entre clase y clase, y
+            lo que tiene que hacer es leer tres frases y tocar una. Marcar
+            casillas y luego buscar el botón es un paso más en el único momento
+            en que esta plataforma cobra algo.
+
+            El precio no cambia en ninguno de los casos, y lo dice cada botón,
+            porque es la primera duda que le va a entrar.
+          */}
+          {s.valeConUno && s.alumnos.length > 1 ? (
+            <div className="mt-5 space-y-3">
+              <form action={aceptar}>
+                <input type="hidden" name="token" value={token} />
+                {s.alumnos.map((a) => (
+                  <input key={a.id} type="hidden" name="alumno" value={a.id} />
+                ))}
+                <button className="w-full rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro">
+                  Puedo con los {s.alumnos.length}
+                </button>
+              </form>
+
+              {s.alumnos.map((a) => (
+                <form key={a.id} action={aceptar}>
+                  <input type="hidden" name="token" value={token} />
+                  <input type="hidden" name="alumno" value={a.id} />
+                  <button className="w-full rounded-lg border-2 border-verde-avanza px-6 py-3 font-semibold text-verde-avanza-oscuro transition hover:bg-verde-avanza-claro">
+                    Sólo con {a.nivel ?? 'este alumno'}
+                    {a.horasSemana && (
+                      <span className="font-normal"> · {a.horasSemana}</span>
+                    )}
+                  </button>
+                </form>
+              ))}
+
+              <p className="text-sm text-gris-medio">
+                Cojas a uno o a todos, la familia paga lo mismo: lo que compra
+                es poder hablar contigo.
+              </p>
+            </div>
+          ) : (
+            <form action={aceptar} className="mt-5">
+              <input type="hidden" name="token" value={token} />
+              <button className="w-full rounded-lg bg-verde-avanza px-6 py-3 font-semibold text-white transition hover:bg-verde-avanza-oscuro">
+                {s.alumnos.length > 1 ? 'Sí, puedo con todos' : 'Sí, puedo cogerla'}
+              </button>
+            </form>
+          )}
 
           <form
             action={rechazar}

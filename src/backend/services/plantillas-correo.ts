@@ -3,6 +3,7 @@ import {
   CADUCADAS_PARA_PAUSAR,
   DIAS_PARA_RECLAMAR,
 } from '@/shared/reglas/cobro';
+import { cuantosEnPalabras } from '@/shared/textos/hermanos';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import { euros, porHora, PRECIO_ES_ORIENTATIVO } from '@/shared/textos/precios';
 
@@ -153,6 +154,28 @@ export function correoSolicitud(datos: {
   precioNivel: number | null;
   /** Dónde vive la familia. Vacío si el profesor sólo da clase online. */
   zona: string | null;
+  /**
+   * Cuántas horas por semana y qué días, ya en palabras.
+   *
+   * Llegan formateados y no en crudo porque este fichero pinta correos, no
+   * traduce códigos. `horasEnPalabras` y `diasEnPalabras` viven en
+   * `shared/textos/horario-familia` y los usan también las tres pantallas que
+   * enseñan lo mismo.
+   */
+  horasSemana: string;
+  diasPreferidos: string;
+  /**
+   * Los hermanos, del segundo en adelante, con su curso y sus horas en palabras.
+   *
+   * Vacío en el caso normal, que sigue siendo el de siempre. Cuando hay algo, el
+   * correo cambia de forma: en vez de una línea de curso y otra de horas, una
+   * línea por alumno. Se probó a poner «Cursos: 3.º de la ESO y 5.º de Primaria»
+   * con las horas sumadas debajo y no vale, porque lo que necesita saber quien
+   * va a coger sólo a uno es cuántas horas son **de cada uno**.
+   */
+  hermanos: { nivel: string; horasSemana: string }[];
+  /** La familia acepta que coja sólo a alguno de ellos. */
+  valeConUno: boolean;
   mensaje: string | null;
   tokenProfesor: string;
   tokenPanel: string;
@@ -165,19 +188,68 @@ export function correoSolicitud(datos: {
   // cuando ya han pasado no es un plazo, es una excusa.
   const plazo = `Tienes ${datos.diasDePlazo} días para contestar. Pasados, la solicitud se cierra sola y le decimos a la familia que busque a otra persona.`;
 
+  /*
+   * Cómo se cuentan los alumnos, que depende de cuántos sean.
+   *
+   * Con uno se mantiene lo de siempre: una línea de curso y otra de horas. Con
+   * hermanos, una línea por alumno con las dos cosas juntas, porque el profesor
+   * necesita poder emparejarlas de un vistazo.
+   *
+   * Y se construye una sola vez para las dos versiones del correo, la de texto y
+   * la de HTML. Tenerlo dos veces es cómo acaban diciendo cosas distintas al
+   * mismo profesor según el programa con el que abra el correo.
+   */
+  const hayHermanos = datos.hermanos.length > 0;
+
+  const conHoras = (nivel: string, horas: string) =>
+    horas ? `${nivel} · ${horas} a la semana` : nivel;
+
+  const alumnos = [
+    conHoras(datos.nivel, datos.horasSemana),
+    ...datos.hermanos.map((h) => conHoras(h.nivel, h.horasSemana)),
+  ];
+
+  /*
+   * La frase que le dice que puede quedarse con uno.
+   *
+   * Va con el «sigue siendo un solo contacto» pegado, y no es relleno. Sin eso,
+   * quien lee que puede coger sólo a uno se pregunta si entonces la familia paga
+   * la mitad, o si le van a pedir que lo justifique. Ninguna de las dos cosas
+   * pasa, y dudarlo es motivo suficiente para no pulsar nada.
+   */
+  const eligeUno =
+    'La familia acepta que cojas sólo a alguno de ellos, el que te encaje ' +
+    'mejor. Sigue siendo un solo contacto y no cambia lo que paga.';
+
   const cuerpo = [
     `Hola ${datos.nombreProfesor}:`,
     '',
     'Una familia ha visto tu ficha en AcademiAvanza y quiere clases contigo.',
     'Antes de darte ningún dato suyo necesitamos saber si te viene bien.',
     '',
-    `Curso: ${datos.nivel}`,
+    ...(hayHermanos
+      ? [
+          `${cuantosEnPalabras(alumnos.length)}:`,
+          ...alumnos.map((a) => `  · ${a}`),
+          ...(datos.valeConUno ? ['', eligeUno] : []),
+        ]
+      : [`Curso: ${datos.nivel}`]),
     ...(datos.precioNivel === null
       ? []
       : [`Precio de referencia: ${porHora(datos.precioNivel)}`]),
     // La zona va junto al curso y no al final: son las dos cosas que decide
     // cualquiera antes de contestar, y aquí es donde se contesta.
     ...(datos.zona ? [`Zona: ${datos.zona}`] : []),
+    // Y con ellas las horas y los días, por el mismo motivo. Sin esto, quien
+    // no podía saber si le cabía en el horario o rechazaba propuestas que le
+    // venían bien, o pedía el teléfono de la familia antes de aceptar para
+    // preguntárselo. Las líneas se omiten si la familia no contestó: un
+    // «Horas por semana: —» ocupa lo mismo y no informa de nada.
+    // Con hermanos, las horas ya van en la línea de cada uno.
+    ...(!hayHermanos && datos.horasSemana
+      ? [`Horas por semana: ${datos.horasSemana}`]
+      : []),
+    ...(datos.diasPreferidos ? [`Días que le vienen bien: ${datos.diasPreferidos}`] : []),
     ...(datos.precioNivel === null ? [] : ['', PRECIO_ES_ORIENTATIVO]),
     ...(datos.mensaje ? ['', 'Lo que te cuenta:', datos.mensaje] : []),
     '',
@@ -201,10 +273,24 @@ export function correoSolicitud(datos: {
     <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
     <p style="margin:0 0 16px;">Una familia ha visto tu ficha y <strong>quiere clases contigo</strong>. Antes de darte ningún dato suyo necesitamos saber si te viene bien.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px;">
-      ${dato('Curso', datos.nivel)}
+      ${
+        hayHermanos
+          ? dato(
+              cuantosEnPalabras(alumnos.length),
+              alumnos.map((a) => escapar(a)).join('<br>'),
+            )
+          : dato('Curso', datos.nivel)
+      }
       ${datos.precioNivel === null ? '' : dato('Precio de referencia', porHora(datos.precioNivel))}
       ${datos.zona ? dato('Zona', datos.zona) : ''}
+      ${!hayHermanos && datos.horasSemana ? dato('Horas por semana', datos.horasSemana) : ''}
+      ${datos.diasPreferidos ? dato('Días que le vienen bien', datos.diasPreferidos) : ''}
     </table>
+    ${
+      hayHermanos && datos.valeConUno
+        ? `<p style="margin:0 0 16px;color:${GRIS};font-size:14px;">${eligeUno}</p>`
+        : ''
+    }
     ${
       datos.precioNivel === null
         ? ''
@@ -996,6 +1082,58 @@ export function correoFamiliaNoSigue(datos: {
   return {
     para: datos.para,
     asunto: 'Una solicitud que ya no sigue adelante',
+    cuerpo,
+    html,
+  };
+}
+
+/**
+ * 6 bis · Esa familia ha retirado su solicitud antes de que contestaras.
+ *
+ * Es otro correo y no un parámetro más del de arriba, porque aquél empieza por
+ * «la familia a la que dijiste que sí» y aquí el profesor **no ha dicho nada
+ * todavía**. Reutilizarlo le contaría un pasado que no ocurrió, y a alguien que
+ * abre veinte correos así al mes eso le suena a que la plataforma no se entera
+ * de lo que pasa en su propia casa.
+ *
+ * Las dos frases del final no son relleno. Quien recibe esto puede pensar dos
+ * cosas feas: que ha tardado demasiado, y que esto le cuenta como una solicitud
+ * sin contestar de las que acaban pausando su ficha. Ninguna de las dos es
+ * verdad —la familia se retiró por su cuenta y una retirada no cuenta— y es más
+ * barato decirlo que dejar que lo suponga.
+ */
+export function correoFamiliaSeRetira(datos: {
+  para: string;
+  nombreProfesor: string;
+  nivel: string | null;
+}): Correo {
+  const cuerpo = [
+    `Hola ${datos.nombreProfesor}:`,
+    '',
+    `La familia ${datos.nivel ? `de ${datos.nivel} ` : ''}que te escribió ha`,
+    'retirado su solicitud. No hace falta que contestes.',
+    '',
+    'Te avisamos para que no te quedes esperando. No cuenta como una solicitud',
+    'sin contestar y tu ficha sigue publicada igual.',
+    '',
+    'AcademiAvanza',
+  ].join('\n');
+
+  const html = envoltorio(`
+    <p style="margin:0 0 16px;">Hola ${escapar(datos.nombreProfesor)}:</p>
+    <p style="margin:0 0 16px;">
+      La familia ${datos.nivel ? `de ${escapar(datos.nivel)} ` : ''}que te escribió
+      <strong>ha retirado su solicitud</strong>. No hace falta que contestes.
+    </p>
+    <p style="margin:0;color:${GRIS};font-size:14px;">
+      Te avisamos para que no te quedes esperando. No cuenta como una solicitud sin
+      contestar y tu ficha sigue publicada igual.
+    </p>
+  `);
+
+  return {
+    para: datos.para,
+    asunto: 'Una solicitud retirada',
     cuerpo,
     html,
   };

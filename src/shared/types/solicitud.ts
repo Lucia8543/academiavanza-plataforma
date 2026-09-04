@@ -75,6 +75,22 @@ export type SolicitudFamilia = {
    * reclama nada ni se le cierra la solicitud.
    */
   avisoDePago: boolean;
+  /**
+   * La retiró la familia antes de que el profesor contestara.
+   *
+   * Hace falta porque el estado `cancelada` cuenta dos historias distintas —la
+   * que se retira antes del sí y la que no paga después del sí— y a la familia
+   * hay que contarle la suya. Quien abre este enlace tres semanas después no se
+   * acuerda de qué pasó con cuál.
+   */
+  retirada: boolean;
+  /**
+   * Los alumnos de la solicitud y a cuáles ha dicho que sí el profesor.
+   *
+   * Vacío en las solicitudes anteriores a que existieran los hermanos, y en
+   * ellas la pantalla enseña `nivel` suelto, que es lo que son.
+   */
+  alumnos: { id: string; nivel: string | null; aceptado: boolean | null }[];
   motivoRechazo: string | null;
   enviadaEn: Date;
   /*
@@ -114,6 +130,44 @@ export type SolicitudProfesor = {
    * lista cerrada.
    */
   zona: string | null;
+  /**
+   * Cuántas horas por semana y qué días, en palabras y listos para pintar.
+   *
+   * Cadena vacía cuando la familia no contestó, que es lo normal y no un
+   * error: los dos campos son opcionales. Quien pinta la pantalla omite la
+   * línea entera en ese caso, porque «Horas por semana: —» ocupa lo mismo que
+   * una línea útil y no dice nada.
+   *
+   * Son lo que le faltaba al profesor para poder decidir si le cabe en el
+   * horario antes de aceptar, y sin eso o rechazaba propuestas que le venían
+   * bien o pedía el teléfono de la familia por adelantado.
+   */
+  horasSemana: string;
+  diasPreferidos: string;
+  /**
+   * Los alumnos de la solicitud, en el orden en que los puso la familia.
+   *
+   * Vacío en las solicitudes anteriores a que existieran los hermanos, y ese
+   * caso hay que tratarlo: entonces la pantalla enseña `nivel` y `horasSemana`
+   * sueltos, que es exactamente lo que esas solicitudes son. Rellenar la lista
+   * a la fuerza con un alumno inventado habría hecho que todas parecieran
+   * nuevas, y no lo son.
+   */
+  alumnos: {
+    id: string;
+    nivel: string | null;
+    /** Ya en palabras: «3 horas». Vacío si la familia no lo dijo. */
+    horasSemana: string;
+    /** null mientras no ha contestado; true si lo coge; false si a éste no. */
+    aceptado: boolean | null;
+  }[];
+  /**
+   * La familia acepta que coja sólo a alguno de los hermanos.
+   *
+   * Es lo que convierte el botón de aceptar en varios. Sin esto, quien sólo
+   * puede con uno tiene que decir que no a todo.
+   */
+  valeConUno: boolean;
   enviadaEn: Date;
   /** Ya tiene al menos un aparato apuntado: no hay que volver a pedirle nada. */
   avisadoPorMovil: boolean;

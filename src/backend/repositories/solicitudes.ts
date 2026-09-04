@@ -3,6 +3,10 @@ import { nombrePublico } from '@/backend/repositories/directorio';
 import { PLAZOS, plazoDe, type Urgencia } from '@/shared/reglas/cobro';
 import { elProfesorVeElTelefono } from '@/shared/reglas/solicitud';
 import { zonaCompleta } from '@/shared/datos/zonas';
+import {
+  diasEnPalabras,
+  horasEnPalabras,
+} from '@/shared/textos/horario-familia';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import type {
   EstadoSolicitud,
@@ -33,6 +37,7 @@ export async function porTokenFamilia(
       importe: true,
       motivo_rechazo: true,
       enviado_en: true,
+      aceptada_en: true,
       pagada_en: true,
       telefono_familia: true,
       email_familia: true,
@@ -41,6 +46,10 @@ export async function porTokenFamilia(
       vale_de: true,
       vale_concedido: true,
       niveles: { select: { nombre: true, precio_referencia: true } },
+      alumnos: {
+        select: { id: true, aceptado: true, niveles: { select: { nombre: true } } },
+        orderBy: { orden: 'asc' },
+      },
       profesores: {
         select: {
           nombre: true,
@@ -92,6 +101,32 @@ export async function porTokenFamilia(
         )
       : null,
     motivoRechazo: s.motivo_rechazo,
+    /*
+     * Cancelada, sí, pero ¿por cuál de las dos puertas?
+     *
+     * `cancelada` cubre dos historias distintas: la familia que se retiró antes
+     * de que el profesor contestara, y la que dijo que no iba a pagar después
+     * de que él aceptara. La columna del estado no las distingue, y la fecha de
+     * aceptación sí: si no la hay, nunca hubo un sí.
+     *
+     * Se decide aquí y no en la pantalla porque es una regla sobre los datos, no
+     * sobre cómo se pintan. Una pantalla que mirase `estado` y `aceptada_en` a
+     * la vez tendría que volver a acertar cada vez que alguien añada un camino.
+     */
+    retirada: s.estado === 'cancelada' && s.aceptada_en === null,
+    /*
+     * Los alumnos y a cuáles ha dicho que sí.
+     *
+     * A la familia le hace falta cuando el profesor puede coger sólo a alguno:
+     * ha pagado un contacto y tiene que saber para cuál de sus hijos le ha
+     * salido, y para cuál le toca volver a buscar. Sin esto se enteraría en la
+     * llamada, que es tarde y es una decepción evitable.
+     */
+    alumnos: s.alumnos.map((a) => ({
+      id: a.id,
+      nivel: a.niveles?.nombre ?? null,
+      aceptado: a.aceptado,
+    })),
     enviadaEn: s.enviado_en,
     /*
      * El teléfono del profesor no se devuelve nunca, ni siquiera pagada.
@@ -119,8 +154,20 @@ export async function porTokenProfesor(
       mensaje: true,
       zona: true,
       barrio: true,
+      horas_semana: true,
+      dias_preferidos: true,
+      vale_con_uno: true,
       enviado_en: true,
       niveles: { select: { nombre: true, precio_referencia: true } },
+      alumnos: {
+        select: {
+          id: true,
+          horas_semana: true,
+          aceptado: true,
+          niveles: { select: { nombre: true } },
+        },
+        orderBy: { orden: 'asc' },
+      },
       profesores: {
         select: {
           cupo: true,
@@ -149,6 +196,29 @@ export async function porTokenProfesor(
     mensaje: s.mensaje,
     // Al profesor se le da ya montado: «Ríos Rosas (Chamberí)».
     zona: zonaCompleta(s.zona, s.barrio),
+    // Y las horas y los días también en palabras, por el mismo motivo: quien
+    // pinta la pantalla no tiene que saber que un 3 es miércoles.
+    horasSemana: horasEnPalabras(s.horas_semana),
+    diasPreferidos: diasEnPalabras(s.dias_preferidos),
+    /*
+     * Los alumnos, ya ordenados y en palabras.
+     *
+     * Salen de `contacto_alumnos` y no de `nivel_id`, que es lo mismo sólo para
+     * el primero. El orden lo pone la consulta y no la base de datos por su
+     * cuenta: aquí el orden es información, porque el profesor va a pulsar un
+     * botón por alumno y tiene que ser el que cree.
+     *
+     * Las solicitudes anteriores a la migración 29 no tienen filas aquí. En ese
+     * caso la lista sale vacía y la pantalla enseña lo de siempre, el curso
+     * suelto, que es exactamente lo que esas solicitudes son.
+     */
+    alumnos: s.alumnos.map((a) => ({
+      id: a.id,
+      nivel: a.niveles?.nombre ?? null,
+      horasSemana: horasEnPalabras(a.horas_semana),
+      aceptado: a.aceptado,
+    })),
+    valeConUno: s.vale_con_uno,
     enviadaEn: s.enviado_en,
     avisadoPorMovil: s.profesores._count.suscripciones_push > 0,
     cupo: normalizarCupo(s.profesores.cupo),

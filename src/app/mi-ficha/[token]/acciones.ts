@@ -11,6 +11,10 @@ import {
 import { profesorDelPanel } from '@/backend/services/acceso-profesor';
 import { darDeBaja } from '@/backend/services/baja-profesor';
 import {
+  detectarDatosDeContacto,
+  mensajeDeAvisoContactoProfesor,
+} from '@/shared/schemas/datos-de-contacto';
+import {
   detectarDatosSensibles,
   mensajeDeAvisoProfesor,
 } from '@/shared/schemas/datos-sensibles';
@@ -152,6 +156,13 @@ export async function guardarCambios(
     const sensible = detectarDatosSensibles(texto);
     if (sensible) {
       return { error: mensajeDeAvisoProfesor(sensible) };
+    }
+
+    // Y el teléfono, que es lo que el comentario de arriba llevaba tiempo
+    // avisando que iba a pasar y no comprobaba nadie.
+    const contacto = detectarDatosDeContacto(texto);
+    if (contacto) {
+      return { error: mensajeDeAvisoContactoProfesor(contacto) };
     }
   }
   if (modalidad !== 'online' && !zona) {

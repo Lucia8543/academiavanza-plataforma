@@ -4,7 +4,12 @@ import {
   detectarDatosSensibles,
   mensajeDeAviso,
 } from '@/shared/schemas/datos-sensibles';
+import {
+  detectarDatosDeContacto,
+  mensajeDeAvisoContacto,
+} from '@/shared/schemas/datos-de-contacto';
 import { esBarrioValido, esZonaValida } from '@/shared/datos/zonas';
+import { MAXIMO_HERMANOS } from '@/shared/textos/hermanos';
 import { telefonoEspanol } from '@/shared/schemas/telefono';
 
 /**
@@ -113,6 +118,101 @@ export const esquemaContacto = z.object({
    */
   barrio: z.string().trim().optional().default(''),
 
+  /**
+   * Cuántas horas de clase por semana calcula la familia.
+   *
+   * Lo pidió una profesora que no podía decidir si aceptar sin saberlo, y es
+   * de las cosas que sólo se ven cuando alguien las sufre: el profesor tiene un
+   * único momento para decir que sí o que no, y es justo el que hace que la
+   * familia pague. Sin este dato, o rechaza propuestas que le venían bien o le
+   * pide el teléfono a la familia antes de aceptar para preguntárselo, que es
+   * saltarse lo único que cobra la plataforma.
+   *
+   * **`no-lo-se` es una respuesta y la cadena vacía es otra.** Una familia que
+   * escribe en septiembre muchas veces no lo sabe todavía, y decirlo es más
+   * útil que inventarse un número: al profesor le avisa de que eso está por
+   * hablar. Quien no contesta nada deja el campo vacío y ya está.
+   */
+  horasSemana: z
+    /*
+     * `mas-de-3` sigue aceptándose aunque el formulario ya no lo ofrezca.
+     *
+     * Es el tope que hubo hasta la migración 28 y quedan filas con él. Esta
+     * validación no sólo mira lo que entra por el formulario: por aquí pasan
+     * también las pruebas y cualquier reproceso de datos ya guardados, y una
+     * lista que se queda corta convierte un dato válido en un error.
+     */
+    .enum(['', '1', '2', '3', '4', '5-o-mas', 'no-lo-se', 'mas-de-3'])
+    .optional()
+    .default(''),
+
+  /**
+   * Qué días le vendrían mejor, de 1 (lunes) a 7 (domingo).
+   *
+   * Sin franja horaria a propósito. Las franjas ya las declara el profesor en
+   * su rejilla, y pedirle a una madre que rellene siete días por tres franjas
+   * en el móvil es perder solicitudes. Con los días basta para descartar lo
+   * imposible, que es de lo que se trata; la hora concreta la acuerdan ellos
+   * cuando hablen.
+   *
+   * Llegan como cadenas porque un formulario sin JavaScript no sabe de números.
+   * Se quedan sólo los siete válidos y se ordenan, para que el profesor los lea
+   * de lunes a domingo y no en el orden en que se marcaron las casillas.
+   */
+  diasPreferidos: z
+    .array(z.string())
+    .optional()
+    .default([])
+    .transform((dias) => {
+      const validos = dias
+        .map((d) => Number(d))
+        .filter((n) => Number.isInteger(n) && n >= 1 && n <= 7);
+      return [...new Set(validos)].sort((a, b) => a - b);
+    }),
+
+  /**
+   * Los hermanos, si los hay: del segundo en adelante.
+   *
+   * POR QUÉ EL PRIMERO NO ESTÁ AQUÍ
+   *
+   * Porque el primero es `nivelId` y `horasSemana`, que ya existían y de los
+   * que lee media plataforma: el panel de cobros, los correos, la lista de
+   * «tus otras solicitudes» y el histórico. Meterlo aquí habría convertido
+   * añadir un hermano en reescribir todo eso el mismo día.
+   *
+   * La asimetría es fea y está asumida a conciencia. Lo que la mantiene honesta
+   * es que **al guardar se junta todo en `contacto_alumnos`**, empezando por el
+   * primero, y de ahí sale todo lo que se enseña. Esta lista es sólo la forma
+   * que tiene el formulario de mandarlos.
+   *
+   * Se admiten dos como mucho, que con el primero hacen tres.
+   */
+  hermanos: z
+    .array(
+      z.object({
+        nivelId: z.string().trim().min(1, 'Dinos a qué curso va'),
+        horasSemana: z
+          .enum(['', '1', '2', '3', '4', '5-o-mas', 'no-lo-se', 'mas-de-3'])
+          .optional()
+          .default(''),
+      }),
+    )
+    .max(MAXIMO_HERMANOS - 1)
+    .optional()
+    .default([]),
+
+  /**
+   * La familia acepta que el profesor coja sólo a alguno de los hermanos.
+   *
+   * Sin esto, un profesor que sólo puede con uno tiene que decir que no a todo
+   * y la familia se queda sin nadie teniendo media solución delante. Con esto
+   * elige él, que es el único que sabe cómo tiene la tarde.
+   *
+   * En una solicitud de un solo alumno no significa nada, y por eso se apaga
+   * más abajo en vez de confiar en que el formulario no la mande.
+   */
+  valeConUno: z.boolean().optional().default(false),
+
   modalidad: z.enum(['online', 'presencial', 'ambas']).optional(),
 
   mensaje: z
@@ -167,6 +267,22 @@ export const esquemaContacto = z.object({
   // Un barrio que no es de ese distrito no es un despiste de formato: o el
   // formulario se envió a mano, o alguien cambió el distrito después de elegir
   // el barrio. En los dos casos el dato resultante sería mentira.
+  /*
+   * «Me vale con que coja a uno» sólo tiene sentido con hermanos.
+   *
+   * Se apaga aquí en vez de rechazar el envío, porque una casilla marcada que
+   * ha dejado de tener sentido no es un error de nadie: la madre pudo marcar
+   * dos hermanos, marcar esa opción y volver a poner un alumno. Rechazárselo
+   * sería castigarla por cambiar de idea.
+   *
+   * Y se apaga en el esquema y no en la pantalla, que es donde se cambió de
+   * idea, porque lo que llega al servidor no tiene por qué venir de la
+   * pantalla.
+   */
+  .transform((datos) => ({
+    ...datos,
+    valeConUno: datos.hermanos.length > 0 ? datos.valeConUno : false,
+  }))
   .superRefine((datos, ctx) => {
     if (datos.barrio && !esBarrioValido(datos.zona, datos.barrio)) {
       ctx.addIssue({
@@ -185,6 +301,43 @@ export const esquemaContacto = z.object({
       path: ['mensaje'],
       message: mensajeDeAviso(deteccion),
     });
+  })
+  /*
+   * Un teléfono, un correo o un usuario escritos dentro del texto.
+   *
+   * Esto no protege a nadie de nada: protege lo único que cobra la plataforma.
+   * El mensaje viaja al profesor **dentro del correo de la propuesta**, o sea
+   * antes de que la familia pague, así que quien escribiera ahí su número
+   * conseguía gratis exactamente lo que cuestan diez euros. No hacía falta
+   * ingenio ninguno, porque no había nada que esquivar.
+   *
+   * Se mira también el nombre, y no por simetría. El profesor **ve el nombre de
+   * la familia en la pantalla donde decide**, igual que el mensaje y por el
+   * mismo motivo: necesita saber a quién le está diciendo que sí. Un campo de
+   * ochenta caracteres a la vista del profesor y sin comprobar es la misma
+   * puerta con otro cartel, y dejarla abierta después de cerrar la de al lado
+   * habría sido no haber entendido cuál era el problema.
+   *
+   * El teléfono y el correo de arriba no pasan por aquí, faltaría más: ésos son
+   * los campos donde se piden, tienen su propia validación y son justamente lo
+   * que la plataforma vende.
+   */
+  .superRefine((datos, ctx) => {
+    const campos = [
+      ['mensaje', datos.mensaje],
+      ['nombreFamilia', datos.nombreFamilia],
+    ] as const;
+
+    for (const [campo, valor] of campos) {
+      const deteccion = detectarDatosDeContacto(valor ?? '');
+      if (!deteccion) continue;
+
+      ctx.addIssue({
+        code: 'custom',
+        path: [campo],
+        message: mensajeDeAvisoContacto(deteccion),
+      });
+    }
   });
 
 export type DatosContacto = z.infer<typeof esquemaContacto>;

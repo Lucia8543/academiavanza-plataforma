@@ -18,7 +18,9 @@ export type EstadoContacto = {
   ok: boolean;
   mensaje?: string;
   errores?: Record<string, string>;
-  valores?: Record<string, string>;
+  // Casi todo son cadenas, pero los días preferidos son varias casillas y
+  // viajan como lista. Mismo criterio que en el alta del profesor.
+  valores?: Record<string, string | string[]>;
 };
 
 export async function enviarContacto(
@@ -47,11 +49,32 @@ export async function enviarContacto(
   const cadena = (campo: string) => String(formulario.get(campo) ?? '');
   const slug = cadena('slug');
 
+  /*
+   * Los alumnos, todos, tal y como llegan: dos listas paralelas.
+   *
+   * El formulario pinta un bloque por alumno con un curso y unas horas dentro, y
+   * los tres bloques mandan los mismos dos nombres. Se emparejan por posición,
+   * que es la forma que tiene un formulario HTML de mandar una lista de objetos
+   * y funciona porque los dos `select` se pintan siempre juntos: no puede haber
+   * tres cursos y dos horarios.
+   */
+  const cursosDeLosAlumnos = formulario.getAll('alumnoNivel').map(String);
+  const horasDeLosAlumnos = formulario.getAll('alumnoHoras').map(String);
+
   const enviado = {
     nombreFamilia: cadena('nombreFamilia'),
     telefono: cadena('telefono'),
     email: cadena('email'),
-    nivelId: cadena('nivelId'),
+    /*
+     * El curso y las horas del primer alumno.
+     *
+     * El formulario manda **todos** los alumnos con el mismo par de nombres, y
+     * aquí se separa el primero de los demás. La asimetría no es de la pantalla,
+     * es del modelo: `nivelId` y `horasSemana` existían antes de que hubiera
+     * hermanos y siguen leyéndolos el panel de cobros, los correos y el
+     * histórico. Está explicada entera en el ADR 0011.
+     */
+    nivelId: String(cursosDeLosAlumnos[0] ?? ''),
     /*
      * Dónde vive la familia, y sólo se pregunta si el profesor se desplaza.
      *
@@ -68,6 +91,36 @@ export async function enviarContacto(
      */
     zona: cadena('zona'),
     barrio: cadena('barrio'),
+    /*
+     * Cuántas horas y qué días. Lo que el profesor necesita para decidir.
+     *
+     * Van aquí, y no sólo en el formulario, porque este fichero es donde se
+     * han perdido en silencio los tres campos anteriores: el cupo, la zona y
+     * la urgencia. El patrón siempre es el mismo, y por eso conviene decirlo
+     * en voz alta: el navegador envía el campo, esta función no lo copia, el
+     * esquema tiene valor por defecto y el servicio guarda un vacío
+     * perfectamente válido. No hay excepción, ni aviso, ni línea en el
+     * registro. Sólo un profesor que no entiende por qué le falta un dato.
+     *
+     * `getAll` y no `get` para los días: son casillas y llegan repetidas.
+     */
+    horasSemana: horasDeLosAlumnos[0] ?? '',
+    diasPreferidos: formulario.getAll('diasPreferidos').map(String),
+    /*
+     * Y los hermanos, que son del segundo en adelante.
+     *
+     * Las horas se completan con cadena vacía si faltan. Si alguna vez las dos
+     * listas dejaran de tener el mismo largo, el resultado sería un hermano sin
+     * horas —que es un dato opcional y se nota— y no un desplazamiento que le
+     * asigna a uno las horas del otro, que es el fallo callado y caro.
+     */
+    hermanos: cursosDeLosAlumnos.slice(1).map((nivelId, i) => ({
+      nivelId,
+      horasSemana: horasDeLosAlumnos[i + 1] ?? '',
+    })),
+    // Si la familia acepta que el profesor coja sólo a alguno. El esquema lo
+    // apaga cuando no hay hermanos, así que aquí basta con copiarlo tal cual.
+    valeConUno: cadena('valeConUno') === 'si',
     // Para cuándo lo necesita. Sin esta línea el formulario pintaba las tres
     // opciones, el navegador las enviaba y aquí se tiraban: como el esquema
     // tiene valor por defecto, todo el mundo acababa con cinco días y nadie se
@@ -91,6 +144,25 @@ export async function enviarContacto(
     nivelId: enviado.nivelId,
     zona: enviado.zona,
     barrio: enviado.barrio,
+    horasSemana: enviado.horasSemana,
+    // Los días viajan como lista, igual que llegaron. El formulario los vuelve
+    // a marcar uno a uno, y perder cinco casillas por un campo mal escrito más
+    // arriba es de las cosas que hacen abandonar un formulario.
+    diasPreferidos: enviado.diasPreferidos,
+    /*
+     * Los hermanos vuelven como dos listas paralelas y no como objetos.
+     *
+     * Lo que viaja de vuelta a la pantalla es una bolsa de cadenas y listas de
+     * cadenas, que es lo que sabe rellenar un formulario. La pantalla los
+     * vuelve a emparejar por posición, igual que se desemparejaron arriba.
+     *
+     * Y tienen que volver, porque quien ha rellenado tres cursos y tres
+     * horarios y se equivoca en el teléfono no puede encontrarse el formulario
+     * en blanco. Es la razón por la que existe todo este `valores`.
+     */
+    alumnoNivel: cursosDeLosAlumnos,
+    alumnoHoras: horasDeLosAlumnos,
+    valeConUno: enviado.valeConUno ? 'si' : 'no',
     mensaje: enviado.mensaje,
     vale: enviado.vale,
   };

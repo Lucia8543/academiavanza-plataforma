@@ -71,6 +71,15 @@ const NO_SE_COPIAN: Record<string, string> = {
   empresa: 'campo trampa',
   web: 'campo trampa',
   apodo: 'campo trampa',
+  /*
+   * Cuántos alumnos son. No se copia porque no hace falta copiarlo: el servidor
+   * lo cuenta a partir de cuántos `alumnoNivel` han llegado.
+   *
+   * Y es mejor así. Si se enviara y se copiara, habría dos versiones del mismo
+   * hecho —lo que dice la casilla y cuántos bloques venían— y algún día dirían
+   * cosas distintas. Este campo sólo existe para pintar la pantalla.
+   */
+  cuantosAlumnos: 'lo cuenta el servidor a partir de los alumnos que llegan',
 };
 
 /** Los `name="..."` de todo lo que el formulario envía. */
@@ -113,6 +122,37 @@ describe('⭐ el contacto de la familia copia todos los campos', () => {
     // propósito y no de rebote.
     expect(enviadosContacto).toContain('zona');
     expect(enviadosContacto).toContain('barrio');
+    /*
+     * Y las dos que se añadieron después por lo mismo.
+     *
+     * Las pidió una profesora que no podía saber si le cabía en el horario
+     * antes de aceptar, que es la misma situación que creó la zona cuando se
+     * perdía: sin el dato, o rechaza propuestas que le venían bien, o pide el
+     * teléfono de la familia por adelantado para preguntarlo.
+     *
+     * El bucle de abajo ya las recogería solo, porque las saca de los
+     * `name=`. Se nombran aquí igualmente para que quitarlas del formulario
+     * rompa una prueba con nombre en vez de reducir en dos una cuenta que
+     * nadie mira.
+     *
+     * `horasSemana` ya no está en esta lista, y no es un descuido. Desde que
+     * una solicitud puede llevar hermanos, las horas se envían con el mismo
+     * nombre que las de los demás alumnos —`alumnoHoras`, repetido— y el
+     * servidor se queda con la primera. Quien las busque, que las busque ahí.
+     */
+    expect(enviadosContacto).toContain('diasPreferidos');
+    /*
+     * Y los tres de los hermanos.
+     *
+     * Éstos tienen un riesgo propio que los anteriores no tenían: los dos
+     * primeros viajan **repetidos**, uno por bloque de la pantalla, y se
+     * emparejan por posición en la acción. Si alguien quitara uno de los dos
+     * `name`, el otro seguiría llegando y los hermanos se guardarían con las
+     * horas cambiadas o sin ellas, sin que fallara nada.
+     */
+    expect(enviadosContacto).toContain('alumnoNivel');
+    expect(enviadosContacto).toContain('alumnoHoras');
+    expect(enviadosContacto).toContain('valeConUno');
   });
 
   it.each(enviadosContacto)(

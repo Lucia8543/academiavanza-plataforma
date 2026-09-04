@@ -12,6 +12,7 @@ import { CorreoFamilia } from '@/frontend/features/directorio/correo-familia';
 import { Dejarlo } from '@/frontend/features/directorio/dejarlo';
 import { GuardarEnlace } from '@/frontend/features/directorio/guardar-enlace';
 import { ReclamarVale } from '@/frontend/features/directorio/reclamar-vale';
+import { RetirarSolicitud } from '@/frontend/features/directorio/retirar-solicitud';
 import { formatearTelefono } from '@/shared/schemas/telefono';
 import { euros, porHora } from '@/shared/textos/precios';
 
@@ -36,6 +37,16 @@ const ETIQUETA: Record<string, { texto: string; clase: string }> = {
   },
   rechazada: { texto: 'no pudo', clase: 'bg-gris-claro text-gris-medio' },
   caducada: { texto: 'sin respuesta', clase: 'bg-gris-claro text-gris-medio' },
+  /*
+   * Los dos que faltaban, y se notaba: sin ellos la etiqueta caía al valor
+   * crudo de la base de datos y en la lista ponía «cancelada» y «devuelta» tal
+   * cual, en el vocabulario de la tabla y no en el de la familia.
+   *
+   * Ahora importa más que antes, porque retirar una solicitud deja justamente
+   * ese estado y va a dejar de ser un caso raro.
+   */
+  cancelada: { texto: 'la retiraste', clase: 'bg-gris-claro text-gris-medio' },
+  devuelta: { texto: 'te lo devolvimos', clase: 'bg-gris-claro text-gris-medio' },
 };
 
 function Paso({
@@ -89,6 +100,37 @@ export default async function PaginaSolicitud({
   // enlaces sueltos por el correo, y desde cualquiera puede llegar al resto.
   const otras = await otrasDeLaMismaFamilia(s.telefonoFamilia, token);
 
+  /*
+   * Conversaciones vivas, contando ésta.
+   *
+   * Vivas son las dos que todavía pueden acabar en un cobro: la que espera
+   * respuesta y la que ya fue aceptada y está sin pagar. Las rechazadas, las
+   * caducadas y las que ya se pagaron no cuentan, porque ninguna va a
+   * sorprenderla con otros diez euros.
+   *
+   * Se cuenta aquí y no dentro del componente porque es la clase de número que,
+   * calculado al pintar, acaba diciendo una cosa en una pantalla y otra en la
+   * de al lado.
+   */
+  const VIVAS = ['pendiente_profesor', 'aceptada'];
+  const abiertas =
+    (VIVAS.includes(s.estado) ? 1 : 0) +
+    otras.filter((o) => VIVAS.includes(o.estado)).length;
+
+  /*
+   * A cuáles ha dicho que sí y a cuáles no.
+   *
+   * Se separa aquí y no dentro del JSX porque los dos grupos se usan en la
+   * misma frase y calcularlos dos veces al pintar es cómo acaban discrepando.
+   *
+   * `aceptado` es de tres valores y aquí importan sólo dos: `false` es «a éste
+   * no» y `null` es «todavía no ha contestado». Filtrar por `!a.aceptado`
+   * habría metido a los indecisos en la lista de los descartados, y a una madre
+   * le habríamos dicho que a su hijo no lo cogen antes de que nadie lo dijera.
+   */
+  const cogidos = s.alumnos.filter((a) => a.aceptado === true);
+  const sinCoger = s.alumnos.filter((a) => a.aceptado === false);
+
   const bizum = process.env.BIZUM_TELEFONO;
 
   return (
@@ -126,6 +168,36 @@ export default async function PaginaSolicitud({
               Le hemos avisado. Suele contestar en un día o dos. Si dice que no,
               no pagas nada y puedes escribir a otro.
             </p>
+
+            {/*
+              La salida, y sólo existe mientras nadie ha contestado.
+
+              En cuanto el profesor acepte, la que vale es la otra —«al final no
+              me hace falta»—, que además le pregunta el motivo. Dos botones
+              para lo mismo en momentos distintos sería un lío; el mismo botón
+              en los dos momentos, peor.
+            */}
+            <RetirarSolicitud token={token} nombreProfesor={s.profesor} />
+          </Paso>
+        )}
+
+        {/* Se retiró ella. Es distinto de que caducara o de que él dijera que
+            no, y hay que decirlo con sus palabras: quien abre este enlace tres
+            semanas después no se acuerda de qué pasó con cuál. */}
+        {s.retirada && (
+          <Paso numero={2} titulo="Retiraste esta solicitud" estado="ahora">
+            <div className="rounded-lg border border-gris-borde bg-gris-claro p-4">
+              <p className="text-sm text-carbon">
+                Se lo dijimos para que no se quedara esperando. No has pagado
+                nada. Si cambias de idea puedes volver a escribirle.
+              </p>
+              <a
+                href={`/profesor/${s.slugProfesor}`}
+                className="mt-3 inline-block rounded-lg bg-verde-avanza px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Ver su ficha
+              </a>
+            </div>
           </Paso>
         )}
 
@@ -151,8 +223,49 @@ export default async function PaginaSolicitud({
         {(s.estado === 'aceptada' ||
           s.estado === 'pagada' ||
           s.estado === 'devuelta' ||
-          s.estado === 'cancelada') && (
-          <Paso numero={2} titulo="Ha aceptado" estado="hecho" />
+          // Cancelada sí, pero de las que llegaron a tener un sí. La que se
+          // retiró antes tiene su propio paso, justo aquí arriba.
+          (s.estado === 'cancelada' && !s.retirada)) && (
+          <Paso numero={2} titulo="Ha aceptado" estado="hecho">
+            {/*
+              A cuáles de los hermanos, cuando no ha cogido a todos.
+              ----------------------------------------------------------------
+
+              Sólo aparece si de verdad ha descartado a alguno, y es el momento
+              en que hay que contárselo: ha pagado un contacto y tiene que saber
+              para cuál de sus hijos le ha salido y para cuál le toca volver a
+              buscar. Si se entera en la llamada es tarde, y una decepción que
+              se podía evitar con dos líneas.
+
+              El enlace al directorio va aquí y no en un correo de mañana,
+              porque éste es el minuto en que está más dispuesta a escribir a
+              otro profesor. Y dice desde el principio que sería un contacto
+              aparte, para que no lo descubra al final.
+            */}
+            {sinCoger.length > 0 && (
+              <div className="rounded-lg border border-gris-borde bg-gris-claro p-4">
+                <p className="text-sm text-carbon">
+                  Va a dar clase a{' '}
+                  <strong>
+                    {cogidos.map((a) => a.nivel ?? 'tu hijo').join(' y ')}
+                  </strong>
+                  . Para{' '}
+                  {sinCoger.map((a) => a.nivel ?? 'el otro').join(' y ')} no le
+                  encajaba el horario.
+                </p>
+                <p className="mt-2 text-sm text-gris-medio">
+                  Puedes escribir a otro profesor, y ése sería un contacto
+                  aparte.
+                </p>
+                <a
+                  href="/profesores"
+                  className="mt-3 inline-block rounded-lg bg-verde-avanza px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Buscar profesor para el otro
+                </a>
+              </div>
+            )}
+          </Paso>
         )}
 
         {/* Se cerró sin que el profesor llegara a contestar. */}
@@ -474,6 +587,35 @@ export default async function PaginaSolicitud({
       {/* ------------------------------------------------------------------ */}
       {otras.length > 0 && (
         <section className="mt-12 border-t border-gris-borde pt-8">
+          {/*
+            Cuántas conversaciones tienes abiertas y qué pueden costarte.
+            ------------------------------------------------------------------
+
+            Va **fuera** del desplegable de abajo, y es la única cosa de esta
+            sección que se ve sin abrir nada. El desplegable existe para que
+            quien reenvíe este enlace por WhatsApp no enseñe sin querer a qué
+            otros profesores ha escrito; un número no revela a nadie.
+
+            Y es la frase que le faltaba a la madre del lío. Escribir es gratis,
+            así que escribió a cuatro sin pensar que cada uno que dijera que sí
+            era otro contacto que pagar. No lo hizo por lista: es que en ningún
+            sitio se lo decíamos. Cuando lo descubrió ya había que deshacerlo a
+            mano.
+          */}
+          {abiertas > 1 && (
+            <div className="mb-8 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+              <p className="text-sm text-carbon">
+                <strong>
+                  Estás hablando con {abiertas} profesores a la vez.
+                </strong>{' '}
+                Cada uno que te acepte es un contacto aparte
+                {s.importe > 0 ? ` de ${euros(s.importe)}` : ''}, porque es el
+                teléfono de una persona distinta. Si ya has encontrado a quien
+                buscabas, retira las que no te hagan falta y les avisamos.
+              </p>
+            </div>
+          )}
+
           {/*
             Plegado, y hay que abrirlo a propósito.
 

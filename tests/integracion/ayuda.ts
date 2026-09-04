@@ -137,6 +137,16 @@ export function datosDeFamilia(
     // clase presencial. Las pruebas que lo necesiten lo pasan por `overrides`.
     zona: '',
     barrio: '',
+    // Vacíos por lo mismo que la zona: son opcionales en el formulario, y una
+    // prueba que los diera siempre rellenos dejaría sin cubrir el caso normal
+    // de la familia que no contesta a esas dos preguntas.
+    horasSemana: '',
+    diasPreferidos: [],
+    // Sin hermanos por defecto, que es el caso de casi todas las solicitudes.
+    // Las pruebas que los necesiten los pasan por `overrides`, y así el camino
+    // normal sigue siendo el que se prueba siempre.
+    hermanos: [],
+    valeConUno: false,
     mensaje: '',
     esTutorLegal: true,
     aceptaPrivacidad: true,

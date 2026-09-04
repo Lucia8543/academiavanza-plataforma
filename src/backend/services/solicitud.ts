@@ -13,13 +13,19 @@ import {
   URGENCIA_POR_DEFECTO,
 } from '@/shared/reglas/cobro';
 import { zonaCompleta } from '@/shared/datos/zonas';
+import {
+  diasEnPalabras,
+  horasEnPalabras,
+} from '@/shared/textos/horario-familia';
 import { aceptaSolicitudes, normalizarCupo } from '@/shared/reglas/cupo';
 import type { Sospecha } from '@/shared/schemas/trampa-bots';
 import { detectarDatosSensibles } from '@/shared/schemas/datos-sensibles';
+import { detectarDatosDeContacto } from '@/shared/schemas/datos-de-contacto';
 import {
   correoContactoAbierto,
   correoDevolucion,
   correoFamiliaNoSigue,
+  correoFamiliaSeRetira,
   correoFamiliaYaNoEspera,
   correoFichaPausada,
   correoPagoConfirmado,
@@ -216,6 +222,58 @@ export async function crearSolicitud(
         // porque la zona no cambia nada en esa decisión.
         zona: datos.zona || null,
         barrio: datos.barrio || null,
+        /*
+         * Lo que el profesor necesita para decidir si le cabe en el horario.
+         *
+         * Los dos pueden venir vacíos y eso está bien: una familia que escribe
+         * en septiembre a menudo no sabe todavía cuántas horas va a necesitar.
+         *
+         * En las horas, `null` y `'no-lo-se'` son cosas distintas y las dos
+         * caben: la primera es que no contestó y la segunda que contestó que
+         * no lo sabe. Al profesor le importa la diferencia, porque la segunda
+         * es una conversación pendiente y la primera un silencio.
+         *
+         * En los días no hay esa distinción y tampoco haría falta: Prisma
+         * representa una lista de escalares vacía como `[]` y no admite
+         * `null`, así que se guarda tal cual llega.
+         */
+        horas_semana: datos.horasSemana || null,
+        dias_preferidos: datos.diasPreferidos,
+        /*
+         * Los alumnos, todos, empezando por el primero.
+         * ------------------------------------------------------------------
+         *
+         * **Aquí está la regla que sostiene la duplicidad de esta tabla.** El
+         * curso y las horas del primer alumno viven en dos sitios: sueltos en
+         * `contactos`, que es de donde leen el panel de cobros, los correos y
+         * la lista de otras solicitudes, y en `contacto_alumnos`, que es de
+         * donde sale todo lo nuevo.
+         *
+         * Se escriben en el mismo `create` y en ninguna otra parte, que es lo
+         * único que impide que se separen. Si algún día hay que tocarlos,
+         * manda `contacto_alumnos`: lo de arriba es el reflejo.
+         *
+         * `orden` empieza en 1 porque es lo que ve la familia en la pantalla,
+         * y no significa prioridad. Nadie ordena a sus hijos.
+         */
+        alumnos: {
+          create: [
+            {
+              orden: 1,
+              nivel_id: datos.nivelId,
+              horas_semana: datos.horasSemana || null,
+            },
+            ...datos.hermanos.map((hermano, i) => ({
+              orden: i + 2,
+              nivel_id: hermano.nivelId,
+              horas_semana: hermano.horasSemana || null,
+            })),
+          ],
+        },
+        // Si la familia acepta que coja sólo a alguno. El esquema ya lo ha
+        // apagado si no hay hermanos, así que aquí no hace falta volver a
+        // preguntarlo: preguntarlo dos veces es cómo acaban discrepando.
+        vale_con_uno: datos.valeConUno,
         // Para cuándo lo necesita. Decide en cuántos días caduca si el profesor
         // no contesta, y se le dice a los dos en el primer correo.
         urgencia: datos.urgencia ?? URGENCIA_POR_DEFECTO,
@@ -331,13 +389,46 @@ function motivoPublicable(motivo?: string): string | null {
   const limpio = motivo?.trim();
   if (!limpio) return null;
 
-  return detectarDatosSensibles(limpio) ? null : limpio;
+  if (detectarDatosSensibles(limpio)) return null;
+
+  /*
+   * Y un teléfono aquí tampoco sale.
+   *
+   * Este texto lo escribe el profesor al rechazar y lo lee la familia, así que
+   * es el sitio perfecto para un «no puedo por la plataforma, llámame al
+   * 600...». Sería el trato entero por fuera: él dice que no donde se cobra y
+   * que sí donde no se cobra, y encima queda como el que hace un favor.
+   *
+   * Se descarta el texto y el rechazo sigue adelante, igual que con el otro
+   * filtro y por la misma razón: devolver un error dejaría viva una solicitud
+   * que el profesor ya ha rechazado, y a la familia esperando una respuesta que
+   * nunca llega. Un rechazo sin motivo la pantalla lo trata bien.
+   */
+  if (detectarDatosDeContacto(limpio)) return null;
+
+  return limpio;
 }
 
+/**
+ * Acepta la solicitud, y opcionalmente sólo a algunos de los hermanos.
+ *
+ * `alumnos` son los identificadores de las filas de `contacto_alumnos` que el
+ * profesor coge. Vacío o sin pasar significa **todos**, que es el caso normal y
+ * el único que existía antes.
+ *
+ * EL PRECIO NO DEPENDE DE CUÁNTOS COJA, Y ESO ES DELIBERADO
+ *
+ * Coja a uno o a los tres, la familia paga lo mismo, porque lo que compra es
+ * poder hablar con esta persona y el teléfono es el mismo. Lo contrario obligaría
+ * a recalcular el importe en el momento de aceptar, a decírselo a la familia
+ * después de que ya vio otra cifra, y a explicar por qué. Todo eso por dos euros
+ * y a cambio de una regla que no se puede contar en una frase.
+ */
 export async function decidir(
   tokenProfesor: string,
   decision: Decision,
   motivo?: string,
+  alumnos?: string[],
 ): Promise<boolean> {
   // Sólo se puede decidir sobre lo que sigue esperando. Un enlace reenviado o
   // pulsado dos veces no debe deshacer nada.
@@ -351,6 +442,8 @@ export async function decidir(
       nombre_familia: true,
       importe: true,
       vale_de: true,
+      vale_con_uno: true,
+      alumnos: { select: { id: true }, orderBy: { orden: 'asc' } },
       profesores: { select: { nombre: true, apellidos: true } },
     },
   });
@@ -373,6 +466,56 @@ export async function decidir(
             motivo_rechazo: motivoLimpio,
           },
   });
+
+  /*
+   * A cuáles de los hermanos coge, si la familia le dejó elegir.
+   * -------------------------------------------------------------------------
+   *
+   * Se marcan todos, los que sí y los que no, y no sólo los que coge. La
+   * columna admite tres valores por eso mismo: `null` significa «no ha
+   * contestado», y dejar a los descartados en `null` haría que la familia no
+   * pudiera distinguir un «a este niño no» de un profesor que todavía no ha
+   * dicho nada.
+   *
+   * **Los identificadores que llegan se cruzan con los de esta solicitud.** Un
+   * enlace de aceptar es público para quien lo tenga, así que sin ese cruce
+   * bastaría con mandar el identificador de un alumno de otra familia para
+   * escribir en su fila. Es una comprobación de dos líneas y es la diferencia
+   * entre un formulario y un agujero.
+   */
+  if (decision === 'aceptar' && alumnos?.length) {
+    const suyos = new Set(solicitud.alumnos.map((a) => a.id));
+    const cogidos = alumnos.filter((id) => suyos.has(id));
+
+    // Si no queda ninguno válido, no se toca nada: es preferible una solicitud
+    // aceptada entera —que es lo que la familia pidió— a una en la que el
+    // profesor no coge a nadie porque llegó una lista rara.
+    if (cogidos.length > 0 && solicitud.vale_con_uno) {
+      await db.contacto_alumnos.updateMany({
+        where: { contacto_id: solicitud.id, id: { in: cogidos } },
+        data: { aceptado: true },
+      });
+      await db.contacto_alumnos.updateMany({
+        where: { contacto_id: solicitud.id, id: { notIn: cogidos } },
+        data: { aceptado: false },
+      });
+    }
+  }
+
+  /*
+   * Y si los coge a todos, también se dice.
+   *
+   * Podría dejarse en `null` y darlo por supuesto, y sería el error de siempre:
+   * la pantalla de la familia tendría que saber que `null` significa una cosa
+   * antes de aceptar y otra después. Un dato que cambia de significado según el
+   * estado de otra fila es de los que nadie recuerda seis meses más tarde.
+   */
+  if (decision === 'aceptar' && !alumnos?.length) {
+    await db.contacto_alumnos.updateMany({
+      where: { contacto_id: solicitud.id },
+      data: { aceptado: true },
+    });
+  }
 
   /*
    * Un contacto pagado con vale se abre solo.
@@ -599,6 +742,75 @@ export async function responderAlRecordatorio(
       }),
     );
   }
+
+  return true;
+}
+
+/**
+ * La familia retira una solicitud que el profesor todavía no ha contestado.
+ *
+ * POR QUÉ HACÍA FALTA
+ *
+ * Hasta ahora la familia sólo podía decir que no **después** de que el profesor
+ * aceptara, que es exactamente un paso tarde. Una madre que escribe a cuatro
+ * profesores y encuentra al bueno el martes no tenía forma de cerrar los otros
+ * tres: se quedaban vivos hasta que alguno aceptaba y le llegaba un cobro de
+ * diez euros por un contacto que ya no quería, o hasta que caducaban solos
+ * dejando a tres profesores esperando para nada.
+ *
+ * Eso pasó de verdad, y acabó siendo un lío por WhatsApp con Lucía cerrando
+ * solicitudes a mano en el panel. Que es la definición de lo que este proyecto
+ * no puede tener.
+ *
+ * SÓLO DESDE `pendiente_profesor`, Y ES LO IMPORTANTE
+ *
+ * En cuanto el profesor acepta, la salida es la otra: `responderAlRecordatorio`,
+ * que además le pregunta el motivo. Si esto aceptara también las aceptadas
+ * habría dos caminos para lo mismo, uno de ellos sin motivo, y el profesor
+ * dejaría de saber por qué le dejan.
+ *
+ * El estado es `cancelada` y no `caducada` a propósito: lo que pausa la ficha de
+ * un profesor son las caducadas sin contestar, y **que una familia se retire no
+ * es culpa suya**. Contárselo como un fallo sería castigarle por la prisa de
+ * otro.
+ */
+export async function retirarSolicitud(
+  tokenFamilia: string,
+  motivo?: MotivoCierre,
+): Promise<boolean> {
+  const solicitud = await db.contactos.findFirst({
+    where: { token_familia: tokenFamilia, estado: 'pendiente_profesor' },
+    select: {
+      id: true,
+      niveles: { select: { nombre: true } },
+      profesores: { select: { nombre: true, email: true } },
+    },
+  });
+
+  if (!solicitud) return false;
+
+  // Mismo criterio que al irse tras la aceptación: sólo valen los motivos de
+  // quien no ha llegado a pagar, porque estos dos no han hablado nunca.
+  const cierre = motivo && MOTIVOS_SIN_PAGAR.includes(motivo) ? motivo : null;
+
+  await db.contactos.update({
+    where: { id: solicitud.id },
+    data: {
+      estado: 'cancelada',
+      cancelada_en: new Date(),
+      ...(cierre
+        ? { motivo_cierre: cierre, motivo_cierre_en: new Date() }
+        : {}),
+    },
+  });
+
+  await enviar(
+    correoFamiliaSeRetira({
+      para: solicitud.profesores.email,
+      nombreProfesor: solicitud.profesores.nombre,
+      nivel: solicitud.niveles?.nombre ?? null,
+    }),
+  );
 
   return true;
 }
@@ -1058,6 +1270,29 @@ async function avisarAlProfesor(
     select: { nombre: true, precio_referencia: true },
   });
 
+  /*
+   * Los cursos de los hermanos, si los hay.
+   *
+   * Se traen en una sola consulta y se ordenan **según los mandó la familia**,
+   * no como los devuelva la base de datos. `findMany` con un `in` no promete
+   * ningún orden, y aquí el orden es información: el segundo hermano de la
+   * pantalla tiene que ser el segundo del correo, o el profesor cree que está
+   * cogiendo a uno y coge al otro.
+   */
+  const cursosHermanos = datos.hermanos.length
+    ? await db.niveles.findMany({
+        where: { id: { in: datos.hermanos.map((h) => h.nivelId) } },
+        select: { id: true, nombre: true },
+      })
+    : [];
+
+  const hermanos = datos.hermanos.map((hermano) => ({
+    nivel:
+      cursosHermanos.find((c) => c.id === hermano.nivelId)?.nombre ??
+      'sin especificar',
+    horasSemana: horasEnPalabras(hermano.horasSemana),
+  }));
+
   const ruta = `/aceptar/${tokenProfesor}`;
 
   const resultado = await avisar(
@@ -1079,6 +1314,15 @@ async function avisarAlProfesor(
           ? null
           : Number(nivel.precio_referencia),
       zona: zonaCompleta(datos.zona || null, datos.barrio || null),
+      // Ya en palabras. El profesor lee «2 horas» y «Lunes, miércoles y
+      // viernes», no `2` y `[1,3,5]`, y la traducción vive en un solo sitio
+      // para que las cuatro pantallas que enseñan esto digan lo mismo.
+      horasSemana: horasEnPalabras(datos.horasSemana),
+      diasPreferidos: diasEnPalabras(datos.diasPreferidos),
+      // Los hermanos y si le vale con coger a uno. Van juntos porque lo segundo
+      // sólo significa algo si hay lo primero.
+      hermanos,
+      valeConUno: datos.valeConUno,
       mensaje: datos.mensaje || null,
       tokenProfesor,
       tokenPanel: await tokenDelPanel(profesor.id),

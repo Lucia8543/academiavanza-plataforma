@@ -834,7 +834,46 @@ export async function borrarContactosViejos(): Promise<number> {
        */
       zona: null,
       barrio: null,
+      // Las horas y los días también. Son preferencias de esa familia, no
+      // acreditan ningún cobro, y sumadas al curso y al profesor estrechan el
+      // cerco igual que lo hacía el barrio. Esta vez se decidió aquí antes de
+      // crear las columnas, que es lo que dice el párrafo de arriba.
+      horas_semana: null,
+      // Lista vacía y no `null`: Prisma no deja poner a nulo una lista de
+      // escalares. El efecto es el mismo, que no quede rastro de qué días
+      // pedía esa familia.
+      dias_preferidos: [],
+      /*
+       * `vale_con_uno` se queda, y se decide aquí antes de tocarlo, que es lo
+       * que pide el párrafo de arriba.
+       *
+       * No dice nada de esa familia: dice qué podía hacer el profesor al
+       * contestar. Vaciarlo convertiría en incomprensible una solicitud en la
+       * que él cogió a uno de dos hermanos, que es justo lo que habría que
+       * poder explicar si alguien reclama.
+       */
     },
+  });
+
+  /*
+   * Y los alumnos de esas solicitudes: sus horas.
+   *
+   * El curso se queda y las horas se vacían, y la diferencia no es capricho. El
+   * curso es lo que acredita el cobro —por qué se pagó ese precio y no otro— y
+   * ya estaba en `contactos` desde siempre. Las horas son una preferencia de la
+   * familia, no acreditan nada, y sumadas al curso y al profesor estrechan el
+   * cerco igual que el barrio.
+   *
+   * `aceptado` también se queda, por lo mismo que `vale_con_uno`: es lo que
+   * contestó el profesor, no lo que pidió la familia.
+   *
+   * Va en una consulta aparte porque `updateMany` no atraviesa relaciones. Se
+   * filtra por las mismas solicitudes, no por fecha propia: la fila del alumno
+   * no tiene edad, la tiene la solicitud de la que cuelga.
+   */
+  await db.contacto_alumnos.updateMany({
+    where: { contactos: { ...viejas, estado: { in: ['pagada', 'devuelta'] } } },
+    data: { horas_semana: null },
   });
 
   return borradas + anonimizadas;

@@ -71,6 +71,10 @@ model contactos {
   recordatorio_profesor_en DateTime?    @db.Timestamptz(6)
   urgencia                 String       @default("ya")
   sospecha_bot             String?
+  horas_semana             String?
+  dias_preferidos          Int[]        @db.SmallInt
+  vale_con_uno             Boolean      @default(false)
+  alumnos              contacto_alumnos[]
   niveles              niveles?         @relation(fields: [nivel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   profesores           profesores       @relation(fields: [profesor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   contactos            contactos?       @relation("contactosTocontactos", fields: [vale_de], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -293,6 +297,26 @@ model colegios {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// Los alumnos de una solicitud, uno por fila. Sólo curso y horas: ningún dato
+/// que identifique al menor. La fila de orden 1 se refleja en contactos.nivel_id
+/// y contactos.horas_semana por compatibilidad, y esta tabla es la que manda.
+model contacto_alumnos {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contacto_id  String    @db.Uuid
+  orden        Int       @db.SmallInt
+  nivel_id     String?   @db.Uuid
+  horas_semana String?
+  /// NULL mientras el profesor no contesta; true si coge a este alumno; false
+  /// si a este no. Los tres valores son distintos y ninguno sobra.
+  aceptado     Boolean?
+  contactos    contactos @relation(fields: [contacto_id], references: [id], onDelete: Cascade)
+  niveles      niveles?  @relation(fields: [nivel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([contacto_id, orden], map: "contacto_alumno_unico")
+  @@index([contacto_id, orden], map: "idx_contacto_alumnos_solicitud")
+  @@schema("app")
+}
+
 model niveles {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   slug              String             @unique
@@ -303,6 +327,7 @@ model niveles {
   creado_en         DateTime           @default(now()) @db.Timestamptz(6)
   precio_referencia Decimal?           @db.Decimal(6, 2)
   contactos         contactos[]
+  contacto_alumnos  contacto_alumnos[]
   profesor_niveles  profesor_niveles[]
 
   @@index([etapa, orden_visual], map: "idx_niveles_etapa", where: raw("activo"))
